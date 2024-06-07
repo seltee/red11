@@ -22,3 +22,8 @@ int Window::getHeight()
 {
     return state.height;
 }
+
+void Window::close()
+{
+    state.bIsCloseRequested = true;
+}

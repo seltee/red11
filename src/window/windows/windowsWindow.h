@@ -13,10 +13,12 @@
 class WindowsWindow : public Window
 {
 public:
-    WindowsWindow(const char *windowName, int width, int height, bool bIsFulltscreen);
+    EXPORT WindowsWindow(const char *windowName, int width, int height, bool bIsFulltscreen);
     inline HWND getHwnd() { return hwnd; }
 
-    void processWindow();
+    EXPORT void processWindow();
+
+    EXPORT void setMousePosition(int x, int y, bool generateMoveEvents = false);
 
 protected:
     HWND hwnd;

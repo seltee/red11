@@ -1,20 +1,20 @@
 // SPDX-FileCopyrightText: 2024 Dmitrii Shashkov
 // SPDX-License-Identifier: MIT
 
-#include "shine.h"
+#include "red11.h"
 
 #define WINDOW_WIDTH 1600
 #define WINDOW_HEIGHT 1200
 
 APPMAIN
 {
-    Shine::openConsole();
-    auto window = Shine::createWindow("Window Example", WINDOW_WIDTH, WINDOW_HEIGHT, false);
-    auto renderer = Shine::createRenderer(window, RendererType::DirectX9);
+    Red11::openConsole();
+    auto window = Red11::createWindow("Window Example", WINDOW_WIDTH, WINDOW_HEIGHT, false);
+    auto renderer = Red11::createRenderer(window, RendererType::DirectX9);
 
-    auto cubeMesh = Shine::getMeshBuilder()->createCube(0.1f);
+    auto cubeMesh = Red11::getMeshBuilder()->createCube(0.1f);
 
-    auto scene = Shine::createScene();
+    auto scene = Red11::createScene();
     auto cube = scene->createActor<Actor>("Cube");
     auto cubeComponent = cube->createComponentMesh(cubeMesh);
     cubeComponent->setMaterial(new MaterialSimple(Color(0.2, 0.2, 0.2)));
@@ -46,11 +46,12 @@ APPMAIN
 
     camera->setupAsPerspective(WINDOW_WIDTH, WINDOW_HEIGHT);
 
+    DeltaCounter deltaCounter;
     float wsDelta = 0.0f;
     while (!window->isCloseRequested())
     {
         window->processWindow();
-        wsDelta += 0.02f;
+        wsDelta += deltaCounter.getDelta();
 
         renderer->startRendering();
         renderer->clearBuffer(Color(0.4, 0.5, 0.8));

@@ -25,6 +25,10 @@ public:
     EXPORT int getWidth();
     EXPORT int getHeight();
 
+    EXPORT void close();
+
+    virtual void setMousePosition(int x, int y, bool generateMoveEvents = false) = 0;
+
 protected:
     WindowState state;
 };

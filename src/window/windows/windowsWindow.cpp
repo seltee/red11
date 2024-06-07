@@ -2,12 +2,13 @@
 // SPDX-License-Identifier: MIT
 
 #include "windowsWindow.h"
+#include "data/inputProvider.h"
 #include <shellscalingapi.h>
 #include <windows.h>
 
 #ifdef WINDOWS_ONLY
 
-#define CLASS_NAME L"Shine Window Class"
+#define CLASS_NAME L"Red11 Window Class"
 
 LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -16,6 +17,30 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
     case WM_DESTROY:
         PostQuitMessage(0);
         break;
+    case WM_KEYDOWN:
+        InputData keyDownData;
+        keyDownData.keyboard.keyCode = (KeyboardCode)wParam;
+        keyDownData.keyboard.state = 1;
+        InputProvider::provideNewInput(InputType::Keyboard, keyDownData);
+        break;
+
+    case WM_KEYUP:
+        InputData keyUpData;
+        keyUpData.keyboard.keyCode = (KeyboardCode)wParam;
+        keyUpData.keyboard.state = 0;
+        InputProvider::provideNewInput(InputType::Keyboard, keyUpData);
+        break;
+
+    case WM_MOUSEMOVE:
+        InputData mouseData;
+        mouseData.mouse.type = InputMouseType::PositionX;
+        mouseData.mouse.value = (int)(lParam & 0xffff);
+        InputProvider::provideNewInput(InputType::Mouse, mouseData);
+        mouseData.mouse.type = InputMouseType::PositionY;
+        mouseData.mouse.value = (int)(lParam >> 16);
+        InputProvider::provideNewInput(InputType::Mouse, mouseData);
+        break;
+
     default:
         return DefWindowProcW(hwnd, message, wParam, lParam);
     }
@@ -110,6 +135,16 @@ void WindowsWindow::processWindow()
             DispatchMessage(&msg);
         }
     }
+}
+
+void WindowsWindow::setMousePosition(int x, int y, bool generateMoveEvents)
+{
+    POINT p = {x, y};
+    ClientToScreen(hwnd, &p);
+    if (SetCursorPos(p.x, p.y)){
+        InputProvider::setMousePosition(x, y, generateMoveEvents);
+    }
+
 }
 
 #endif

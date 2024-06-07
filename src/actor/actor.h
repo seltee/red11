@@ -7,6 +7,7 @@
 #include "utils/destroyable.h"
 #include "components/component.h"
 #include "components/componentMesh.h"
+#include "components/componentMeshGroup.h"
 #include "components/componentLight.h"
 #include "data/mesh.h"
 #include "renderer/renderer.h"
@@ -37,13 +38,23 @@ public:
     EXPORT void removeComponent(Component *component);
     EXPORT void prepareNewComponent(Component *component);
 
-    EXPORT ComponentMesh *createComponentMesh(Mesh *mesh, Vector3 position = Vector3(0.0f), Vector3 rotation = Vector3(0.0f), Vector3 scale = Vector3(1.0f))
+    inline ComponentMesh *createComponentMesh(Mesh *mesh, Vector3 position = Vector3(0.0f), Vector3 rotation = Vector3(0.0f), Vector3 scale = Vector3(1.0f))
     {
         auto component = createComponent<ComponentMesh>();
         component->setPosition(position);
         component->setRotation(rotation);
         component->setScale(scale);
         component->setMesh(mesh);
+        return component;
+    }
+
+    inline ComponentMeshGroup *createComponentMeshGroup(std::vector<MeshObject *> *list, Vector3 position = Vector3(0.0f), Vector3 rotation = Vector3(0.0f), Vector3 scale = Vector3(1.0f))
+    {
+        auto component = createComponent<ComponentMeshGroup>();
+        component->setPosition(position);
+        component->setRotation(rotation);
+        component->setScale(scale);
+        component->setMeshList(list);
         return component;
     }
 

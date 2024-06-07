@@ -12,11 +12,13 @@
 #include "data/mesh.h"
 #include "data/material/material.h"
 #include "data/material/materialSimple.h"
+#include "data/texture.h"
 
 #pragma comment(lib, "d3d9.lib")
 
 #define MAX_QUEUE_LIGHTS_COUNT (8 * 1024)
 #define MAX_QUEUE_MESH_COUNT (256 * 1024)
+#define MAX_TEXTURES_COUNT (32 * 1024)
 #define MAX_LIGHTS_PER_MESH_COUNT 8
 
 struct MeshRenderData
@@ -31,6 +33,12 @@ struct MeshRenderData
 struct MaterialRenderData
 {
     D3DMATERIAL9 material;
+};
+
+struct TextureRenderData
+{
+    IDirect3DTexture9 *texture;
+    int updIndex;
 };
 
 struct QueuedLightRenderData
@@ -70,14 +78,17 @@ protected:
     void initD3D(HWND hWnd, bool bIsFullscreen, int width, int height); // sets up and initializes Direct3D
     void renderFrame(void);                                             // renders a single frame
     void cleanD3D(void);
+
     MeshRenderData *createBuffer(Mesh *mesh);
     MaterialRenderData *createSimpleMaterial(MaterialSimple *material);
+    TextureRenderData *createTexture(Texture *texture);
 
     LPDIRECT3D9 d3d = nullptr;          // the pointer to our Direct3D interface
     LPDIRECT3DDEVICE9 d3ddev = nullptr; // the pointer to the device class
 
     MeshRenderData *meshRenderData[MAX_MESH_COUNT];
     MaterialRenderData *materialRenderData[MAX_MATERIAL_COUNT];
+    TextureRenderData *textureRenderData[MAX_TEXTURES_COUNT];
 
     int queueCurrentLight = 0;
     int queueCurrentMesh = 0;

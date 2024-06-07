@@ -3,14 +3,23 @@
 
 #include "directx9renderer.h"
 #include "window/windows/windowsWindow.h"
+#include <string>
 
-#define CUSTOMFVF (D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_DIFFUSE)
+#define FVF_COLORED (D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_DIFFUSE)
+#define FVF_TEXTURED (D3DFVF_XYZ | D3DFVF_TEX1 | D3DFVF_NORMAL)
 
-struct ColorNormalVertex
+struct VertexNormalColor
 {
     float x, y, z;                   // from the D3DFVF_XYZRHW flag
     float normalX, normalY, normalZ; // from the D3DFVF_NORMAL flag
     unsigned int color;              // from the D3DFVF_DIFFUSE flag
+};
+
+struct VertexNormalUV
+{
+    float x, y, z;                   // from the D3DFVF_XYZRHW flag
+    float normalX, normalY, normalZ; // from the D3DFVF_NORMAL flag
+    float u, v;                      // from the D3DFVF_TEX1 flag
 };
 
 DirectX9Renderer::DirectX9Renderer(Window *window) : Renderer(window)
@@ -19,6 +28,7 @@ DirectX9Renderer::DirectX9Renderer(Window *window) : Renderer(window)
 
     ZeroMemory(meshRenderData, sizeof(MeshRenderData *) * MAX_MESH_COUNT);
     ZeroMemory(materialRenderData, sizeof(MaterialRenderData *) * MAX_MATERIAL_COUNT);
+    ZeroMemory(textureRenderData, sizeof(TextureRenderData *) * MAX_TEXTURES_COUNT);
     ZeroMemory(queueMeshes, sizeof(QueuedMeshRenderData) * MAX_QUEUE_MESH_COUNT);
     ZeroMemory(queueLights, sizeof(QueuedLightRenderData) * MAX_QUEUE_LIGHTS_COUNT);
 
@@ -43,7 +53,7 @@ void DirectX9Renderer::clearBuffer(Color color)
 
 void DirectX9Renderer::queueMesh(Mesh *mesh, Material *material, Matrix4 *model)
 {
-    if (queueCurrentMesh < MAX_QUEUE_MESH_COUNT)
+    if (queueCurrentMesh < MAX_QUEUE_MESH_COUNT && mesh && material)
     {
         queueMeshes[queueCurrentMesh].mesh = mesh;
         queueMeshes[queueCurrentMesh].material = material;
@@ -172,11 +182,39 @@ void DirectX9Renderer::renderMesh(Mesh *mesh, Material *material, Matrix4 *model
         meshRenderData[meshIndex] = meshData;
     }
 
-    d3ddev->SetFVF(CUSTOMFVF);
-    d3ddev->SetStreamSource(0, meshData->vBuffer, 0, sizeof(ColorNormalVertex));
-    d3ddev->SetIndices(meshData->iBuffer);
+    auto defTexture = reinterpret_cast<MaterialSimple *>(material)->getDefuseTexture();
+    if (defTexture)
+    {
+        int tIndex = defTexture->getIndex();
 
-    d3ddev->SetMaterial(&materialData->material); // set the globably-used material to &material
+        auto textureDXData = textureRenderData[tIndex];
+        if (!textureDXData)
+        {
+            textureDXData = createTexture(defTexture);
+            textureRenderData[tIndex] = textureDXData;
+        }
+        if (textureDXData && textureDXData->texture)
+            d3ddev->SetTexture(0, textureDXData->texture);
+    }
+    else
+    {
+        d3ddev->SetTexture(0, 0);
+    }
+
+    if (mesh->getType() == VertexDataType::PositionUV)
+    {
+        d3ddev->SetFVF(FVF_TEXTURED);
+        d3ddev->SetStreamSource(0, meshData->vBuffer, 0, sizeof(VertexNormalUV));
+        d3ddev->SetMaterial(&materialData->material); // set the globably-used material to &material
+    }
+    else
+    {
+        d3ddev->SetFVF(FVF_COLORED);
+        d3ddev->SetStreamSource(0, meshData->vBuffer, 0, sizeof(VertexNormalColor));
+        d3ddev->SetMaterial(&materialData->material); // set the globably-used material to &material
+    }
+
+    d3ddev->SetIndices(meshData->iBuffer);
 
     d3ddev->SetTransform(D3DTS_WORLD, (D3DMATRIX *)value_ptr(*model));
 
@@ -281,29 +319,29 @@ MeshRenderData *DirectX9Renderer::createBuffer(Mesh *mesh)
     unsigned int indeciesAmount = pAmount * 3;
     bool useShortForIndicies = indeciesAmount < 0xffff;
 
-    // Vertex buffer
-    d3ddev->CreateVertexBuffer(vAmount * sizeof(ColorNormalVertex), 0, CUSTOMFVF, D3DPOOL_MANAGED, &data->vBuffer, NULL);
-
-    ColorNormalVertex *vBufferData;
-    data->vBuffer->Lock(0, 0, (void **)&vBufferData, 0); // locks v_buffer, the buffer we made earlier
-
-    // if mesh vertex data is colored
+    // if mesh data not intended to use UV
     if (mesh->getType() == VertexDataType::PositionColor)
     {
+        d3ddev->CreateVertexBuffer(vAmount * sizeof(VertexNormalColor), 0, FVF_COLORED, D3DPOOL_MANAGED, &data->vBuffer, NULL);
+        VertexNormalColor *vBufferData;
+        data->vBuffer->Lock(0, 0, (void **)&vBufferData, 0); // locks v_buffer, the buffer we made earlier
         for (int i = 0; i < vAmount; i++)
         {
-            VertexDataColored v = verticies.vertexPositionColor[i];
-            vBufferData[i] = {v.position.x, v.position.y, v.position.z, v.position.x, v.position.y, v.position.z, v.color};
+            VertexDataColored v = verticies->vertexPositionColor[i];
+            vBufferData[i] = {v.position.x, v.position.y, v.position.z, v.position.x, v.position.y, v.position.z, Color(0.6f, 0.6f, 0.6f).getAsUInt()};
         }
     }
 
     // if mesh vertex data is just position/normal
-    if (mesh->getType() == VertexDataType::PositionNormal)
+    if (mesh->getType() == VertexDataType::PositionUV)
     {
+        d3ddev->CreateVertexBuffer(vAmount * sizeof(VertexNormalUV), 0, FVF_TEXTURED, D3DPOOL_MANAGED, &data->vBuffer, NULL);
+        VertexNormalUV *vBufferData;
+        data->vBuffer->Lock(0, 0, (void **)&vBufferData, 0); // locks v_buffer, the buffer we made earlier
         for (int i = 0; i < vAmount; i++)
         {
-            VertexDataPosition v = verticies.vertexPosition[i];
-            vBufferData[i] = {v.position.x, v.position.y, v.position.z, v.normal.x, v.normal.y, v.normal.z, Color(0.6f, 0.6f, 0.6f).getAsUInt()};
+            VertexDataUV v = verticies->vertexPositionUV[i];
+            vBufferData[i] = {v.position.x, v.position.y, v.position.z, v.normal.x, v.normal.y, v.normal.z, v.uv.x, v.uv.y};
         }
     }
 
@@ -350,9 +388,54 @@ MaterialRenderData *DirectX9Renderer::createSimpleMaterial(MaterialSimple *mater
 {
     MaterialRenderData *data = new MaterialRenderData();
     ZeroMemory(&data->material, sizeof(D3DMATERIAL9));
-    data->material.Diffuse = {material->defuse.r, material->defuse.g, material->defuse.b, material->defuse.a};
-    data->material.Ambient = {material->ambient.r, material->ambient.g, material->ambient.b, material->ambient.a};
-    data->material.Emissive = {material->emission.r, material->emission.g, material->emission.b, material->emission.a};
+    Color defuseColor = material->getDefuseColor();
+    Color ambientColor = material->getAmbientColor();
+    Color emissionColor = material->getEmissionColor();
+
+    data->material.Diffuse = {defuseColor.r, defuseColor.g, defuseColor.b, defuseColor.a};
+    data->material.Ambient = {ambientColor.r, ambientColor.g, ambientColor.b, ambientColor.a};
+    data->material.Emissive = {emissionColor.r, emissionColor.g, emissionColor.b, emissionColor.a};
+
+    return data;
+}
+
+TextureRenderData *DirectX9Renderer::createTexture(Texture *texture)
+{
+    TextureRenderData *data = new TextureRenderData();
+
+    data->texture = nullptr;
+    HRESULT res = d3ddev->CreateTexture(texture->getWidth(), texture->getHeight(), 0, 0, D3DFORMAT::D3DFMT_X8R8G8B8, D3DPOOL::D3DPOOL_MANAGED, &data->texture, nullptr);
+
+    if (res != D3D_OK)
+    {
+        if (res == D3DERR_INVALIDCALL)
+            printf("Invalid D3D call\n");
+        if (res == D3DERR_OUTOFVIDEOMEMORY)
+            printf("D3D out of memory\n");
+        if (res == E_OUTOFMEMORY)
+            printf("E out of memory\n");
+        return nullptr;
+    }
+
+    d3ddev->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
+    d3ddev->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);
+
+    data->updIndex = texture->getUpdIndex();
+
+    D3DLOCKED_RECT r;
+    data->texture->LockRect(0, &r, NULL, D3DLOCK_DISCARD);
+
+    unsigned int *pData = (unsigned int *)r.pBits;
+    unsigned int *buffer = (unsigned int *)texture->getBufferData();
+
+    int pSize = texture->getWidth() * texture->getHeight();
+    for (int i = 0; i < pSize; i++)
+    {
+        unsigned char *s = (unsigned char *)&buffer[i];
+        pData[i] = s[2] + (s[1] << 8) + (s[0] << 16) + (s[3] << 24);
+    }
+
+    data->texture->UnlockRect(0);
 
     return data;
 }

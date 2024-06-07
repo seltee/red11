@@ -5,30 +5,29 @@
 
 MaterialSimple::MaterialSimple()
 {
-    this->defuse = Color(0.16f, 0.16f, 0.16f);
-    this->emission = Color(0.0f, 0.0f, 0.0f);
-    this->ambient = this->defuse;
 }
 
-MaterialSimple::MaterialSimple(Color defuse)
+MaterialSimple::MaterialSimple(Color defuseColor, Color emissionColor)
 {
-    this->defuse = defuse;
-    this->emission = Color(0.0f, 0.0f, 0.0f);
-    this->ambient = defuse;
+    MaterialSimple(defuseColor, emissionColor, defuseColor);
 }
 
-MaterialSimple::MaterialSimple(Color defuse, Color emission)
+MaterialSimple::MaterialSimple(Color defuseColor, Color emissionColor, Color ambientColor)
 {
-    this->defuse = defuse;
-    this->emission = emission;
-    this->ambient = defuse;
+    this->defuseColor = defuseColor;
+    this->emissionColor = emissionColor;
+    this->ambientColor = ambientColor;
 }
 
-MaterialSimple::MaterialSimple(Color defuse, Color emission, Color ambient)
+MaterialSimple::MaterialSimple(Texture *defuseTexture, Texture *emissionTexture, Texture *ambientTexture)
 {
-    this->defuse = defuse;
-    this->emission = emission;
-    this->ambient = ambient;
+    this->defuseTexture = defuseTexture;
+    this->emissionTexture = emissionTexture;
+    this->ambientTexture = ambientTexture;
+
+    this->defuseColor = Color(1.0f, 1.0f, 1.0f);
+    this->ambientColor = Color(1.0f, 1.0f, 1.0f);
+    this->emissionColor = Color(1.0f, 1.0f, 1.0f);
 }
 
 MaterialType MaterialSimple::getType()

@@ -3,26 +3,38 @@
 
 #include "mesh.h"
 
-Mesh::Mesh(void *verticies, VertexDataType type, int vLength, PolygonTriPoints *polygons, int pLength)
+Mesh::Mesh(VertexDataType type, void *verticies, int vLength, PolygonTriPoints *polygons, int pLength, Matrix4 *transformation)
 {
     this->type = type;
     static unsigned int lastIndex = 0;
     index = lastIndex;
     lastIndex++;
 
-    if (type == VertexDataType::PositionNormal)
+    if (type == VertexDataType::PositionUV)
     {
-        this->verticies.vertexPosition = new VertexDataPosition[vLength];
+        this->verticies.vertexPositionUV = new VertexDataUV[vLength];
         this->vLength = vLength;
         for (int i = 0; i < vLength; i++)
-            this->verticies.vertexPosition[i] = ((VertexDataPosition *)verticies)[i];
+            if (transformation)
+            {
+                this->verticies.vertexPositionUV[i] = ((VertexDataUV *)verticies)[i];
+                this->verticies.vertexPositionUV[i].position = Vector3(*transformation * Vector4(this->verticies.vertexPositionUV[i].position, 1.0f));
+            }
+            else
+                this->verticies.vertexPositionUV[i] = ((VertexDataUV *)verticies)[i];
     }
     if (type == VertexDataType::PositionColor)
     {
         this->verticies.vertexPositionColor = new VertexDataColored[vLength];
         this->vLength = vLength;
         for (int i = 0; i < vLength; i++)
-            this->verticies.vertexPositionColor[i] = ((VertexDataColored *)verticies)[i];
+            if (transformation)
+            {
+                this->verticies.vertexPositionColor[i] = ((VertexDataColored *)verticies)[i];
+                this->verticies.vertexPositionColor[i].position = Vector3(*transformation * Vector4(this->verticies.vertexPositionColor[i].position, 1.0f));
+            }
+            else
+                this->verticies.vertexPositionColor[i] = ((VertexDataColored *)verticies)[i];
     }
 
     this->polygons = new PolygonTriPoints[pLength];
@@ -33,11 +45,10 @@ Mesh::Mesh(void *verticies, VertexDataType type, int vLength, PolygonTriPoints *
 
 Mesh::~Mesh()
 {
-    if (type == VertexDataType::PositionNormal && this->verticies.vertexPosition)
-        delete this->verticies.vertexPosition;
+    if (type == VertexDataType::PositionUV && this->verticies.vertexPositionUV)
+        delete this->verticies.vertexPositionUV;
     if (type == VertexDataType::PositionColor && this->verticies.vertexPositionColor)
         delete this->verticies.vertexPositionColor;
-
     if (this->polygons)
         delete[] this->polygons;
 }

@@ -5,6 +5,7 @@
 #include "utils/utils.h"
 #include "utils/math.h"
 #include "utils/meshBuilder.h"
+#include "utils/deltaCounter.h"
 #include "scene/scene.h"
 #include "actor/actor.h"
 #include "window/window.h"
@@ -12,6 +13,10 @@
 #include "data/material/material.h"
 #include "data/material/materialSimple.h"
 #include "data/camera.h"
+#include "data/texture.h"
+#include "data/textureFile.h"
+#include "data/inputProvider.h"
+#include "data/data3DFile.h"
 
 #ifdef WINDOWS_ONLY
 #include <shellscalingapi.h>
@@ -25,10 +30,10 @@
 #define APPMAIN int main(int argc, char *argv[])
 #endif
 
-class Shine
+class Red11
 {
 protected:
-    Shine();
+    Red11();
 
 public:
     EXPORT static Scene *createScene();
@@ -42,6 +47,9 @@ public:
 
     EXPORT static MeshBuilder *getMeshBuilder();
 
+    EXPORT static InputProvider *getGlobalInputProvider();
+
 protected:
     static MeshBuilder *meshBuilder;
+    static InputProvider *globalInputProvider;
 };

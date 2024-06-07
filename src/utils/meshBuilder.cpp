@@ -7,42 +7,43 @@ Mesh *MeshBuilder::createCube(float size)
 {
     float halfSize = size / 2.0f;
 
-    VertexDataPosition verticies[24];
+    VertexDataUV verticies[24];
+
     // Top
-    verticies[0] = VertexDataPosition(halfSize, halfSize, halfSize, 0.0f, 0.0f, 1.0f);
-    verticies[1] = VertexDataPosition(-halfSize, halfSize, halfSize, 0.0f, 0.0f, 1.0f);
-    verticies[2] = VertexDataPosition(-halfSize, -halfSize, halfSize, 0.0f, 0.0f, 1.0f);
-    verticies[3] = VertexDataPosition(halfSize, -halfSize, halfSize, 0.0f, 0.0f, 1.0f);
+    verticies[0] = VertexDataUV(halfSize, halfSize, halfSize, 0.0, 0.0, 0.0f, 0.0f, 1.0f);
+    verticies[1] = VertexDataUV(-halfSize, halfSize, halfSize, 1.0, 0.0, 0.0f, 0.0f, 1.0f);
+    verticies[2] = VertexDataUV(-halfSize, -halfSize, halfSize, 1.0, 1.0, 0.0f, 0.0f, 1.0f);
+    verticies[3] = VertexDataUV(halfSize, -halfSize, halfSize, 0.0, 1.0, 0.0f, 0.0f, 1.0f);
 
     // Bottom
-    verticies[4] = VertexDataPosition(halfSize, halfSize, -halfSize, 0.0f, 0.0f, -1.0f);
-    verticies[5] = VertexDataPosition(-halfSize, halfSize, -halfSize, 0.0f, 0.0f, -1.0f);
-    verticies[6] = VertexDataPosition(-halfSize, -halfSize, -halfSize, 0.0f, 0.0f, -1.0f);
-    verticies[7] = VertexDataPosition(halfSize, -halfSize, -halfSize, 0.0f, 0.0f, -1.0f);
+    verticies[4] = VertexDataUV(halfSize, halfSize, -halfSize, 0.0, 0.0, 0.0f, 0.0f, -1.0f);
+    verticies[5] = VertexDataUV(-halfSize, halfSize, -halfSize, 1.0, 0.0, 0.0f, 0.0f, -1.0f);
+    verticies[6] = VertexDataUV(-halfSize, -halfSize, -halfSize, 1.0, 1.0, 0.0f, 0.0f, -1.0f);
+    verticies[7] = VertexDataUV(halfSize, -halfSize, -halfSize, 0.0, 1.0, 0.0f, 0.0f, -1.0f);
 
     // Right
-    verticies[8] = VertexDataPosition(halfSize, halfSize, halfSize, 1.0f, 0.0f, 0.0f);
-    verticies[9] = VertexDataPosition(halfSize, -halfSize, halfSize, 1.0f, 0.0f, 0.0f);
-    verticies[10] = VertexDataPosition(halfSize, -halfSize, -halfSize, 1.0f, 0.0f, 0.0f);
-    verticies[11] = VertexDataPosition(halfSize, halfSize, -halfSize, 1.0f, 0.0f, 0.0f);
+    verticies[8] = VertexDataUV(halfSize, halfSize, halfSize, 0.0, 0.0, 1.0f, 0.0f, 0.0f);
+    verticies[9] = VertexDataUV(halfSize, -halfSize, halfSize, 1.0, 0.0, 1.0f, 0.0f, 0.0f);
+    verticies[10] = VertexDataUV(halfSize, -halfSize, -halfSize, 1.0, 1.0, 1.0f, 0.0f, 0.0f);
+    verticies[11] = VertexDataUV(halfSize, halfSize, -halfSize, 0.0, 1.0, 1.0f, 0.0f, 0.0f);
 
     // Left
-    verticies[12] = VertexDataPosition(-halfSize, halfSize, halfSize, -1.0f, 0.0f, 0.0f);
-    verticies[13] = VertexDataPosition(-halfSize, -halfSize, halfSize, -1.0f, 0.0f, 0.0f);
-    verticies[14] = VertexDataPosition(-halfSize, -halfSize, -halfSize, -1.0f, 0.0f, 0.0f);
-    verticies[15] = VertexDataPosition(-halfSize, halfSize, -halfSize, -1.0f, 0.0f, 0.0f);
+    verticies[12] = VertexDataUV(-halfSize, halfSize, halfSize, 0.0, 0.0, -1.0f, 0.0f, 0.0f);
+    verticies[13] = VertexDataUV(-halfSize, -halfSize, halfSize, 1.0, 0.0, -1.0f, 0.0f, 0.0f);
+    verticies[14] = VertexDataUV(-halfSize, -halfSize, -halfSize, 1.0, 1.0, -1.0f, 0.0f, 0.0f);
+    verticies[15] = VertexDataUV(-halfSize, halfSize, -halfSize, 0.0, 1.0, -1.0f, 0.0f, 0.0f);
 
     // Front
-    verticies[16] = VertexDataPosition(halfSize, halfSize, halfSize, 0.0f, 1.0f, 0.0f);
-    verticies[17] = VertexDataPosition(-halfSize, halfSize, halfSize, 0.0f, 1.0f, 0.0f);
-    verticies[18] = VertexDataPosition(-halfSize, halfSize, -halfSize, 0.0f, 1.0f, 0.0f);
-    verticies[19] = VertexDataPosition(halfSize, halfSize, -halfSize, 0.0f, 1.0f, 0.0f);
+    verticies[16] = VertexDataUV(halfSize, halfSize, halfSize, 0.0, 0.0, 0.0f, 1.0f, 0.0f);
+    verticies[17] = VertexDataUV(-halfSize, halfSize, halfSize, 1.0, 0.0, 0.0f, 1.0f, 0.0f);
+    verticies[18] = VertexDataUV(-halfSize, halfSize, -halfSize, 1.0, 1.0, 0.0f, 1.0f, 0.0f);
+    verticies[19] = VertexDataUV(halfSize, halfSize, -halfSize, 0.0, 1.0, 0.0f, 1.0f, 0.0f);
 
     // Back
-    verticies[20] = VertexDataPosition(halfSize, -halfSize, halfSize, 0.0f, -1.0f, 0.0f);
-    verticies[21] = VertexDataPosition(-halfSize, -halfSize, halfSize, 0.0f, -1.0f, 0.0f);
-    verticies[22] = VertexDataPosition(-halfSize, -halfSize, -halfSize, 0.0f, -1.0f, 0.0f);
-    verticies[23] = VertexDataPosition(halfSize, -halfSize, -halfSize, 0.0f, -1.0f, 0.0f);
+    verticies[20] = VertexDataUV(halfSize, -halfSize, halfSize, 0.0, 0.0, 0.0f, -1.0f, 0.0f);
+    verticies[21] = VertexDataUV(-halfSize, -halfSize, halfSize, 1.0, 0.0, 0.0f, -1.0f, 0.0f);
+    verticies[22] = VertexDataUV(-halfSize, -halfSize, -halfSize, 1.0, 1.0, 0.0f, -1.0f, 0.0f);
+    verticies[23] = VertexDataUV(halfSize, -halfSize, -halfSize, 0.0, 1.0, 0.0f, -1.0f, 0.0f);
 
     PolygonTriPoints polygons[12];
     for (int i = 0; i < 12; i++)
@@ -69,7 +70,7 @@ Mesh *MeshBuilder::createCube(float size)
     polygons[10] = PolygonTriPoints({20, 22, 21});
     polygons[11] = PolygonTriPoints({20, 23, 22});
 
-    return new Mesh(verticies, VertexDataType::PositionNormal, 24, polygons, 12);
+    return new Mesh(VertexDataType::PositionUV, verticies, 24, polygons, 12);
 }
 
 Mesh *MeshBuilder::createCubeColored(float size, Color color[8])
@@ -110,7 +111,7 @@ Mesh *MeshBuilder::createCubeColored(float size, Color color[8])
     polygons[10] = PolygonTriPoints({2, 3, 6});
     polygons[11] = PolygonTriPoints({3, 7, 6});
 
-    return new Mesh(verticies, VertexDataType::PositionColor, 8, polygons, 12);
+    return new Mesh(VertexDataType::PositionColor, verticies, 8, polygons, 12);
 }
 
 Mesh *MeshBuilder::createCubeColored(float size, Color color)

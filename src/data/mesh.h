@@ -3,35 +3,40 @@
 
 #pragma once
 #include "utils/primitives.h"
+#include <string>
 
 #define MAX_MESH_COUNT 100000
 
 enum class VertexDataType
 {
-    PositionNormal,
+    PositionUV,
     PositionColor
 };
 
-struct VertexDataPosition
+struct VertexDataUV
 {
     Vector3 position;
+    Vector2 uv;
     Vector3 normal;
 
-    VertexDataPosition()
+    VertexDataUV()
     {
         this->position = Vector3(0.0f);
+        this->uv = Vector2(0.0f);
         this->normal = Vector3(0.0f);
     }
 
-    VertexDataPosition(Vector3 position, Vector3 normal)
+    VertexDataUV(Vector3 position, Vector2 uv, Vector3 normal)
     {
         this->position = position;
+        this->uv = uv;
         this->normal = normal;
     }
 
-    VertexDataPosition(float px, float py, float pz, float nx, float ny, float nz)
+    VertexDataUV(float px, float py, float pz, float u, float v, float nx, float ny, float nz)
     {
         this->position = Vector3(px, py, pz);
+        this->uv = Vector2(u, v);
         this->normal = Vector3(nx, ny, nz);
     }
 };
@@ -66,14 +71,24 @@ struct VertexDataColored
 
 union VertexData
 {
-    VertexDataPosition *vertexPosition;
+    void *ptr;
+    VertexDataUV *vertexPositionUV;
     VertexDataColored *vertexPositionColor;
 };
+
+inline int getVertexDataTypeSize(VertexDataType type)
+{
+    if (type == VertexDataType::PositionUV)
+        return sizeof(VertexDataUV);
+    if (type == VertexDataType::PositionColor)
+        return sizeof(VertexDataColored);
+    return 0;
+}
 
 class Mesh
 {
 public:
-    Mesh(void *verticies, VertexDataType type, int vLength, PolygonTriPoints *polygons, int pLength);
+    Mesh(VertexDataType type, void *verticies, int vLength, PolygonTriPoints *polygons, int pLength, Matrix4 *transformation = nullptr);
     ~Mesh();
 
     inline unsigned int getIndex() { return index; }
@@ -82,12 +97,12 @@ public:
     inline int getVerticiesAmount() { return vLength; };
 
     inline PolygonTriPoints *getPolygons() { return polygons; };
-    inline VertexData getVerticies() { return verticies; };
+    inline VertexData *getVerticies() { return &verticies; };
 
     inline VertexDataType getType() { return type; }
 
 protected:
-    VertexDataType type = VertexDataType::PositionNormal;
+    VertexDataType type = VertexDataType::PositionUV;
     VertexData verticies;
     int vLength = 0;
     PolygonTriPoints *polygons = nullptr;
