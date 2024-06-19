@@ -2,33 +2,16 @@
 // SPDX-License-Identifier: MIT
 
 #include "directx9renderer.h"
+#include "red11.h"
 #include "window/windows/windowsWindow.h"
 #include <string>
-
-#define FVF_COLORED (D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_DIFFUSE)
-#define FVF_TEXTURED (D3DFVF_XYZ | D3DFVF_TEX1 | D3DFVF_NORMAL)
-
-struct VertexNormalColor
-{
-    float x, y, z;                   // from the D3DFVF_XYZRHW flag
-    float normalX, normalY, normalZ; // from the D3DFVF_NORMAL flag
-    unsigned int color;              // from the D3DFVF_DIFFUSE flag
-};
-
-struct VertexNormalUV
-{
-    float x, y, z;                   // from the D3DFVF_XYZRHW flag
-    float normalX, normalY, normalZ; // from the D3DFVF_NORMAL flag
-    float u, v;                      // from the D3DFVF_TEX1 flag
-};
 
 DirectX9Renderer::DirectX9Renderer(Window *window) : Renderer(window)
 {
     WindowsWindow *winWindow = (WindowsWindow *)window;
 
-    ZeroMemory(meshRenderData, sizeof(MeshRenderData *) * MAX_MESH_COUNT);
-    ZeroMemory(materialRenderData, sizeof(MaterialRenderData *) * MAX_MATERIAL_COUNT);
-    ZeroMemory(textureRenderData, sizeof(TextureRenderData *) * MAX_TEXTURES_COUNT);
+    ZeroMemory(meshRenderData, sizeof(Directx9MeshRenderData *) * MAX_MESH_COUNT);
+    ZeroMemory(textureRenderData, sizeof(Directx9TextureRenderData *) * MAX_TEXTURES_COUNT);
     ZeroMemory(queueMeshes, sizeof(QueuedMeshRenderData) * MAX_QUEUE_MESH_COUNT);
     ZeroMemory(queueLights, sizeof(QueuedLightRenderData) * MAX_QUEUE_LIGHTS_COUNT);
 
@@ -58,7 +41,31 @@ void DirectX9Renderer::queueMesh(Mesh *mesh, Material *material, Matrix4 *model)
         queueMeshes[queueCurrentMesh].mesh = mesh;
         queueMeshes[queueCurrentMesh].material = material;
         queueMeshes[queueCurrentMesh].model = model;
+        queueMeshes[queueCurrentMesh].bones = nullptr;
         queueCurrentMesh++;
+    }
+}
+
+void DirectX9Renderer::queueMeshSkinned(Mesh *mesh, Material *material, Matrix4 *model, std::vector<BoneTransform> *bones)
+{
+    if (queueCurrentMesh < MAX_QUEUE_MESH_COUNT && mesh && material)
+    {
+        queueMeshes[queueCurrentMesh].mesh = mesh;
+        queueMeshes[queueCurrentMesh].material = material;
+        queueMeshes[queueCurrentMesh].model = model;
+        queueMeshes[queueCurrentMesh].bones = bones;
+        queueCurrentMesh++;
+    }
+}
+
+void DirectX9Renderer::queueLine(Vector3 vFrom, Vector3 vTo, Color color)
+{
+    if (queueCurrentLine < MAX_QUEUE_LINES)
+    {
+        queueLines[queueCurrentLine].vFrom = vFrom;
+        queueLines[queueCurrentLine].vTo = vTo;
+        queueLines[queueCurrentLine].color = color;
+        queueCurrentLine++;
     }
 }
 
@@ -146,12 +153,25 @@ void DirectX9Renderer::renderQueue(Camera *camera)
         }
     }
 
-    d3ddev->SetTransform(D3DTS_VIEW, (D3DMATRIX *)value_ptr(*camera->getViewMatrix()));
-    d3ddev->SetTransform(D3DTS_PROJECTION, (D3DMATRIX *)value_ptr(*camera->getProjectionMatrix())); // set the projection transform
+    // d3ddev->SetTransform(D3DTS_VIEW, (D3DMATRIX *)value_ptr(*camera->getViewMatrix()));
+    // d3ddev->SetTransform(D3DTS_PROJECTION, (D3DMATRIX *)value_ptr(*camera->getProjectionMatrix())); // set the projection transform
+
+    setDepthBufferState(true);
+    setLightningState(true);
 
     for (int i = 0; i < queueCurrentMesh; i++)
     {
-        renderMesh(queueMeshes[i].mesh, queueMeshes[i].material, queueMeshes[i].model);
+        if (queueMeshes[i].bones)
+            renderMeshSkinned(camera, queueMeshes[i].mesh, queueMeshes[i].material, queueMeshes[i].model, queueMeshes[i].bones);
+        else
+            renderMesh(camera, queueMeshes[i].mesh, queueMeshes[i].material, queueMeshes[i].model);
+    }
+
+    setDepthBufferState(false);
+    setLightningState(false);
+    for (int i = 0; i < queueCurrentLine; i++)
+    {
+        renderLine(camera, queueLines[i].vFrom, queueLines[i].vTo, queueLines[i].color);
     }
 }
 
@@ -159,71 +179,130 @@ void DirectX9Renderer::clearQueue()
 {
     queueCurrentLight = 0;
     queueCurrentMesh = 0;
+    queueCurrentLine = 0;
 }
 
-void DirectX9Renderer::renderMesh(Mesh *mesh, Material *material, Matrix4 *model)
+void DirectX9Renderer::renderMesh(Camera *camera, Mesh *mesh, Material *material, Matrix4 *model)
 {
     if (!mesh || !material)
         return;
 
-    int meshIndex = mesh->getIndex();
-    MeshRenderData *meshData = meshRenderData[meshIndex];
-    if (!meshData)
-    {
-        meshData = createBuffer(mesh);
-        meshRenderData[meshIndex] = meshData;
-    }
-
-    int materialIndex = material->getIndex();
-    MaterialRenderData *materialData = materialRenderData[materialIndex];
-    if (!materialData)
-    {
-        materialData = createSimpleMaterial((MaterialSimple *)material);
-        meshRenderData[meshIndex] = meshData;
-    }
-
-    auto defTexture = reinterpret_cast<MaterialSimple *>(material)->getDefuseTexture();
-    if (defTexture)
-    {
-        int tIndex = defTexture->getIndex();
-
-        auto textureDXData = textureRenderData[tIndex];
-        if (!textureDXData)
-        {
-            textureDXData = createTexture(defTexture);
-            textureRenderData[tIndex] = textureDXData;
-        }
-        if (textureDXData && textureDXData->texture)
-            d3ddev->SetTexture(0, textureDXData->texture);
-    }
-    else
-    {
-        d3ddev->SetTexture(0, 0);
-    }
+    Directx9MeshRenderData *meshData = getMeshRenderData(mesh);
+    MaterialSimple *materialSimple = reinterpret_cast<MaterialSimple *>(material);
+    Directx9TextureRenderData *defTexture = getTextureRenderData(materialSimple->getDefuseTexture());
 
     if (mesh->getType() == VertexDataType::PositionUV)
     {
-        d3ddev->SetFVF(FVF_TEXTURED);
-        d3ddev->SetStreamSource(0, meshData->vBuffer, 0, sizeof(VertexNormalUV));
-        d3ddev->SetMaterial(&materialData->material); // set the globably-used material to &material
+        d3ddev->SetStreamSource(0, meshData->vBuffer, 0, sizeof(DX9VertexNormalUV));
+        d3ddev->SetVertexDeclaration(pVertexDeclNormalUV);
+        d3ddev->SetVertexShader(pVertexUVShader);
+        d3ddev->SetPixelShader(pFragmentUVShader);
+
+        // Is defuse texture set
+        float textureIsSet = defTexture ? true : false;
+        d3ddev->SetPixelShaderConstantF(7, &textureIsSet, 1);
+
+        // Defuse Color
+        d3ddev->SetPixelShaderConstantF(4, materialSimple->getDefuseColor().getAsFloatArray(), 1);
+
+        // Ambient Color
+        d3ddev->SetPixelShaderConstantF(5, ambientColor.getAsFloatArray(), 1);
+
+        // Emission Color
+        d3ddev->SetPixelShaderConstantF(6, materialSimple->getEmissionColor().getAsFloatArray(), 1);
+
+        d3ddev->SetTexture(0, defTexture ? defTexture->d3dtexture : 0);
     }
-    else
+    else if (mesh->getType() == VertexDataType::PositionColor)
     {
-        d3ddev->SetFVF(FVF_COLORED);
-        d3ddev->SetStreamSource(0, meshData->vBuffer, 0, sizeof(VertexNormalColor));
-        d3ddev->SetMaterial(&materialData->material); // set the globably-used material to &material
+        d3ddev->SetStreamSource(0, meshData->vBuffer, 0, sizeof(DX9VertexNormalColor));
+        d3ddev->SetVertexDeclaration(pVertexDeclNormalColor);
+        d3ddev->SetVertexShader(pVertexColorShader);
+        d3ddev->SetPixelShader(pFragmentColorShader);
     }
 
     d3ddev->SetIndices(meshData->iBuffer);
 
-    d3ddev->SetTransform(D3DTS_WORLD, (D3DMATRIX *)value_ptr(*model));
+    Matrix4 worldViewProjection = *camera->getProjectionMatrix() * *camera->getViewMatrix() * *model;
+    worldViewProjection = glm::transpose(worldViewProjection);
+    d3ddev->SetVertexShaderConstantF(0, (const float *)value_ptr(worldViewProjection), 4);
 
     d3ddev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, meshData->vAmount, 0, meshData->iAmount);
 }
 
-void DirectX9Renderer::setAmbientLight(Color &color)
+void DirectX9Renderer::renderMeshSkinned(Camera *camera, Mesh *mesh, Material *material, Matrix4 *model, std::vector<BoneTransform> *bones)
 {
-    d3ddev->SetRenderState(D3DRS_AMBIENT, D3DCOLOR_XRGB((unsigned char)(color.r * 255), (unsigned char)(color.g * 255), (unsigned char)(color.b * 255)));
+    if (!mesh || !material)
+        return;
+
+    Directx9MeshRenderData *meshData = getMeshRenderData(mesh);
+    MaterialSimple *materialSimple = reinterpret_cast<MaterialSimple *>(material);
+    Directx9TextureRenderData *defTexture = getTextureRenderData(materialSimple->getDefuseTexture());
+
+    d3ddev->SetStreamSource(0, meshData->vBuffer, 0, sizeof(DX9VertexNormalUVSkinned));
+    d3ddev->SetVertexDeclaration(pVertexDeclNormalUVSkinned);
+    d3ddev->SetVertexShader(pVertexUVSkinnedShader);
+    d3ddev->SetPixelShader(pFragmentUVSkinnedShader);
+
+    // set bone matrices, base register is 48
+    for (auto &bone : *bones)
+    {
+        Deform *deform = mesh->getDeformByName(*bone.name);
+        if (deform)
+        {
+            int reg = 48 + deform->index * 4;
+            Matrix4 boneMatrix = *bone.model * deform->getInvBindMatrix();
+            boneMatrix = glm::transpose(boneMatrix);
+            d3ddev->SetVertexShaderConstantF(reg, (const float *)value_ptr(boneMatrix), 4);
+        }
+    }
+
+    // Shader multiplies model matrix internally, so view projection needs to be provcided
+    Matrix4 viewProjection = *camera->getProjectionMatrix() * *camera->getViewMatrix();
+    viewProjection = glm::transpose(viewProjection);
+    d3ddev->SetVertexShaderConstantF(0, (const float *)value_ptr(viewProjection), 4);
+
+    // Defuse Color
+    d3ddev->SetPixelShaderConstantF(4, materialSimple->getDefuseColor().getAsFloatArray(), 1);
+
+    // Ambient Color
+    d3ddev->SetPixelShaderConstantF(5, ambientColor.getAsFloatArray(), 1);
+
+    // Emission Color
+    d3ddev->SetPixelShaderConstantF(6, materialSimple->getEmissionColor().getAsFloatArray(), 1);
+
+    // Defuse Texture
+    float textureIsSet = defTexture ? true : false;
+    d3ddev->SetPixelShaderConstantF(7, &textureIsSet, 1);
+    d3ddev->SetTexture(0, defTexture ? defTexture->d3dtexture : 0);
+
+    d3ddev->SetIndices(meshData->iBuffer);
+
+    d3ddev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, meshData->vAmount, 0, meshData->iAmount);
+}
+
+void DirectX9Renderer::renderLine(Camera *camera, Vector3 vFrom, Vector3 vTo, Color color)
+{
+    Vector3 center = (vFrom + vTo) * 0.5f;
+    Vector3 difference = vTo - vFrom;
+    Vector3 normal = glm::normalize(difference);
+
+    float y = atan2f(normal.z, normal.x);
+    float len = sqrtf(normal.x * normal.x + normal.z * normal.z);
+    float x = atan2(len, normal.y);
+
+    Entity entity;
+
+    entity.setPosition(center);
+    entity.setScale(Vector3(0.0008f, 0.0008f, glm::length(difference)));
+    entity.setRotation(Vector3(CONST_PI / 2 - x, -y - CONST_PI / 2.0f, 0.0f));
+
+    renderMesh(camera, cubeMesh, lineMaterial, entity.getModelMatrix());
+}
+
+void DirectX9Renderer::setAmbientLight(Color &ambientColor)
+{
+    this->ambientColor = ambientColor;
 }
 
 void DirectX9Renderer::setLightningState(bool value)
@@ -231,14 +310,13 @@ void DirectX9Renderer::setLightningState(bool value)
     d3ddev->SetRenderState(D3DRS_LIGHTING, value);
 }
 
-void DirectX9Renderer::setZTestState(bool value)
+void DirectX9Renderer::setDepthBufferState(bool state)
 {
-    d3ddev->SetRenderState(D3DRS_ZENABLE, value);
+    d3ddev->SetRenderState(D3DRS_ZENABLE, state);
 }
 
 void DirectX9Renderer::endRendering()
 {
-
     d3ddev->EndScene();
 }
 
@@ -272,6 +350,46 @@ void DirectX9Renderer::initD3D(HWND hWnd, bool bIsFullscreen, int width, int hei
                       &d3ddev);
 
     d3ddev->SetRenderState(D3DRS_NORMALIZENORMALS, TRUE);
+
+    cubeMesh = Red11::getMeshBuilder()->createCube(1.0f);
+    lineMaterial = new MaterialSimple(Color(0.2, 1.0, 0.2));
+
+    if (d3ddev->CreateVertexShader((const DWORD *)vertexColorShader_vso, &pVertexColorShader) != D3D_OK)
+        printf("Shader compilation failed\n");
+    if (d3ddev->CreatePixelShader((const DWORD *)fragmentColorShader_pso, &pFragmentColorShader) != D3D_OK)
+        printf("Shader compilation failed\n");
+    if (d3ddev->CreateVertexShader((const DWORD *)vertexUVShader_vso, &pVertexUVShader) != D3D_OK)
+        printf("Shader compilation failed\n");
+    if (d3ddev->CreatePixelShader((const DWORD *)fragmentUVShader_pso, &pFragmentUVShader) != D3D_OK)
+        printf("Shader compilation failed\n");
+    if (d3ddev->CreateVertexShader((const DWORD *)vertexUVSkinnedShader_vso, &pVertexUVSkinnedShader) != D3D_OK)
+        printf("Shader compilation failed\n");
+    if (d3ddev->CreatePixelShader((const DWORD *)fragmentUVSkinnedShader_pso, &pFragmentUVSkinnedShader) != D3D_OK)
+        printf("Shader compilation failed\n");
+
+    D3DVERTEXELEMENT9 VertexElementsNormalColor[] = {
+        {0, offsetof(DX9VertexNormalColor, x), D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0},
+        {0, offsetof(DX9VertexNormalColor, normalX), D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL, 0},
+        {0, offsetof(DX9VertexNormalColor, color), D3DDECLTYPE_D3DCOLOR, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0},
+        D3DDECL_END()};
+
+    D3DVERTEXELEMENT9 VertexElementsNormalUV[] = {
+        {0, offsetof(DX9VertexNormalUV, x), D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0},
+        {0, offsetof(DX9VertexNormalUV, normalX), D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL, 0},
+        {0, offsetof(DX9VertexNormalUV, u), D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0},
+        D3DDECL_END()};
+
+    D3DVERTEXELEMENT9 VertexElementsNormalUVSkinned[] = {
+        {0, offsetof(DX9VertexNormalUVSkinned, x), D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0},
+        {0, offsetof(DX9VertexNormalUVSkinned, normalX), D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL, 0},
+        {0, offsetof(DX9VertexNormalUVSkinned, u), D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0},
+        {0, offsetof(DX9VertexNormalUVSkinned, boneIndices), D3DDECLTYPE_UBYTE4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_BLENDINDICES, 0},
+        {0, offsetof(DX9VertexNormalUVSkinned, boneWeights), D3DDECLTYPE_FLOAT4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_BLENDWEIGHT, 0},
+        D3DDECL_END()};
+
+    d3ddev->CreateVertexDeclaration(VertexElementsNormalColor, &pVertexDeclNormalColor);
+    d3ddev->CreateVertexDeclaration(VertexElementsNormalUV, &pVertexDeclNormalUV);
+    d3ddev->CreateVertexDeclaration(VertexElementsNormalUVSkinned, &pVertexDeclNormalUVSkinned);
 }
 
 void DirectX9Renderer::renderFrame(void)
@@ -298,144 +416,41 @@ void DirectX9Renderer::cleanD3D(void)
             meshRenderData[i] = nullptr;
         }
     }
-    for (int i = 0; i < MAX_MATERIAL_COUNT; i++)
-    {
-        if (materialRenderData[i])
-        {
-            delete materialRenderData[i];
-            materialRenderData[i] = nullptr;
-        }
-    }
 }
 
-MeshRenderData *DirectX9Renderer::createBuffer(Mesh *mesh)
+Directx9MeshRenderData *DirectX9Renderer::getMeshRenderData(Mesh *mesh)
 {
-    MeshRenderData *data = new MeshRenderData();
-    int pAmount = mesh->getPolygonsAmount();
-    int vAmount = mesh->getVerticiesAmount();
-    auto polies = mesh->getPolygons();
-    auto verticies = mesh->getVerticies();
-
-    unsigned int indeciesAmount = pAmount * 3;
-    bool useShortForIndicies = indeciesAmount < 0xffff;
-
-    // if mesh data not intended to use UV
-    if (mesh->getType() == VertexDataType::PositionColor)
-    {
-        d3ddev->CreateVertexBuffer(vAmount * sizeof(VertexNormalColor), 0, FVF_COLORED, D3DPOOL_MANAGED, &data->vBuffer, NULL);
-        VertexNormalColor *vBufferData;
-        data->vBuffer->Lock(0, 0, (void **)&vBufferData, 0); // locks v_buffer, the buffer we made earlier
-        for (int i = 0; i < vAmount; i++)
-        {
-            VertexDataColored v = verticies->vertexPositionColor[i];
-            vBufferData[i] = {v.position.x, v.position.y, v.position.z, v.position.x, v.position.y, v.position.z, Color(0.6f, 0.6f, 0.6f).getAsUInt()};
-        }
-    }
-
-    // if mesh vertex data is just position/normal
-    if (mesh->getType() == VertexDataType::PositionUV)
-    {
-        d3ddev->CreateVertexBuffer(vAmount * sizeof(VertexNormalUV), 0, FVF_TEXTURED, D3DPOOL_MANAGED, &data->vBuffer, NULL);
-        VertexNormalUV *vBufferData;
-        data->vBuffer->Lock(0, 0, (void **)&vBufferData, 0); // locks v_buffer, the buffer we made earlier
-        for (int i = 0; i < vAmount; i++)
-        {
-            VertexDataUV v = verticies->vertexPositionUV[i];
-            vBufferData[i] = {v.position.x, v.position.y, v.position.z, v.normal.x, v.normal.y, v.normal.z, v.uv.x, v.uv.y};
-        }
-    }
-
-    data->vBuffer->Unlock(); // unlock v_buffer
-    data->vAmount = vAmount;
-
-    // Indicies buffer
-    D3DFORMAT format = useShortForIndicies ? D3DFMT_INDEX16 : D3DFMT_INDEX32;
-    d3ddev->CreateIndexBuffer(useShortForIndicies ? indeciesAmount * sizeof(short) : indeciesAmount * sizeof(int),
-                              0,
-                              useShortForIndicies ? D3DFMT_INDEX16 : D3DFMT_INDEX32,
-                              D3DPOOL_MANAGED,
-                              &data->iBuffer,
-                              NULL);
-
-    void *iBufferData;
-    data->iBuffer->Lock(0, 0, (void **)&iBufferData, 0);
-
-    for (int i = 0; i < pAmount; i++)
-    {
-        if (format == D3DFMT_INDEX16)
-        {
-            ((unsigned short *)iBufferData)[i * 3] = polies[i].a;
-            ((unsigned short *)iBufferData)[i * 3 + 1] = polies[i].b;
-            ((unsigned short *)iBufferData)[i * 3 + 2] = polies[i].c;
-        }
-        else
-        {
-            ((unsigned int *)iBufferData)[i * 3] = polies[i].a;
-            ((unsigned int *)iBufferData)[i * 3 + 1] = polies[i].b;
-            ((unsigned int *)iBufferData)[i * 3 + 2] = polies[i].c;
-        }
-    }
-
-    data->iBuffer->Unlock();
-
-    data->iAmount = pAmount;
-    data->iFormat = format;
-
-    return data;
-}
-
-MaterialRenderData *DirectX9Renderer::createSimpleMaterial(MaterialSimple *material)
-{
-    MaterialRenderData *data = new MaterialRenderData();
-    ZeroMemory(&data->material, sizeof(D3DMATERIAL9));
-    Color defuseColor = material->getDefuseColor();
-    Color ambientColor = material->getAmbientColor();
-    Color emissionColor = material->getEmissionColor();
-
-    data->material.Diffuse = {defuseColor.r, defuseColor.g, defuseColor.b, defuseColor.a};
-    data->material.Ambient = {ambientColor.r, ambientColor.g, ambientColor.b, ambientColor.a};
-    data->material.Emissive = {emissionColor.r, emissionColor.g, emissionColor.b, emissionColor.a};
-
-    return data;
-}
-
-TextureRenderData *DirectX9Renderer::createTexture(Texture *texture)
-{
-    TextureRenderData *data = new TextureRenderData();
-
-    data->texture = nullptr;
-    HRESULT res = d3ddev->CreateTexture(texture->getWidth(), texture->getHeight(), 0, 0, D3DFORMAT::D3DFMT_X8R8G8B8, D3DPOOL::D3DPOOL_MANAGED, &data->texture, nullptr);
-
-    if (res != D3D_OK)
-    {
-        if (res == D3DERR_INVALIDCALL)
-            printf("Invalid D3D call\n");
-        if (res == D3DERR_OUTOFVIDEOMEMORY)
-            printf("D3D out of memory\n");
-        if (res == E_OUTOFMEMORY)
-            printf("E out of memory\n");
+    if (!mesh)
         return nullptr;
-    }
 
-    d3ddev->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
-    d3ddev->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);
-
-    data->updIndex = texture->getUpdIndex();
-
-    D3DLOCKED_RECT r;
-    data->texture->LockRect(0, &r, NULL, D3DLOCK_DISCARD);
-
-    unsigned int *pData = (unsigned int *)r.pBits;
-    unsigned int *buffer = (unsigned int *)texture->getBufferData();
-
-    int pSize = texture->getWidth() * texture->getHeight();
-    for (int i = 0; i < pSize; i++)
+    int meshIndex = mesh->getIndex();
+    Directx9MeshRenderData *meshData = meshRenderData[meshIndex];
+    if (!meshData)
     {
-        unsigned char *s = (unsigned char *)&buffer[i];
-        pData[i] = s[2] + (s[1] << 8) + (s[0] << 16) + (s[3] << 24);
+        meshData = new Directx9MeshRenderData(d3ddev, mesh);
+        meshRenderData[meshIndex] = meshData;
+    }
+    return meshData;
+}
+
+Directx9TextureRenderData *DirectX9Renderer::getTextureRenderData(Texture *texture)
+{
+    if (!texture)
+        return nullptr;
+
+    int tIndex = texture->getIndex();
+
+    auto textureDXData = textureRenderData[tIndex];
+    if (!textureDXData)
+    {
+        textureDXData = new Directx9TextureRenderData(d3ddev, texture);
+        if (!textureDXData->isReadyState)
+        {
+            delete textureDXData;
+            textureDXData = nullptr;
+        }
+        textureRenderData[tIndex] = textureDXData;
     }
 
-    data->texture->UnlockRect(0);
-
-    return data;
+    return textureDXData;
 }

@@ -29,7 +29,7 @@ APPMAIN
     auto mushroomTexture = new TextureFile("Mushroom", "./data/mushroom_albedo.jpg");
     auto mushroomMaterial = new MaterialSimple(mushroomTexture);
 
-    auto testMaterial = new MaterialSimple(Color(0.2, 0.2, 0.2));
+    auto testMaterial = new MaterialSimple(Color(0.3, 0.3, 0.7));
 
     // Meshes
     auto cubeMesh = Red11::getMeshBuilder()->createCube(0.1f);
@@ -43,7 +43,7 @@ APPMAIN
     auto animTestMesh = animTestFileData->getAsMesh();
 
     auto scene = Red11::createScene();
-    scene->setAmbientLight(Color(0.4f, 0.4f, 0.4f));
+    scene->setAmbientLight(Color(1.0f, 1.0f, 1.0f));
     auto cube = scene->createActor<Actor>("Cube");
     auto cubeComponent = cube->createComponentMesh(cubeMesh);
     cubeComponent->setMaterial(crateMaterial);

@@ -92,13 +92,13 @@ void Actor::onProcess(float delta)
     }
 }
 
-void Actor::onRender(Renderer *renderer)
+void Actor::onRender(Camera *camera, Renderer *renderer)
 {
     if (!components.empty())
     {
         for (auto &component : components)
         {
-            component->onRender(renderer);
+            component->onRender(camera, renderer);
         }
     }
 }

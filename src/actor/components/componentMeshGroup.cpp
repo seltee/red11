@@ -12,32 +12,71 @@ ComponentMeshGroup::~ComponentMeshGroup()
     destroyList();
 }
 
-void ComponentMeshGroup::onRender(Renderer *renderer)
+void ComponentMeshGroup::onRender(Camera *camera, Renderer *renderer)
 {
     for (auto &it : list)
-        renderer->renderMesh(it->getMesh(), material, it->getModelMatrix());
+    {
+        if (it->bIsSkinned)
+        {
+            boneTransforms.clear();
+            for (auto &boneIt : bonesList)
+                boneTransforms.push_back(BoneTransform(boneIt->getModelMatrix(), boneIt->getNamePointer()));
+            renderer->renderMeshSkinned(camera, it->getMesh(), material, it->getModelMatrix(), &boneTransforms);
+        }
+        else
+        {
+            if (it->getMesh())
+                renderer->renderMesh(camera, it->getMesh(), material, it->getModelMatrix());
+        }
+    }
 }
 
 void ComponentMeshGroup::onRenderQueue(Renderer *renderer)
 {
     for (auto &it : list)
     {
-        renderer->queueMesh(it->getMesh(), material, it->getModelMatrix());
+        if (it->getMesh())
+        {
+            if (it->bIsSkinned)
+            {
+                boneTransforms.clear();
+                for (auto &boneIt : bonesList)
+                    boneTransforms.push_back(BoneTransform(boneIt->getModelMatrix(), boneIt->getNamePointer()));
+                renderer->queueMeshSkinned(it->getMesh(), material, it->getModelMatrix(), &boneTransforms);
+            }
+            else
+            {
+                renderer->queueMesh(it->getMesh(), material, it->getModelMatrix());
+            }
+        }
+    }
+
+    if (bBonesView)
+    {
+        for (auto &it : list)
+        {
+            if (it->isBone() && it->getParent() && it->getParent()->isBone())
+            {
+                Vector3 from = Vector3(*it->getModelMatrix() * Vector4(0.0f, 0.0f, 0.0f, 1.0f));
+                Vector3 to = Vector3(*it->getParent()->getModelMatrix() * Vector4(0.0f, 0.0f, 0.0f, 1.0f));
+                renderer->queueLine(from, to, Color(0.8f, 0.8f, 0.8f, 1.0f));
+            }
+        }
     }
 }
 
 void ComponentMeshGroup::onProcess(float delta)
 {
     // gather total weight
-    float totalWeight = 0.0f;
+    bool hasAnimations = false;
     for (auto &track : tracks)
     {
         track->process(delta);
         if (track->isPlaying())
-            totalWeight += track->getWeight();
+            hasAnimations = true;
     }
 
-    if (totalWeight == 0.0f)
+    if (!hasAnimations)
     {
         // no animations playing
         for (auto &it : list)
@@ -49,24 +88,38 @@ void ComponentMeshGroup::onProcess(float delta)
     }
     else
     {
-        float initialTake = fmaxf(0.0f, 1.0f - totalWeight);
-
         for (auto &node : list)
         {
+            // Some nodes may not exist in some tracks so we need to calc local one
+            float totalWeightNode = 0.0f;
+            for (auto &track : tracks)
+            {
+                if (track->isPlaying())
+                    totalWeightNode += track->getNodeWeight(node->getNamePointer());
+            }
+
+            float initialTake = fmaxf(0.0f, 1.0f - totalWeightNode);
+            totalWeightNode += initialTake;
+
             Vector3 position = initialTake > 0.0f ? node->initialPosition * initialTake : Vector3(0.0f);
-            Quat rotation = initialTake > 0.0f ? node->initialRotation * initialTake : Quat();
+            Quat rotation = node->initialRotation;
             Vector3 scale = initialTake > 0.0f ? node->initialScale * initialTake : Vector3(0.0f);
 
             for (auto &track : tracks)
-            {
-                track->addTransformation(totalWeight, node->getNamePointer(), &position, &rotation, &scale);
-            }
+                track->addTransformation(totalWeightNode, node->getNamePointer(), &position, &rotation, &scale);
+
+            // printf("%s - %f %f %f\n", node->getNamePointer()->c_str(), position.x, position.y, position.z);
 
             node->setPosition(position);
             node->setRotation(rotation);
             node->setScale(scale);
         }
     }
+}
+
+void ComponentMeshGroup::setDebugBonesView(bool bState)
+{
+    bBonesView = bState;
 }
 
 void ComponentMeshGroup::setMeshList(std::vector<MeshObject *> *newList)
@@ -82,23 +135,28 @@ void ComponentMeshGroup::setMeshList(std::vector<MeshObject *> *newList)
         newObj->initialScale = it->getScale();
         newObj->setName(*it->getNamePointer());
         list.push_back(newObj);
+        if (newObj->isBone())
+            bonesList.push_back(newObj);
     }
 
     // relink parents
-    for (auto &it : *newList)
+    int iChild = 0;
+    for (auto &child : *newList)
     {
-        MeshObject *parent = it->getParent();
-        if (parent)
+        if (child->getParent())
         {
-            unsigned int id = it->getMesh()->getIndex();
-            unsigned int parentId = parent->getMesh()->getIndex();
-
-            MeshObject *localObject = getObjectByIndex(id);
-            MeshObject *parentLocalObject = getObjectByIndex(parentId);
-
-            if (localObject && parentLocalObject)
-                localObject->setParent(parentLocalObject);
+            int iParent = 0;
+            for (auto &parent : *newList)
+            {
+                if (parent == child->getParent())
+                {
+                    list.at(iChild)->setParent(list.at(iParent));
+                    break;
+                }
+                iParent++;
+            }
         }
+        iChild++;
     }
 
     // link ones without parent to component
@@ -119,17 +177,10 @@ void ComponentMeshGroup::setMaterial(Material *material)
     this->material = material;
 }
 
-MeshObject *ComponentMeshGroup::getObjectByIndex(unsigned int index)
-{
-    for (auto &it : list)
-        if (it->getMesh()->getIndex() == index)
-            return it;
-    return nullptr;
-}
-
 void ComponentMeshGroup::destroyList()
 {
     for (auto &it : list)
         delete it;
     list.clear();
+    bonesList.clear();
 }

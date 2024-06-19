@@ -15,6 +15,8 @@ APPMAIN
     auto cubeMesh = Red11::getMeshBuilder()->createCube(0.1f);
 
     auto scene = Red11::createScene();
+    scene->setAmbientLight(Color(0.8f, 0.8f, 0.8f));
+
     auto cube = scene->createActor<Actor>("Cube");
     auto cubeComponent = cube->createComponentMesh(cubeMesh);
     cubeComponent->setMaterial(new MaterialSimple(Color(0.2, 0.2, 0.2)));

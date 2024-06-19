@@ -8,29 +8,16 @@
 #include "FBXAnimationCurveNode.h"
 #include "FBXAnimationCurve.h"
 #include "FBXAnimationLayer.h"
+#include "FBXDeform.h"
+#include "FBXGeometry.h"
+#include "FBXModel.h"
+#include "FBXAttribute.h"
 #include "data/animation/animation.h"
 #include "data/mesh.h"
 #include "data/meshObject.h"
-#include "utils/meshDescriptor.h"
 #include <vector>
 
 const unsigned long long FBXTimeToMs = 46186158;
-
-struct FBXMeshWithIndex
-{
-    Mesh *mesh;
-    unsigned long long index;
-};
-
-struct FBXModelWithIndex
-{
-    unsigned long long index;
-    unsigned long long parentIndex;
-    Vector3 position, rotation, scale;
-    std::string name;
-    std::vector<FBXAnimationCurveNode *> curveNodes;
-    MeshObject *meshObject;
-};
 
 struct FBXAnimationBinding
 {
@@ -49,12 +36,16 @@ public:
 protected:
     static void printAnimationStructure(std::vector<FBXAnimationStack *> &animStacks);
 
-    static FBXModelWithIndex *getModelByIndex(unsigned long long id, std::vector<FBXModelWithIndex> &models);
-    static FBXMeshWithIndex *getMeshByIndex(unsigned long long id, std::vector<FBXMeshWithIndex> &meshes);
-    static FBXAnimationStack *getStackByIndex(unsigned long long id, std::vector<FBXAnimationStack *> &animStacks);
-    static FBXAnimationLayer *getLayerByIndex(unsigned long long id, std::vector<FBXAnimationLayer *> &animLayers);
-    static FBXAnimationCurveNode *getCurveNodeByIndex(unsigned long long id, std::vector<FBXAnimationCurveNode *> &animCurveNodes);
-    static FBXAnimationCurve *getCurveByIndex(unsigned long long id, std::vector<FBXAnimationCurve *> &animCurves);
+    static FBXModel *getModelById(unsigned long long id, std::vector<FBXModel *> &models);
+    static FBXAnimationStack *getStackById(unsigned long long id, std::vector<FBXAnimationStack *> &animStacks);
+    static FBXAnimationLayer *getLayerById(unsigned long long id, std::vector<FBXAnimationLayer *> &animLayers);
+    static FBXAnimationCurveNode *getCurveNodeById(unsigned long long id, std::vector<FBXAnimationCurveNode *> &animCurveNodes);
+    static FBXAnimationCurve *getCurveById(unsigned long long id, std::vector<FBXAnimationCurve *> &animCurves);
+    static FBXDeform *getDeformById(unsigned long long id, std::vector<FBXDeform *> &deforms);
+    static FBXGeometry *getGeometryById(unsigned long long id, std::vector<FBXGeometry *> &geometries);
+    static FBXAttribute *getAttributeById(unsigned long long id, std::vector<FBXAttribute *> &attributes);
+
+    static FBXModel *getModelByDeform(FBXDeform *deform, std::vector<FBXModel *> &models);
 
     static std::vector<std::string> getAnimationNames(std::vector<FBXAnimationLayer *> &animLayers);
 

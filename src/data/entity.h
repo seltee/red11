@@ -32,6 +32,24 @@ public:
         bIsTransformationDirty = true;
     }
 
+    inline void setPositionX(float value)
+    {
+        this->position.x = value;
+        bIsTransformationDirty = true;
+    }
+
+    inline void setPositionY(float value)
+    {
+        this->position.y = value;
+        bIsTransformationDirty = true;
+    }
+
+    inline void setPositionZ(float value)
+    {
+        this->position.z = value;
+        bIsTransformationDirty = true;
+    }
+
     inline void translate(float x, float y, float z)
     {
         this->position += Vector3(x, y, z);

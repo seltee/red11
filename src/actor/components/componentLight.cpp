@@ -25,7 +25,7 @@ void ComponentLight::setupSpot(Vector3 spotPosition,
     this->light = Light(spotPosition, spotDirection, spotAttenuation, spotInnerRadius, spotOuterRadius, spotRange, spotFalloff, spotColor);
 }
 
-void ComponentLight::onRender(Renderer *renderer)
+void ComponentLight::onRender(Camera *camera, Renderer *renderer)
 {
 }
 

@@ -5,9 +5,10 @@
 #include "utils/FBX/loaderFBX.h"
 #include "utils/meshCombiner.h"
 
-Data3DFile::Data3DFile(std::string path)
+Data3DFile::Data3DFile(std::string path, bool bLoadMeshData)
 {
     this->path = path;
+    this->bLoadMeshData = bLoadMeshData;
 }
 
 Mesh *Data3DFile::getAsMesh()
@@ -53,7 +54,7 @@ std::vector<Animation *> *Data3DFile::getAnimationsList()
 
 void Data3DFile::load()
 {
-    if (LoaderFBX::loadFBXFile(path, &meshObjectList, &animationsList))
+    if (LoaderFBX::loadFBXFile(path, bLoadMeshData ? &meshObjectList : nullptr, &animationsList))
         bLoaded = true;
 }
 

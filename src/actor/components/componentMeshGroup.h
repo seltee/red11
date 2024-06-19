@@ -11,16 +11,23 @@
 class AnimationMeshObject : public MeshObject
 {
 public:
-    AnimationMeshObject(MeshObject *obj) : MeshObject(obj->getMesh())
+    AnimationMeshObject(MeshObject *obj) : MeshObject(obj->getMesh(), obj->isBone())
     {
         initialPosition = obj->getPosition();
         initialRotation = obj->getRotation();
         initialScale = obj->getScale();
+
+        if (obj->getMesh() && obj->getMesh()->getDeforms()->size() > 0)
+        {
+            bIsSkinned = true;
+        }
     }
 
     Vector3 initialPosition;
     Quat initialRotation;
     Vector3 initialScale;
+
+    bool bIsSkinned = false;
 };
 
 class ComponentMeshGroup : public Component
@@ -29,9 +36,11 @@ public:
     EXPORT ComponentMeshGroup();
     EXPORT ~ComponentMeshGroup();
 
-    EXPORT void onRender(Renderer *renderer) override final;
+    EXPORT void onRender(Camera *camera, Renderer *renderer) override final;
     EXPORT void onRenderQueue(Renderer *renderer) override final;
     EXPORT void onProcess(float delta) override final;
+
+    EXPORT void setDebugBonesView(bool bState);
 
     // all MeshObjects will be recreated with meshes and structure for this mesh group component
     // it can be changed freely locally in this component
@@ -41,12 +50,13 @@ public:
     EXPORT void setMaterial(Material *material);
     inline Material *getMaterial() { return material; }
 
-    EXPORT MeshObject *getObjectByIndex(unsigned int index);
-
 protected:
     std::vector<AnimationMeshObject *> list;
+    std::vector<AnimationMeshObject *> bonesList;
     std::vector<AnimationTrack *> tracks;
+    std::vector<BoneTransform> boneTransforms;
     Material *material = nullptr;
+    bool bBonesView = false;
 
     void destroyList();
 };

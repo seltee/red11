@@ -47,18 +47,20 @@ BINDIR = bin
 OBJ_FILES = ${OBJDIR}/red11.o \
 			${OBJDIR}/window.o ${OBJDIR}/windowsWindow.o \
 			${OBJDIR}/scene.o \
-			${OBJDIR}/renderer.o ${OBJDIR}/directx9renderer.o \
+			${OBJDIR}/renderer.o \
+			${OBJDIR}/directx9renderer.o ${OBJDIR}/directx9meshRenderData.o ${OBJDIR}/directx9textureRenderData.o  \
 			${OBJDIR}/mesh.o ${OBJDIR}/meshObject.o ${OBJDIR}/entity.o ${OBJDIR}/light.o ${OBJDIR}/camera.o ${OBJDIR}/texture.o ${OBJDIR}/textureFile.o ${OBJDIR}/inputProvider.o \
-			${OBJDIR}/animation.o ${OBJDIR}/animationTarget.o ${OBJDIR}/animator.o ${OBJDIR}/animationTrack.o \
+			${OBJDIR}/deform.o ${OBJDIR}/boneTransform.o ${OBJDIR}/animation.o ${OBJDIR}/animationTarget.o ${OBJDIR}/animator.o ${OBJDIR}/animationTrack.o \
 			${OBJDIR}/data3DFile.o \
 			${OBJDIR}/material.o ${OBJDIR}/materialSimple.o \
 			${OBJDIR}/actor.o \
-			${OBJDIR}/component.o ${OBJDIR}/componentMesh.o ${OBJDIR}/componentLight.o ${OBJDIR}/componentMeshGroup.o \
-			${OBJDIR}/utils.o ${OBJDIR}/color.o ${OBJDIR}/meshBuilder.o ${OBJDIR}/meshCombiner.o ${OBJDIR}/destroyable.o ${OBJDIR}/meshDescriptor.o ${OBJDIR}/stb_image.o \
+			${OBJDIR}/component.o ${OBJDIR}/componentMesh.o ${OBJDIR}/componentLight.o ${OBJDIR}/componentMeshGroup.o ${OBJDIR}/componentCamera.o \
+			${OBJDIR}/utils.o ${OBJDIR}/color.o ${OBJDIR}/meshBuilder.o ${OBJDIR}/meshCombiner.o ${OBJDIR}/destroyable.o ${OBJDIR}/stb_image.o \
 			${OBJDIR}/deltaCounter.o \
-			${OBJDIR}/loaderFBX.o ${OBJDIR}/FBXNode.o ${OBJDIR}/FBXAnimationStack.o ${OBJDIR}/FBXAnimationLayer.o ${OBJDIR}/FBXAnimationCurve.o ${OBJDIR}/FBXAnimationCurveNode.o
+			${OBJDIR}/loaderFBX.o ${OBJDIR}/FBXNode.o ${OBJDIR}/FBXAnimationStack.o ${OBJDIR}/FBXAnimationLayer.o ${OBJDIR}/FBXAnimationCurve.o ${OBJDIR}/FBXAnimationCurveNode.o \
+			${OBJDIR}/FBXDeform.o ${OBJDIR}/FBXGeometry.o ${OBJDIR}/FBXModel.o ${OBJDIR}/FBXAttribute.o
 
-EXAMPLES = 1-window${EXT} 2-textures${EXT}
+EXAMPLES = 1-window${EXT} 2-textures${EXT} 3-animation${EXT} 4-bones${EXT}
 
 all: engine examples
 
@@ -80,6 +82,12 @@ ${OBJDIR}/renderer.o: ${SRCDIR}/renderer/renderer.cpp
 	
 ${OBJDIR}/directx9renderer.o: ${SRCDIR}/renderer/directx9/directx9renderer.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/directx9renderer.o ${SRCDIR}/renderer/directx9/directx9renderer.cpp
+
+${OBJDIR}/directx9meshRenderData.o: ${SRCDIR}/renderer/directx9/directx9meshRenderData.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/directx9meshRenderData.o ${SRCDIR}/renderer/directx9/directx9meshRenderData.cpp
+
+${OBJDIR}/directx9textureRenderData.o: ${SRCDIR}/renderer/directx9/directx9textureRenderData.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/directx9textureRenderData.o ${SRCDIR}/renderer/directx9/directx9textureRenderData.cpp
 
 ${OBJDIR}/mesh.o: ${SRCDIR}/data/mesh.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/mesh.o ${SRCDIR}/data/mesh.cpp
@@ -104,6 +112,12 @@ ${OBJDIR}/textureFile.o: ${SRCDIR}/data/textureFile.cpp
 
 ${OBJDIR}/inputProvider.o: ${SRCDIR}/data/inputProvider.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/inputProvider.o ${SRCDIR}/data/inputProvider.cpp
+
+${OBJDIR}/deform.o: ${SRCDIR}/data/deform.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/deform.o ${SRCDIR}/data/deform.cpp
+
+${OBJDIR}/boneTransform.o: ${SRCDIR}/data/boneTransform.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/boneTransform.o ${SRCDIR}/data/boneTransform.cpp
 
 ${OBJDIR}/animation.o: ${SRCDIR}/data/animation/animation.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/animation.o ${SRCDIR}/data/animation/animation.cpp
@@ -141,6 +155,9 @@ ${OBJDIR}/componentLight.o: ${SRCDIR}/actor/components/componentLight.cpp
 ${OBJDIR}/componentMeshGroup.o: ${SRCDIR}/actor/components/componentMeshGroup.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/componentMeshGroup.o ${SRCDIR}/actor/components/componentMeshGroup.cpp
 
+${OBJDIR}/componentCamera.o: ${SRCDIR}/actor/components/componentCamera.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/componentCamera.o ${SRCDIR}/actor/components/componentCamera.cpp
+
 ${OBJDIR}/utils.o: ${SRCDIR}/utils/utils.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/utils.o ${SRCDIR}/utils/utils.cpp
 
@@ -155,9 +172,6 @@ ${OBJDIR}/meshCombiner.o: ${SRCDIR}/utils/meshCombiner.cpp
 
 ${OBJDIR}/destroyable.o: ${SRCDIR}/utils/destroyable.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/destroyable.o ${SRCDIR}/utils/destroyable.cpp
-
-${OBJDIR}/meshDescriptor.o: ${SRCDIR}/utils/meshDescriptor.cpp
-	$(CC) $(CFLAGS) -o ${OBJDIR}/meshDescriptor.o ${SRCDIR}/utils/meshDescriptor.cpp
 
 ${OBJDIR}/stb_image.o: ${SRCDIR}/utils/image/stb_image.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/stb_image.o ${SRCDIR}/utils/image/stb_image.cpp
@@ -183,6 +197,18 @@ ${OBJDIR}/FBXAnimationCurve.o: ${SRCDIR}/utils/FBX/FBXAnimationCurve.cpp
 ${OBJDIR}/FBXAnimationCurveNode.o: ${SRCDIR}/utils/FBX/FBXAnimationCurveNode.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/FBXAnimationCurveNode.o ${SRCDIR}/utils/FBX/FBXAnimationCurveNode.cpp
 
+${OBJDIR}/FBXDeform.o: ${SRCDIR}/utils/FBX/FBXDeform.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/FBXDeform.o ${SRCDIR}/utils/FBX/FBXDeform.cpp
+
+${OBJDIR}/FBXGeometry.o: ${SRCDIR}/utils/FBX/FBXGeometry.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/FBXGeometry.o ${SRCDIR}/utils/FBX/FBXGeometry.cpp
+
+${OBJDIR}/FBXModel.o: ${SRCDIR}/utils/FBX/FBXModel.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/FBXModel.o ${SRCDIR}/utils/FBX/FBXModel.cpp
+
+${OBJDIR}/FBXAttribute.o: ${SRCDIR}/utils/FBX/FBXAttribute.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/FBXAttribute.o ${SRCDIR}/utils/FBX/FBXAttribute.cpp
+
 $(TARGET): ${OBJ_FILES}
 	$(LD) ${LFLAGS} ${LIBRARIES} ${OBJ_FILES} -o $(TARGET)
 	${COPY} ${TARGET} "${BINDIR}/${TARGET}"
@@ -202,6 +228,19 @@ ${OBJDIR}/2-textures.o: ${EXMDIR}/2-textures.cpp
 	$(LD) ${EFLAGS} ${OBJDIR}/2-textures.o -o 2-textures${EXT}
 	${MOVE} 2-textures${EXT} ${BINDIR}/2-textures${EXT}
 
+${OBJDIR}/3-animation.o: ${EXMDIR}/3-animation.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/3-animation.o ${EXMDIR}/3-animation.cpp
+
+3-animation${EXT}: ${OBJDIR}/3-animation.o
+	$(LD) ${EFLAGS} ${OBJDIR}/3-animation.o -o 3-animation${EXT}
+	${MOVE} 3-animation${EXT} ${BINDIR}/3-animation${EXT}
+
+${OBJDIR}/4-bones.o: ${EXMDIR}/4-bones.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/4-bones.o ${EXMDIR}/4-bones.cpp
+
+4-bones${EXT}: ${OBJDIR}/4-bones.o
+	$(LD) ${EFLAGS} ${OBJDIR}/4-bones.o -o 4-bones${EXT}
+	${MOVE} 4-bones${EXT} ${BINDIR}/4-bones${EXT}
 
 # llvm-objcopy
 clean:

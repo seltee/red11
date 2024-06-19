@@ -3,12 +3,14 @@
 
 #pragma once
 #include "utils/primitives.h"
+#include "data/deform.h"
 #include <string>
 
 #define MAX_MESH_COUNT 100000
 
 enum class VertexDataType
 {
+    Unknown,
     PositionUV,
     PositionColor
 };
@@ -18,23 +20,27 @@ struct VertexDataUV
     Vector3 position;
     Vector2 uv;
     Vector3 normal;
+    int index;
 
     VertexDataUV()
     {
+        this->index = 0;
         this->position = Vector3(0.0f);
         this->uv = Vector2(0.0f);
         this->normal = Vector3(0.0f);
     }
 
-    VertexDataUV(Vector3 position, Vector2 uv, Vector3 normal)
+    VertexDataUV(int index, Vector3 position, Vector2 uv, Vector3 normal)
     {
+        this->index = index;
         this->position = position;
         this->uv = uv;
         this->normal = normal;
     }
 
-    VertexDataUV(float px, float py, float pz, float u, float v, float nx, float ny, float nz)
+    VertexDataUV(int index, float px, float py, float pz, float u, float v, float nx, float ny, float nz)
     {
+        this->index = index;
         this->position = Vector3(px, py, pz);
         this->uv = Vector2(u, v);
         this->normal = Vector3(nx, ny, nz);
@@ -46,23 +52,27 @@ struct VertexDataColored
     Vector3 position;
     Vector3 normal;
     unsigned int color;
+    int index;
 
     VertexDataColored()
     {
+        this->index = 0;
         this->position = Vector3(0.0f);
         this->normal = Vector3(0.0f, 0.0f, 1.0f);
         this->color = 0;
     }
 
-    VertexDataColored(float px, float py, float pz, float nx, float ny, float nz, unsigned int color)
+    VertexDataColored(int index, float px, float py, float pz, float nx, float ny, float nz, unsigned int color)
     {
+        this->index = index;
         this->position = Vector3(px, py, pz);
         this->normal = Vector3(normal);
         this->color = color;
     }
 
-    VertexDataColored(Vector3 p, Vector3 n, unsigned int color)
+    VertexDataColored(int index, Vector3 p, Vector3 n, unsigned int color)
     {
+        this->index = index;
         this->position = p;
         this->normal = n;
         this->color = color;
@@ -91,6 +101,17 @@ public:
     Mesh(VertexDataType type, void *verticies, int vLength, PolygonTriPoints *polygons, int pLength, Matrix4 *transformation = nullptr);
     ~Mesh();
 
+    void addDeform(Deform *deform);
+    inline Deform *getDeformByName(std::string &name)
+    {
+        for (auto &deform : deforms)
+        {
+            if (deform->isName(name))
+                return deform;
+        }
+        return nullptr;
+    }
+
     inline unsigned int getIndex() { return index; }
 
     inline int getPolygonsAmount() { return pLength; }
@@ -98,7 +119,7 @@ public:
 
     inline PolygonTriPoints *getPolygons() { return polygons; };
     inline VertexData *getVerticies() { return &verticies; };
-
+    inline std::vector<Deform *> *getDeforms() { return &deforms; }
     inline VertexDataType getType() { return type; }
 
 protected:
@@ -109,4 +130,6 @@ protected:
     int pLength = 0;
 
     unsigned int index;
+
+    std::vector<Deform *> deforms;
 };

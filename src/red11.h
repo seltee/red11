@@ -6,6 +6,8 @@
 #include "utils/math.h"
 #include "utils/meshBuilder.h"
 #include "utils/deltaCounter.h"
+#include "utils/glm/glm.hpp"
+#include "utils/glm/gtx/vector_angle.inl"
 #include "scene/scene.h"
 #include "actor/actor.h"
 #include "window/window.h"

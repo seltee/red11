@@ -28,7 +28,7 @@ void Component::onCreated()
 {
 }
 
-void Component::onRender(Renderer *renderer)
+void Component::onRender(Camera *camera, Renderer *renderer)
 {
 }
 
@@ -42,13 +42,14 @@ void Component::onProcess(float delta)
 
 void Component::setParent(Component *parent)
 {
-    this->parent = parent;
-    if (parent)
+    if (parent && parent->getOwner() == owner)
     {
+        this->parent = parent;
         this->setTransformationParent(parent);
     }
     else
     {
+        this->parent = nullptr;
         this->setTransformationParent(owner);
     }
 }

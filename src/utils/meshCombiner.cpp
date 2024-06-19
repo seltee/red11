@@ -10,13 +10,18 @@ Mesh *combineMeshList(std::vector<MeshObject *> &list)
         return nullptr;
 
     // check if all data types are the same
-    VertexDataType type = list.at(0)->getMesh()->getType();
+    VertexDataType type = VertexDataType::Unknown;
     for (auto &it : list)
-        if (it->getMesh()->getType() != type)
+    {
+        if (it->getMesh() && type == VertexDataType::Unknown)
+            type = it->getMesh()->getType();
+        if (it->getMesh() && it->getMesh()->getType() != type)
             return nullptr;
+    }
 
     for (auto &it : list)
-        transformedList.push_back(it->getTransformedMesh());
+        if (it->getMesh())
+            transformedList.push_back(it->getTransformedMesh());
 
     // collect amount of data and create arrays
     int totalPolygonsAmount = 0;

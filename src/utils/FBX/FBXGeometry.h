@@ -4,7 +4,10 @@
 #pragma once
 #include <vector>
 #include "data/mesh.h"
+#include "data/deform.h"
 #include "utils/utils.h"
+#include "FBXNode.h"
+#include "FBXDeform.h"
 
 struct PolygonUV
 {
@@ -19,17 +22,19 @@ struct PolygonTriPointsUV
     unsigned int UVa, UVb, UVc;
 };
 
-class MeshDescriptor
+class FBXGeometry
 {
 public:
-    EXPORT MeshDescriptor();
-    EXPORT ~MeshDescriptor();
+    EXPORT FBXGeometry(FBXNode *node);
+    EXPORT ~FBXGeometry();
 
-    EXPORT void provideVertex(double *list, int countOfDoubles);
-    EXPORT void providePolygonIndexes(int *list, int countOfIndexes);
-    EXPORT void provideUVData(double *list, int countOfDoubles);
-    EXPORT void provideUVIndexes(int *list, int countOfIndexes);
-    EXPORT void provideNormals(double *list, int countOfDoubles);
+    EXPORT Mesh *getMesh();
+
+    EXPORT void addDeformer(FBXDeform *deform);
+
+    EXPORT bool hasDeformer(FBXDeform *deform);
+
+    inline std::vector<FBXDeform *> *getDeforms() { return &deforms; }
 
     inline VertexDataUV *getVertexes()
     {
@@ -52,7 +57,17 @@ public:
         return outPolygonsAmount;
     }
 
+    unsigned long long id;
+
 protected:
+    EXPORT void processDeformToMesh(Mesh *mesh, FBXDeform *deform);
+
+    EXPORT void provideVertex(double *list, int countOfDoubles);
+    EXPORT void providePolygonIndexes(int *list, int countOfIndexes);
+    EXPORT void provideUVData(double *list, int countOfDoubles);
+    EXPORT void provideUVIndexes(int *list, int countOfIndexes);
+    EXPORT void provideNormals(double *list, int countOfDoubles);
+
     void rebuild();
     unsigned int getIndex(VertexDataUV &newVertex, std::vector<VertexDataUV> *vecOutVertexes);
     bool dirty = true;
@@ -77,4 +92,8 @@ protected:
 
     int *polygonIndexes = nullptr;
     int polygonIndexesAmount = 0;
+
+    Mesh *mesh = nullptr;
+
+    std::vector<FBXDeform *> deforms;
 };

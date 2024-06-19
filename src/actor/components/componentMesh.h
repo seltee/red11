@@ -13,7 +13,7 @@ class ComponentMesh : public Component
 public:
     EXPORT ComponentMesh();
 
-    EXPORT void onRender(Renderer *renderer) override final;
+    EXPORT void onRender(Camera *camera, Renderer *renderer) override final;
     EXPORT void onRenderQueue(Renderer *renderer) override final;
 
     EXPORT void setMesh(Mesh *mesh);

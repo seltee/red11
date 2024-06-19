@@ -9,6 +9,7 @@
 #include "components/componentMesh.h"
 #include "components/componentMeshGroup.h"
 #include "components/componentLight.h"
+#include "components/componentCamera.h"
 #include "data/mesh.h"
 #include "renderer/renderer.h"
 #include "data/entity.h"
@@ -64,7 +65,7 @@ public:
     EXPORT void setScene(Scene *scene);
 
     EXPORT void onProcess(float delta);
-    EXPORT void onRender(Renderer *renderer);
+    EXPORT void onRender(Camera *camera, Renderer *renderer);
     EXPORT void onRenderQueue(Renderer *renderer);
 
     EXPORT virtual void onSpawned();

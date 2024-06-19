@@ -1,13 +1,54 @@
 // SPDX-FileCopyrightText: 2024 Dmitrii Shashkov
 // SPDX-License-Identifier: MIT
 
-#include "meshDescriptor.h"
+#include "FBXGeometry.h"
 
-MeshDescriptor::MeshDescriptor()
+FBXGeometry::FBXGeometry(FBXNode *node)
 {
+    FBXNode *vertices = node->findNode("Vertices");
+    FBXNode *polygonVertexIndex = node->findNode("PolygonVertexIndex");
+    FBXNode *elementUVs = node->findNode("LayerElementUV");
+    FBXNode *elementNormals = node->findNode("LayerElementNormal");
+
+    id = *static_cast<unsigned long *>(node->bindedData.at(0).data);
+
+    if (vertices && !vertices->bindedData.empty())
+    {
+        auto nodeData = vertices->bindedData.at(0);
+        provideVertex((double *)nodeData.data, nodeData.numElements);
+    }
+    if (polygonVertexIndex && !polygonVertexIndex->bindedData.empty())
+    {
+        auto nodeData = polygonVertexIndex->bindedData.at(0);
+        providePolygonIndexes((int *)nodeData.data, nodeData.numElements);
+    }
+    if (elementUVs)
+    {
+        FBXNode *UVs = elementUVs->findNode("UV");
+        FBXNode *UVIndexes = elementUVs->findNode("UVIndex");
+        if (UVs && !UVs->bindedData.empty())
+        {
+            auto nodeData = UVs->bindedData.at(0);
+            provideUVData((double *)nodeData.data, nodeData.numElements);
+        }
+        if (UVIndexes && !UVIndexes->bindedData.empty())
+        {
+            auto nodeData = UVIndexes->bindedData.at(0);
+            provideUVIndexes((int *)nodeData.data, nodeData.numElements);
+        }
+    }
+    if (elementNormals)
+    {
+        FBXNode *normals = elementNormals->findNode("Normals");
+        if (normals && normals->bindedData.size())
+        {
+            auto nodeData = normals->bindedData.at(0);
+            provideNormals((double *)nodeData.data, nodeData.numElements);
+        }
+    }
 }
 
-MeshDescriptor::~MeshDescriptor()
+FBXGeometry::~FBXGeometry()
 {
     if (vertexes)
         delete[] vertexes;
@@ -25,7 +66,54 @@ MeshDescriptor::~MeshDescriptor()
         delete[] outPolygons;
 }
 
-void MeshDescriptor::provideVertex(double *list, int countOfDoubles)
+Mesh *FBXGeometry::getMesh()
+{
+    rebuild();
+    if (!mesh)
+    {
+        mesh = new Mesh(VertexDataType::PositionUV, getVertexes(), getVertexAmount(), getPolygons(), getPolygonsAmount());
+        if (deforms.size() > 0)
+        {
+            for (auto &it : deforms)
+                processDeformToMesh(mesh, it);
+        }
+    }
+    return mesh;
+}
+
+void FBXGeometry::addDeformer(FBXDeform *deform)
+{
+    this->deforms.push_back(deform);
+}
+
+bool FBXGeometry::hasDeformer(FBXDeform *deform)
+{
+    for (auto &it : deforms)
+    {
+        if (it == deform || it->hasDeformer(deform))
+            return true;
+    }
+    return false;
+}
+
+void FBXGeometry::processDeformToMesh(Mesh *mesh, FBXDeform *deform)
+{
+    if (deform->getIndexiesAmount() == deform->getWeightsAmount())
+    {
+        if (deform->getIndexiesAmount() > 0)
+        {
+            mesh->addDeform(new Deform(deform->getName(), deform->getIndexies(), deform->getWeights(), deform->getWeightsAmount(), deform->getInvBindMatrix()));
+        }
+        for (auto &child : *deform->getChildren())
+        {
+            processDeformToMesh(mesh, child);
+        }
+    }
+    else
+        printf("Wrong amount of weights and verticies on %s\n", deform->getName().c_str());
+}
+
+void FBXGeometry::provideVertex(double *list, int countOfDoubles)
 {
     if (vertexes)
         delete[] vertexes;
@@ -44,7 +132,7 @@ void MeshDescriptor::provideVertex(double *list, int countOfDoubles)
     dirty = true;
 }
 
-void MeshDescriptor::providePolygonIndexes(int *list, int countOfIndexes)
+void FBXGeometry::providePolygonIndexes(int *list, int countOfIndexes)
 {
     polygonIndexes = new int[countOfIndexes];
     memcpy(polygonIndexes, list, sizeof(int) * countOfIndexes);
@@ -53,7 +141,7 @@ void MeshDescriptor::providePolygonIndexes(int *list, int countOfIndexes)
     dirty = true;
 }
 
-void MeshDescriptor::provideUVData(double *list, int countOfDoubles)
+void FBXGeometry::provideUVData(double *list, int countOfDoubles)
 {
     uvsAmount = countOfDoubles / 2;
     uvs = new Vector2[uvsAmount];
@@ -68,7 +156,7 @@ void MeshDescriptor::provideUVData(double *list, int countOfDoubles)
     dirty = true;
 }
 
-void MeshDescriptor::provideUVIndexes(int *list, int countOfIndexes)
+void FBXGeometry::provideUVIndexes(int *list, int countOfIndexes)
 {
     uvIndexes = new int[countOfIndexes];
     memcpy(uvIndexes, list, sizeof(int) * countOfIndexes);
@@ -77,7 +165,7 @@ void MeshDescriptor::provideUVIndexes(int *list, int countOfIndexes)
     dirty = true;
 }
 
-void MeshDescriptor::provideNormals(double *list, int countOfDoubles)
+void FBXGeometry::provideNormals(double *list, int countOfDoubles)
 {
     if (normals)
         delete[] normals;
@@ -96,7 +184,7 @@ void MeshDescriptor::provideNormals(double *list, int countOfDoubles)
     dirty = true;
 }
 
-void MeshDescriptor::rebuild()
+void FBXGeometry::rebuild()
 {
     if (dirty && vertexes && normals && uvs && uvIndexes)
     {
@@ -149,12 +237,13 @@ void MeshDescriptor::rebuild()
                 p.c = index;
                 p.UVc = uvIndex;
 
-                int sw = p.b;
-                int UVsv = p.UVb;
-                p.b = p.c;
-                p.UVb = p.UVc;
-                p.c = sw;
-                p.UVc = UVsv;
+                int sw = p.a;
+                int UVsv = p.UVa;
+
+                p.a = p.b;
+                p.UVa = p.UVb;
+                p.b = sw;
+                p.UVb = UVsv;
 
                 vecPolygons.push_back(p);
             }
@@ -175,9 +264,9 @@ void MeshDescriptor::rebuild()
             unsigned int indexUVB = vecPolygons.at(i).UVa;
             unsigned int indexUVC = vecPolygons.at(i).UVc;
 
-            VertexDataUV vecOutVertexA = VertexDataUV(vertexes[indexA], uvs[indexUVA], normals[indexA]);
-            VertexDataUV vecOutVertexB = VertexDataUV(vertexes[indexB], uvs[indexUVB], normals[indexB]);
-            VertexDataUV vecOutVertexC = VertexDataUV(vertexes[indexC], uvs[indexUVC], normals[indexC]);
+            VertexDataUV vecOutVertexA = VertexDataUV(indexA, vertexes[indexA], uvs[indexUVA], normals[indexA]);
+            VertexDataUV vecOutVertexB = VertexDataUV(indexB, vertexes[indexB], uvs[indexUVB], normals[indexB]);
+            VertexDataUV vecOutVertexC = VertexDataUV(indexC, vertexes[indexC], uvs[indexUVC], normals[indexC]);
 
             PolygonTriPoints tri;
             tri.a = getIndex(vecOutVertexA, &vecOutVertexes);
@@ -205,7 +294,7 @@ void MeshDescriptor::rebuild()
     }
 }
 
-unsigned int MeshDescriptor::getIndex(VertexDataUV &newVertex, std::vector<VertexDataUV> *vecOutVertexes)
+unsigned int FBXGeometry::getIndex(VertexDataUV &newVertex, std::vector<VertexDataUV> *vecOutVertexes)
 {
     int len = vecOutVertexes->size();
     for (int index = 0; index < len; index++)
@@ -217,7 +306,8 @@ unsigned int MeshDescriptor::getIndex(VertexDataUV &newVertex, std::vector<Verte
             vecOutVertexes->at(index).normal.y == newVertex.normal.y &&
             vecOutVertexes->at(index).normal.z == newVertex.normal.z &&
             vecOutVertexes->at(index).uv.x == newVertex.uv.x &&
-            vecOutVertexes->at(index).uv.y == newVertex.uv.y)
+            vecOutVertexes->at(index).uv.y == newVertex.uv.y &&
+            vecOutVertexes->at(index).index == newVertex.index)
         {
             return index;
         }

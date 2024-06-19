@@ -3,9 +3,14 @@
 
 #include "meshObject.h"
 
-MeshObject::MeshObject(Mesh *mesh)
+MeshObject::MeshObject(Mesh *mesh, bool bIsBone)
 {
     this->mesh = mesh;
+    this->bIsBone = bIsBone;
+
+    static unsigned int lastIndex = 0;
+    index = lastIndex;
+    lastIndex++;
 }
 
 void MeshObject::setParent(MeshObject *parent)
@@ -22,7 +27,11 @@ void MeshObject::setEntityParent(Entity *entityParent)
 
 Mesh *MeshObject::getTransformedMesh()
 {
-    return new Mesh(mesh->getType(), mesh->getVerticies()->ptr, mesh->getVerticiesAmount(), mesh->getPolygons(), mesh->getPolygonsAmount(), getModelMatrix());
+    if (mesh)
+    {
+        return new Mesh(mesh->getType(), mesh->getVerticies()->ptr, mesh->getVerticiesAmount(), mesh->getPolygons(), mesh->getPolygonsAmount(), getModelMatrix());
+    }
+    return nullptr;
 }
 
 Mesh *MeshObject::getMesh()

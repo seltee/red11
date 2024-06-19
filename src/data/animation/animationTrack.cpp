@@ -8,22 +8,26 @@ AnimationTrack::AnimationTrack(Animation *animation)
     this->animation = animation;
 }
 
-void AnimationTrack::play(float speed, float fromMoment, float weight)
+void AnimationTrack::play(float speed, float fromMoment, float weight, float weightSwitchSpeed)
 {
     this->speed = speed;
     this->bIsPlaying = true;
     this->bIsLooping = false;
     this->playTime = fromMoment;
     this->weight = weight;
+    this->targetWeight = weight;
+    this->weightSwitchSpeed = weightSwitchSpeed;
 }
 
-void AnimationTrack::loop(float speed, float fromMoment, float weight)
+void AnimationTrack::loop(float speed, float fromMoment, float weight, float weightSwitchSpeed)
 {
     this->speed = speed;
     this->bIsPlaying = true;
     this->bIsLooping = true;
     this->playTime = fromMoment;
     this->weight = weight;
+    this->targetWeight = weight;
+    this->weightSwitchSpeed = weightSwitchSpeed;
 }
 
 void AnimationTrack::stop()
@@ -34,7 +38,7 @@ void AnimationTrack::stop()
 
 void AnimationTrack::setWeight(float weight)
 {
-    this->weight = weight;
+    this->targetWeight = fmaxf(weight, 0.0f);
 }
 
 void AnimationTrack::process(float delta)
@@ -48,19 +52,39 @@ void AnimationTrack::process(float delta)
             else
                 stop();
     }
+    if (weight < targetWeight)
+    {
+        weight += delta * weightSwitchSpeed;
+        if (weight > targetWeight)
+            weight = targetWeight;
+    }
+    if (weight > targetWeight)
+    {
+        weight -= delta * weightSwitchSpeed;
+        if (weight < targetWeight)
+            weight = targetWeight;
+    }
+}
+
+float AnimationTrack::getNodeWeight(std::string *name)
+{
+    auto animator = animation->getTargetByName(*name);
+    if (animator)
+        return weight;
+    return 0.0f;
 }
 
 void AnimationTrack::addTransformation(float totalWeight, std::string *nodeName, Vector3 *position, Quat *rotation, Vector3 *scale)
 {
-    float dWeight = weight / totalWeight;
-
     auto animator = animation->getTargetByName(*nodeName);
-    if (animator)
+    if (animator && totalWeight > 0.0f && weight > 0.0f)
     {
+        float dWeight = weight / totalWeight;
+
         Entity entity;
         animator->getTransformByTime(playTime, &entity);
         *position += entity.getPosition() * dWeight;
-        *rotation += entity.getRotation() * dWeight;
+        *rotation = glm::slerp(*rotation, entity.getRotation(), dWeight);
         *scale += entity.getScale() * dWeight;
     }
 }

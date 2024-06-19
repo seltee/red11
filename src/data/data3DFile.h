@@ -16,7 +16,7 @@
 class Data3DFile
 {
 public:
-    EXPORT Data3DFile(std::string path);
+    EXPORT Data3DFile(std::string path, bool bLoadMeshData = true);
 
     EXPORT Mesh *getAsMesh();
     EXPORT std::vector<MeshObject *> *getMeshObjectList();
@@ -32,4 +32,5 @@ protected:
 
     std::string path;
     bool bLoaded = false;
+    bool bLoadMeshData = true;
 };

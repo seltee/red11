@@ -6,6 +6,7 @@
 Mesh::Mesh(VertexDataType type, void *verticies, int vLength, PolygonTriPoints *polygons, int pLength, Matrix4 *transformation)
 {
     this->type = type;
+    this->vLength = vLength;
     static unsigned int lastIndex = 0;
     index = lastIndex;
     lastIndex++;
@@ -13,7 +14,6 @@ Mesh::Mesh(VertexDataType type, void *verticies, int vLength, PolygonTriPoints *
     if (type == VertexDataType::PositionUV)
     {
         this->verticies.vertexPositionUV = new VertexDataUV[vLength];
-        this->vLength = vLength;
         for (int i = 0; i < vLength; i++)
             if (transformation)
             {
@@ -26,7 +26,6 @@ Mesh::Mesh(VertexDataType type, void *verticies, int vLength, PolygonTriPoints *
     if (type == VertexDataType::PositionColor)
     {
         this->verticies.vertexPositionColor = new VertexDataColored[vLength];
-        this->vLength = vLength;
         for (int i = 0; i < vLength; i++)
             if (transformation)
             {
@@ -51,4 +50,10 @@ Mesh::~Mesh()
         delete this->verticies.vertexPositionColor;
     if (this->polygons)
         delete[] this->polygons;
+}
+
+void Mesh::addDeform(Deform *deform)
+{
+    deform->index = deforms.size();
+    deforms.push_back(deform);
 }

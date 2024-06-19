@@ -12,7 +12,7 @@
 class MeshObject : public Entity
 {
 public:
-    EXPORT MeshObject(Mesh *mesh);
+    EXPORT MeshObject(Mesh *mesh, bool bIsBone = false);
     EXPORT void setParent(MeshObject *parent);
     EXPORT void setEntityParent(Entity *entityParent);
 
@@ -30,8 +30,15 @@ public:
     inline std::string *getNamePointer() { return &name; }
     inline void setName(std::string name) { this->name = name; }
 
+    inline bool isBone() { return bIsBone; }
+
+    inline unsigned int getIndex() { return index; }
+
 protected:
     Mesh *mesh = nullptr;
     MeshObject *parent = nullptr;
     std::string name;
+    bool bIsBone;
+
+    unsigned int index;
 };

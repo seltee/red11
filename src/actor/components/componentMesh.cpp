@@ -17,11 +17,11 @@ void ComponentMesh::setMaterial(Material *material)
     this->material = material;
 }
 
-void ComponentMesh::onRender(Renderer *renderer)
+void ComponentMesh::onRender(Camera *camera, Renderer *renderer)
 {
     if (mesh)
     {
-        renderer->renderMesh(mesh, material, getModelMatrix());
+        renderer->renderMesh(camera, mesh, material, getModelMatrix());
     }
 }
 

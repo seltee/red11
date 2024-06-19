@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2024 Dmitrii Shashkov
 // SPDX-License-Identifier: MIT
 
-#include "utils/FBX/FBXAnimationCurveNode.h"
-#include "utils/FBX/loaderFBX.h"
+#include "FBXAnimationCurveNode.h"
+#include "FBXModel.h"
 
 FBXAnimationCurveNode::FBXAnimationCurveNode(FBXNode *node)
 {
@@ -65,7 +65,7 @@ void FBXAnimationCurveNode::linkCurve(FBXAnimationCurve *curve, FBXNode *node)
     }
 }
 
-void FBXAnimationCurveNode::addAffectedModel(FBXModelWithIndex *model)
+void FBXAnimationCurveNode::addAffectedModel(FBXModel *model)
 {
     affectedModels.push_back(model);
 }
@@ -93,7 +93,7 @@ bool FBXAnimationCurveNode::hasModelName(std::string modelName)
 {
     for (auto &model : affectedModels)
     {
-        if (model->name == modelName)
+        if (model->getName() == modelName)
             return true;
     }
 

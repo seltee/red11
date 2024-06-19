@@ -12,25 +12,20 @@ class MaterialSimple : public Material
 public:
     EXPORT MaterialSimple();
     EXPORT MaterialSimple(Color defuseColor, Color emissionColor = Color(0.0f, 0.0f, 0.0f));
-    EXPORT MaterialSimple(Color defuseColor, Color emissionColor, Color ambientColor);
-    EXPORT MaterialSimple(Texture *defuseTexture, Texture *emissionTexture = nullptr, Texture *ambientTexture = nullptr);
+    EXPORT MaterialSimple(Texture *defuseTexture, Texture *emissionTexture = nullptr);
 
     EXPORT MaterialType getType() override;
 
     inline Color &getDefuseColor() { return defuseColor; }
-    inline Color &getAmbientColor() { return ambientColor; }
     inline Color &getEmissionColor() { return emissionColor; }
 
     inline Texture *getDefuseTexture() { return defuseTexture; }
-    inline Texture *getAmbientTexture() { return ambientTexture; }
     inline Texture *getEmissionTexture() { return emissionTexture; }
 
 protected:
-    Color defuseColor = Color(0.16f, 0.16f, 0.16f);
-    Color ambientColor = Color(0.0f, 0.0f, 0.0f);
-    Color emissionColor = Color(0.16f, 0.16f, 0.16f);
+    Color defuseColor = Color(0.64f, 0.64f, 0.46f);
+    Color emissionColor = Color(0.0f, 0.0f, 0.0f);
 
     Texture *defuseTexture = nullptr;
     Texture *emissionTexture = nullptr;
-    Texture *ambientTexture = nullptr;
 };

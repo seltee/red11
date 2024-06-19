@@ -5,7 +5,7 @@
 
 FBXAnimationLayer::FBXAnimationLayer(FBXNode *node)
 {
-    node->print();
+    // node->print();
     id = *reinterpret_cast<unsigned long long *>(node->bindedData.at(0).data);
     const char *charName = reinterpret_cast<char *>(node->bindedData.at(1).data);
     name = std::string(charName);

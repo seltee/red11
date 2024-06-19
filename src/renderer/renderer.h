@@ -5,9 +5,13 @@
 #include "window/window.h"
 #include "utils/primitives.h"
 #include "data/mesh.h"
+#include "data/boneTransform.h"
 #include "data/material/material.h"
+#include "data/material/materialSimple.h"
 #include "data/light.h"
 #include "data/camera.h"
+#include "data/texture.h"
+#include <vector>
 
 enum class RendererType
 {
@@ -27,13 +31,16 @@ public:
     virtual void startRendering() = 0;
     virtual void clearBuffer(Color color) = 0;
     virtual void queueMesh(Mesh *mesh, Material *material, Matrix4 *model) = 0;
+    virtual void queueMeshSkinned(Mesh *mesh, Material *material, Matrix4 *model, std::vector<BoneTransform> *bones) = 0;
+    virtual void queueLine(Vector3 vFrom, Vector3 vTo, Color color) = 0;
     virtual void queueLight(Light *light) = 0;
     virtual void renderQueue(Camera *camera) = 0;
     virtual void clearQueue() = 0;
-    virtual void renderMesh(Mesh *mesh, Material *material, Matrix4 *model) = 0;
-    virtual void setAmbientLight(Color &color) = 0;
+    virtual void renderMesh(Camera *camera, Mesh *mesh, Material *material, Matrix4 *model) = 0;
+    virtual void renderMeshSkinned(Camera *camera, Mesh *mesh, Material *material, Matrix4 *model, std::vector<BoneTransform> *bones) = 0;
+    virtual void setAmbientLight(Color &ambientColor) = 0;
     virtual void setLightningState(bool value) = 0;
-    virtual void setZTestState(bool value) = 0;
+    virtual void setDepthBufferState(bool value) = 0;
     virtual void endRendering() = 0;
     virtual void present() = 0;
 

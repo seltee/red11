@@ -22,7 +22,7 @@ public:
                           float spotFalloff,
                           Color spotColor);
 
-    EXPORT void onRender(Renderer *renderer) override final;
+    EXPORT void onRender(Camera *camera, Renderer *renderer) override final;
     EXPORT void onRenderQueue(Renderer *renderer) override final;
 
     inline void setEnabled(bool bState) { bEnabled = bState; }
