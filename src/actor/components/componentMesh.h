@@ -13,7 +13,6 @@ class ComponentMesh : public Component
 public:
     EXPORT ComponentMesh();
 
-    EXPORT void onRender(Camera *camera, Renderer *renderer) override final;
     EXPORT void onRenderQueue(Renderer *renderer) override final;
 
     EXPORT void setMesh(Mesh *mesh);
@@ -21,7 +20,10 @@ public:
     EXPORT void setMaterial(Material *material);
     inline Material *getMaterial() { return material; }
 
+    inline void showDebugNormals(bool state) { bShowDebugNormals = state; };
+
 protected:
     Mesh *mesh = nullptr;
     Material *material = nullptr;
+    bool bShowDebugNormals = false;
 };

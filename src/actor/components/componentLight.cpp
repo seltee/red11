@@ -25,10 +25,6 @@ void ComponentLight::setupSpot(Vector3 spotPosition,
     this->light = Light(spotPosition, spotDirection, spotAttenuation, spotInnerRadius, spotOuterRadius, spotRange, spotFalloff, spotColor);
 }
 
-void ComponentLight::onRender(Camera *camera, Renderer *renderer)
-{
-}
-
 void ComponentLight::onRenderQueue(Renderer *renderer)
 {
     if (bEnabled)

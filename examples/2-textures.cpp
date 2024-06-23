@@ -19,17 +19,28 @@ APPMAIN
 {
     Red11::openConsole();
 
-    auto window = Red11::createWindow("Textures/input Example", WINDOW_WIDTH, WINDOW_HEIGHT, false);
+    auto window = Red11::createWindow("Textures/Input Example", WINDOW_WIDTH, WINDOW_HEIGHT, false);
     auto renderer = Red11::createRenderer(window, RendererType::DirectX9);
 
     // Textures & Materials
     auto crateTexture = new TextureFile("Crate", "./data/crate.jpg");
-    auto crateMaterial = new MaterialSimple(crateTexture);
+    auto crateNormalTexture = new TextureFile("SphereNormal", "./data/spehere_normal.png");
+    auto crateMaterial = new MaterialSimple(crateTexture, crateNormalTexture);
+    crateMaterial->setRoughness(0.7f);
+    crateMaterial->setMetallic(0.2f);
 
     auto mushroomTexture = new TextureFile("Mushroom", "./data/mushroom_albedo.jpg");
     auto mushroomMaterial = new MaterialSimple(mushroomTexture);
+    mushroomMaterial->setRoughness(0.5f);
+    mushroomMaterial->setMetallic(0.0f);
 
     auto testMaterial = new MaterialSimple(Color(0.3, 0.3, 0.7));
+    testMaterial->setRoughness(0.01f);
+
+    auto test2Material = new MaterialSimple(nullptr, new TextureFile("BoxWithSphere", "./data/cube_n.png"));
+    test2Material->setAlbedoColor(Color(0.5f, 0.5f, 0.5f));
+    test2Material->setRoughness(0.8f);
+    test2Material->setMetallic(0.1f);
 
     // Meshes
     auto cubeMesh = Red11::getMeshBuilder()->createCube(0.1f);
@@ -42,11 +53,17 @@ APPMAIN
     animTestFileData->load();
     auto animTestMesh = animTestFileData->getAsMesh();
 
+    auto cubeFileData = new Data3DFile("./data/test2.fbx");
+    cubeFileData->load();
+    auto cubeTest2Mesh = cubeFileData->getAsMesh();
+
     auto scene = Red11::createScene();
-    scene->setAmbientLight(Color(1.0f, 1.0f, 1.0f));
+    scene->setAmbientLight(Color(0.4f, 0.4f, 0.7f));
+
     auto cube = scene->createActor<Actor>("Cube");
-    auto cubeComponent = cube->createComponentMesh(cubeMesh);
-    cubeComponent->setMaterial(crateMaterial);
+    auto cubeComponent = cube->createComponentMesh(cubeTest2Mesh);
+    cubeComponent->setMaterial(test2Material);
+    cubeComponent->setScale(0.0005f);
     cube->setPosition(Vector3(0.0f, -0.1f, -0.5f));
 
     auto cube2 = scene->createActor<Actor>("Cube 2");
@@ -87,7 +104,7 @@ APPMAIN
 
     auto lightSun = scene->createActor<Actor>("Light");
     auto lightSunComponent = lightSun->createComponent<ComponentLight>();
-    lightSunComponent->setupDirectional(glm::normalize(Vector3(-1.0f, -1.0f, -1.0)), Color(0.8f, 0.8f, 0.8f));
+    lightSunComponent->setupDirectional(glm::normalize(Vector3(-1.0f, -1.0f, -1.0)), Color(6.7f, 5.9f, 5.0f));
 
     Camera *camera = new Camera();
     camera->setupAsPerspective(WINDOW_WIDTH, WINDOW_HEIGHT);

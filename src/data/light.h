@@ -57,6 +57,8 @@ public:
                  float spotFalloff,
                  Color &spotColor);
 
+    EXPORT bool isAffecting(Vector3 point, float radius);
+
     EXPORT Light transform(Entity *entity);
 
     inline LightType getType() { return type; }

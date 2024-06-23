@@ -65,7 +65,6 @@ public:
     EXPORT void setScene(Scene *scene);
 
     EXPORT void onProcess(float delta);
-    EXPORT void onRender(Camera *camera, Renderer *renderer);
     EXPORT void onRenderQueue(Renderer *renderer);
 
     EXPORT virtual void onSpawned();

@@ -173,12 +173,13 @@ void FBXGeometry::provideNormals(double *list, int countOfDoubles)
     normalsAmount = countOfDoubles / 3;
     normals = new Vector3[normalsAmount];
 
-    for (int i = 0; i < vertexAmount; i++)
+    for (int i = 0; i < normalsAmount; i++)
     {
         int s = i * 3;
         normals[i].x = (float)list[s];
         normals[i].y = (float)list[s + 1];
         normals[i].z = (float)list[s + 2];
+        normals[i] = glm::normalize(normals[i]);
     }
 
     dirty = true;
@@ -212,18 +213,21 @@ void FBXGeometry::rebuild()
             if (filled == 0)
             {
                 p.a = index;
+                p.na = i;
                 p.UVa = uvIndex;
                 filled++;
             }
             else if (filled == 1)
             {
                 p.b = index;
+                p.nb = i;
                 p.UVb = uvIndex;
                 filled++;
             }
             else if (filled == 2)
             {
                 p.c = index;
+                p.nc = i;
                 p.UVc = uvIndex;
                 filled++;
                 vecPolygons.push_back(p);
@@ -231,18 +235,24 @@ void FBXGeometry::rebuild()
             else
             {
                 p.b = p.a;
+                p.nb = p.na;
                 p.UVb = p.UVa;
                 p.a = p.c;
+                p.na = p.nc;
                 p.UVa = p.UVc;
                 p.c = index;
+                p.nc = i;
                 p.UVc = uvIndex;
 
                 int sw = p.a;
+                int swn = p.na;
                 int UVsv = p.UVa;
 
                 p.a = p.b;
+                p.na = p.nb;
                 p.UVa = p.UVb;
                 p.b = sw;
+                p.nb = swn;
                 p.UVb = UVsv;
 
                 vecPolygons.push_back(p);
@@ -260,13 +270,17 @@ void FBXGeometry::rebuild()
             unsigned int indexB = vecPolygons.at(i).a;
             unsigned int indexC = vecPolygons.at(i).c;
 
+            unsigned int normalA = vecPolygons.at(i).nb;
+            unsigned int normalB = vecPolygons.at(i).na;
+            unsigned int normalC = vecPolygons.at(i).nc;
+
             unsigned int indexUVA = vecPolygons.at(i).UVb;
             unsigned int indexUVB = vecPolygons.at(i).UVa;
             unsigned int indexUVC = vecPolygons.at(i).UVc;
 
-            VertexDataUV vecOutVertexA = VertexDataUV(indexA, vertexes[indexA], uvs[indexUVA], normals[indexA]);
-            VertexDataUV vecOutVertexB = VertexDataUV(indexB, vertexes[indexB], uvs[indexUVB], normals[indexB]);
-            VertexDataUV vecOutVertexC = VertexDataUV(indexC, vertexes[indexC], uvs[indexUVC], normals[indexC]);
+            VertexDataUV vecOutVertexA = VertexDataUV(indexA, vertexes[indexA], uvs[indexUVA], normals[normalA]);
+            VertexDataUV vecOutVertexB = VertexDataUV(indexB, vertexes[indexB], uvs[indexUVB], normals[normalB]);
+            VertexDataUV vecOutVertexC = VertexDataUV(indexC, vertexes[indexC], uvs[indexUVC], normals[normalC]);
 
             PolygonTriPoints tri;
             tri.a = getIndex(vecOutVertexA, &vecOutVertexes);

@@ -28,10 +28,6 @@ void Component::onCreated()
 {
 }
 
-void Component::onRender(Camera *camera, Renderer *renderer)
-{
-}
-
 void Component::onRenderQueue(Renderer *renderer)
 {
 }

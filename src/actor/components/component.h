@@ -18,7 +18,6 @@ public:
     EXPORT Actor *getOwner();
 
     EXPORT virtual void onCreated();
-    EXPORT virtual void onRender(Camera *camera, Renderer *renderer);
     EXPORT virtual void onRenderQueue(Renderer *renderer);
     EXPORT virtual void onProcess(float delta);
 

@@ -29,8 +29,6 @@ APPMAIN
     auto crateTexture = new TextureFile("Concrete", "./data/crate.jpg");
     auto crateMaterial = new MaterialSimple(crateTexture);
 
-    auto testMaterial = new MaterialSimple(Color(0.2, 0.2, 0.2));
-
     // Meshes
     auto cubeMesh = Red11::getMeshBuilder()->createCube(0.1f);
 
@@ -41,7 +39,7 @@ APPMAIN
     auto manStraifRightFileData = new Data3DFile("./data/man_straif_right.fbx", false);
 
     auto scene = Red11::createScene();
-    scene->setAmbientLight(Color(1.0f, 1.0f, 1.0f));
+    scene->setAmbientLight(Color(0.2f, 0.2f, 0.2f));
 
     for (int iy = 0; iy < 5; iy++)
     {
@@ -81,7 +79,7 @@ APPMAIN
     // Light
     auto lightSun = scene->createActor<Actor>("Light");
     auto lightSunComponent = lightSun->createComponent<ComponentLight>();
-    lightSunComponent->setupDirectional(glm::normalize(Vector3(-1.0f, -1.0f, -1.0)), Color(0.8f, 0.8f, 0.8f));
+    lightSunComponent->setupDirectional(glm::normalize(Vector3(-1.0f, -1.0f, -1.0)), Color(5.8f, 5.8f, 5.8f));
 
     // Controls
     PlayerControl playerControl;

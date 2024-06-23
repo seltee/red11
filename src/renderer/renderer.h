@@ -36,11 +36,9 @@ public:
     virtual void queueLight(Light *light) = 0;
     virtual void renderQueue(Camera *camera) = 0;
     virtual void clearQueue() = 0;
-    virtual void renderMesh(Camera *camera, Mesh *mesh, Material *material, Matrix4 *model) = 0;
-    virtual void renderMeshSkinned(Camera *camera, Mesh *mesh, Material *material, Matrix4 *model, std::vector<BoneTransform> *bones) = 0;
+    virtual void renderMesh(Camera *camera, Vector3 *cameraPosition, Mesh *mesh, Matrix4 *model) = 0;
+    virtual void renderMeshSkinned(Camera *camera, Vector3 *cameraPosition, Mesh *mesh, Matrix4 *model, std::vector<BoneTransform> *bones) = 0;
     virtual void setAmbientLight(Color &ambientColor) = 0;
-    virtual void setLightningState(bool value) = 0;
-    virtual void setDepthBufferState(bool value) = 0;
     virtual void endRendering() = 0;
     virtual void present() = 0;
 

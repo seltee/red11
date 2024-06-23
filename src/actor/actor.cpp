@@ -92,17 +92,6 @@ void Actor::onProcess(float delta)
     }
 }
 
-void Actor::onRender(Camera *camera, Renderer *renderer)
-{
-    if (!components.empty())
-    {
-        for (auto &component : components)
-        {
-            component->onRender(camera, renderer);
-        }
-    }
-}
-
 void Actor::onRenderQueue(Renderer *renderer)
 {
     if (!components.empty())

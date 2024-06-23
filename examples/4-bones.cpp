@@ -23,33 +23,73 @@ APPMAIN
     auto renderer = Red11::createRenderer(window, RendererType::DirectX9);
 
     // Textures & Materials
-    auto crateTexture = new TextureFile("Crate", "./data/miner_defuse.png");
-    auto crateMaterial = new MaterialSimple(crateTexture);
+
+    auto monTexture = new TextureFile("MonsterDefuse", "./data/miner_defuse.png");
+    auto monMaterial = new MaterialSimple(monTexture);
+    monMaterial->setRoughness(0.25f);
+
+    auto concreteTexture = new TextureFile("Concrete", "./data/concrete_albedo.jpg");
+    auto sphereNormalTexture = new TextureFile("SphereNormal", "./data/spehere_normal.png");
+    auto concreteMaterial = new MaterialSimple(concreteTexture, sphereNormalTexture);
 
     // Meshes
-    auto boneTestFileData = new Data3DFile("./data/miner_anim_idle.fbx");
-    boneTestFileData->load();
+    auto minerIdleFileData = new Data3DFile("./data/miner_anim_idle.fbx");
+    minerIdleFileData->load();
+
+    auto minerDeathFileData = new Data3DFile("./data/miner_death.fbx");
+    minerDeathFileData->load();
+
+    auto minerShootingFileData = new Data3DFile("./data/miner_anim_shooting.fbx");
+    minerShootingFileData->load();
+
+    auto cubeMesh = Red11::getMeshBuilder()->createCube(0.1f);
 
     auto scene = Red11::createScene();
-    scene->setAmbientLight(Color(0.9f, 0.9f, 0.9f));
+    scene->setAmbientLight(Color(0.4f, 0.4f, 0.6f));
 
-    auto testBox = scene->createActor<Actor>("Box");
-    testBox->setPosition(Vector3(0, 0, -0.4));
-    auto testBoxAnimComponent = testBox->createComponentMeshGroup(boneTestFileData->getMeshObjectList());
-    testBoxAnimComponent->setMaterial(crateMaterial);
-    testBoxAnimComponent->setScale(0.0032f);
-    testBoxAnimComponent->setDebugBonesView(true);
-    auto trackBox = testBoxAnimComponent->createAnimationTrack(boneTestFileData->getAnimationsList()->at(0));
-    trackBox->loop(1.0f);
+    int rows = 6;
+    for (int i = 0; i < rows * rows; i++)
+    {
+        int ix = i % rows;
+        int iy = i / rows;
+
+        float xPos = (float)(rows / 2 - ix) * 0.5;
+        float yPos = (float)(iy) * -0.4 - 0.5;
+
+        auto anim = minerIdleFileData;
+        if ((ix % 3) == 2)
+            anim = minerShootingFileData;
+
+        auto testMon = scene->createActor<Actor>("Mon");
+        testMon->setPosition(Vector3(xPos, 0, yPos));
+        auto testMonAnimComponent = testMon->createComponentMeshGroup(anim->getMeshObjectList());
+        testMonAnimComponent->setMaterial(monMaterial);
+        testMonAnimComponent->setScale(0.0018f);
+        auto trackBox = testMonAnimComponent->createAnimationTrack(anim->getAnimationsList()->at(0));
+        trackBox->loop(0.6f);
+    }
+
+    for (int iy = 0; iy < 9; iy++)
+    {
+        for (int ix = 0; ix < 9; ix++)
+        {
+            auto floorCube = scene->createActor<Actor>("FloorCell");
+            auto floorCubeComponent = floorCube->createComponentMesh(cubeMesh);
+            floorCubeComponent->setMaterial(concreteMaterial);
+            floorCubeComponent->setPosition(Vector3((float)(ix - 4) * 0.8f, 0.0f, (float)(iy - 5) * 0.8f));
+            floorCubeComponent->setScale(Vector3(8.0f, 0.01f, 8.0f));
+        }
+    }
 
     auto lightSun = scene->createActor<Actor>("Light");
     auto lightSunComponent = lightSun->createComponent<ComponentLight>();
-    lightSunComponent->setupDirectional(glm::normalize(Vector3(-1.0f, -1.0f, -1.0)), Color(0.8f, 0.8f, 0.8f));
+    lightSunComponent->setupDirectional(glm::normalize(Vector3(-1.0f, -1.0f, -1.0)), Color(6.8f, 5.8f, 5.2f));
 
     Camera *camera = new Camera();
     camera->setupAsPerspective(WINDOW_WIDTH, WINDOW_HEIGHT);
 
     Entity cameraTransform;
+    cameraTransform.setPosition(0, 0.2, 0);
 
     CameraControl cameraControl;
     memset(&cameraControl, 0, sizeof(CameraControl));

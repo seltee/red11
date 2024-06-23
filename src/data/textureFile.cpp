@@ -16,7 +16,7 @@ unsigned char *TextureFile::getBufferData()
     {
         int c;
         data = stbi_load(filePath.c_str(), &width, &height, &c, 4);
-        printf("%s loaded - %i/%i - %i\n", filePath.c_str(), width, height, c);
+        // printf("%s loaded - %i/%i - %i\n", filePath.c_str(), width, height, c);
     }
     return data;
 }

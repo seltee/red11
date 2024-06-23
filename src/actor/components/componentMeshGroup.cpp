@@ -12,25 +12,6 @@ ComponentMeshGroup::~ComponentMeshGroup()
     destroyList();
 }
 
-void ComponentMeshGroup::onRender(Camera *camera, Renderer *renderer)
-{
-    for (auto &it : list)
-    {
-        if (it->bIsSkinned)
-        {
-            boneTransforms.clear();
-            for (auto &boneIt : bonesList)
-                boneTransforms.push_back(BoneTransform(boneIt->getModelMatrix(), boneIt->getNamePointer()));
-            renderer->renderMeshSkinned(camera, it->getMesh(), material, it->getModelMatrix(), &boneTransforms);
-        }
-        else
-        {
-            if (it->getMesh())
-                renderer->renderMesh(camera, it->getMesh(), material, it->getModelMatrix());
-        }
-    }
-}
-
 void ComponentMeshGroup::onRenderQueue(Renderer *renderer)
 {
     for (auto &it : list)

@@ -11,17 +11,24 @@ Mesh::Mesh(VertexDataType type, void *verticies, int vLength, PolygonTriPoints *
     index = lastIndex;
     lastIndex++;
 
+    Matrix3 mModelInverseTranspose;
+    if (transformation)
+        mModelInverseTranspose = glm::transpose(glm::inverse(*transformation));
+
     if (type == VertexDataType::PositionUV)
     {
         this->verticies.vertexPositionUV = new VertexDataUV[vLength];
         for (int i = 0; i < vLength; i++)
+        {
             if (transformation)
             {
                 this->verticies.vertexPositionUV[i] = ((VertexDataUV *)verticies)[i];
                 this->verticies.vertexPositionUV[i].position = Vector3(*transformation * Vector4(this->verticies.vertexPositionUV[i].position, 1.0f));
+                this->verticies.vertexPositionUV[i].normal = glm::normalize(mModelInverseTranspose * this->verticies.vertexPositionUV[i].normal);
             }
             else
                 this->verticies.vertexPositionUV[i] = ((VertexDataUV *)verticies)[i];
+        }
     }
     if (type == VertexDataType::PositionColor)
     {
@@ -31,6 +38,7 @@ Mesh::Mesh(VertexDataType type, void *verticies, int vLength, PolygonTriPoints *
             {
                 this->verticies.vertexPositionColor[i] = ((VertexDataColored *)verticies)[i];
                 this->verticies.vertexPositionColor[i].position = Vector3(*transformation * Vector4(this->verticies.vertexPositionColor[i].position, 1.0f));
+                this->verticies.vertexPositionColor[i].normal = glm::normalize(mModelInverseTranspose * this->verticies.vertexPositionUV[i].normal);
             }
             else
                 this->verticies.vertexPositionColor[i] = ((VertexDataColored *)verticies)[i];
@@ -40,6 +48,8 @@ Mesh::Mesh(VertexDataType type, void *verticies, int vLength, PolygonTriPoints *
     this->pLength = pLength;
     for (int i = 0; i < pLength; i++)
         this->polygons[i] = polygons[i];
+
+    rebuildTangents();
 }
 
 Mesh::~Mesh()
@@ -56,4 +66,67 @@ void Mesh::addDeform(Deform *deform)
 {
     deform->index = deforms.size();
     deforms.push_back(deform);
+}
+
+void Mesh::rebuildTangents()
+{
+    for (int i = 0; i < vLength; i++)
+    {
+        verticies.vertexPositionUV[i].tangent = Vector3(0.0f);
+        verticies.vertexPositionUV[i].bitangent = Vector3(0.0f);
+    }
+
+    Vector3 tangent, bitangent;
+    for (int i = 0; i < pLength; i++)
+    {
+        PolygonTriPoints p = polygons[i];
+        getTangentBitangent(verticies.vertexPositionUV[p.a], verticies.vertexPositionUV[p.b], verticies.vertexPositionUV[p.c], &tangent, &bitangent);
+        verticies.vertexPositionUV[p.a].tangent += tangent;
+        verticies.vertexPositionUV[p.b].tangent += tangent;
+        verticies.vertexPositionUV[p.c].tangent += tangent;
+        verticies.vertexPositionUV[p.a].bitangent += bitangent;
+        verticies.vertexPositionUV[p.b].bitangent += bitangent;
+        verticies.vertexPositionUV[p.c].bitangent += bitangent;
+    }
+
+    for (int i = 0; i < vLength; i++)
+    {
+        verticies.vertexPositionUV[i].tangent = glm::normalize(verticies.vertexPositionUV[i].tangent);
+        verticies.vertexPositionUV[i].bitangent = glm::normalize(verticies.vertexPositionUV[i].bitangent);
+
+        // Ensure right-handed coordinate system
+        if (glm::dot(glm::cross(verticies.vertexPositionUV[i].normal, verticies.vertexPositionUV[i].tangent), verticies.vertexPositionUV[i].bitangent) < 0.0f)
+        {
+            verticies.vertexPositionUV[i].tangent = -verticies.vertexPositionUV[i].tangent;
+        }
+    }
+}
+
+void Mesh::getTangentBitangent(VertexDataUV &v1, VertexDataUV &v2, VertexDataUV &v3, Vector3 *tangent, Vector3 *bitangent)
+{
+    // Edges of the triangle
+    Vector3 edge1 = v2.position - v1.position;
+    Vector3 edge2 = v3.position - v1.position;
+    Vector2 deltaUV1 = v2.uv - v1.uv;
+    Vector2 deltaUV2 = v3.uv - v1.uv;
+
+    // Calculate the tangent and bitangent
+    float f = deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y;
+    if (fabs(f) < 1e-6)
+    {
+        *tangent = Vector3(1.0f, 0.0f, 0.0f);
+        *bitangent = Vector3(0.0f, 1.0f, 0.0f);
+        return;
+    }
+    f = 1.0f / f;
+
+    *tangent = glm::normalize(Vector3(
+        f * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x),
+        f * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y),
+        f * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z)));
+
+    *bitangent = glm::normalize(Vector3(
+        f * (-deltaUV2.x * edge1.x + deltaUV1.x * edge2.x),
+        f * (-deltaUV2.x * edge1.y + deltaUV1.x * edge2.y),
+        f * (-deltaUV2.x * edge1.z + deltaUV1.x * edge2.z)));
 }

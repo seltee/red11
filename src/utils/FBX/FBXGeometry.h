@@ -19,6 +19,7 @@ struct PolygonUV
 struct PolygonTriPointsUV
 {
     unsigned int a, b, c;
+    unsigned int na, nb, nc;
     unsigned int UVa, UVb, UVc;
 };
 

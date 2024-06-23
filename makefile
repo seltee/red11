@@ -48,7 +48,7 @@ OBJ_FILES = ${OBJDIR}/red11.o \
 			${OBJDIR}/window.o ${OBJDIR}/windowsWindow.o \
 			${OBJDIR}/scene.o \
 			${OBJDIR}/renderer.o \
-			${OBJDIR}/directx9renderer.o ${OBJDIR}/directx9meshRenderData.o ${OBJDIR}/directx9textureRenderData.o  \
+			${OBJDIR}/directx9renderer.o ${OBJDIR}/directx9meshRenderData.o ${OBJDIR}/directx9textureRenderData.o ${OBJDIR}/directx9materialRenderData.o  \
 			${OBJDIR}/mesh.o ${OBJDIR}/meshObject.o ${OBJDIR}/entity.o ${OBJDIR}/light.o ${OBJDIR}/camera.o ${OBJDIR}/texture.o ${OBJDIR}/textureFile.o ${OBJDIR}/inputProvider.o \
 			${OBJDIR}/deform.o ${OBJDIR}/boneTransform.o ${OBJDIR}/animation.o ${OBJDIR}/animationTarget.o ${OBJDIR}/animator.o ${OBJDIR}/animationTrack.o \
 			${OBJDIR}/data3DFile.o \
@@ -88,6 +88,9 @@ ${OBJDIR}/directx9meshRenderData.o: ${SRCDIR}/renderer/directx9/directx9meshRend
 
 ${OBJDIR}/directx9textureRenderData.o: ${SRCDIR}/renderer/directx9/directx9textureRenderData.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/directx9textureRenderData.o ${SRCDIR}/renderer/directx9/directx9textureRenderData.cpp
+
+${OBJDIR}/directx9materialRenderData.o: ${SRCDIR}/renderer/directx9/directx9materialRenderData.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/directx9materialRenderData.o ${SRCDIR}/renderer/directx9/directx9materialRenderData.cpp
 
 ${OBJDIR}/mesh.o: ${SRCDIR}/data/mesh.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/mesh.o ${SRCDIR}/data/mesh.cpp

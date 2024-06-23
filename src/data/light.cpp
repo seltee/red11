@@ -21,7 +21,7 @@ Light::Light()
 Light::Light(Vector3 &directionalNormal, Color &directionalColor)
 {
     this->type = LightType::Directional;
-    this->normal = directionalNormal;
+    this->normal = glm::normalize(directionalNormal);
     this->attenuation = Attenuation();
     this->position = Vector3(0.0f, 0.0f, 0.0f);
     this->color = directionalColor;
@@ -54,7 +54,7 @@ Light::Light(Vector3 &spotPosition,
              Color &spotColor)
 {
     this->type = LightType::Spot;
-    this->normal = spotDirection;
+    this->normal = glm::normalize(spotDirection);
     this->attenuation = spotAttenuation;
     this->position = spotPosition;
     this->color = spotColor;
@@ -62,6 +62,13 @@ Light::Light(Vector3 &spotPosition,
     this->innerRadius = spotInnerRadius;
     this->range = spotRange;
     this->falloff = spotFalloff;
+}
+
+bool Light::isAffecting(Vector3 point, float radius)
+{
+    if (type == LightType::Directional)
+        return true;
+    return false;
 }
 
 Light Light::transform(Entity *entity)

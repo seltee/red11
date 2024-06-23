@@ -36,7 +36,6 @@ public:
     EXPORT ComponentMeshGroup();
     EXPORT ~ComponentMeshGroup();
 
-    EXPORT void onRender(Camera *camera, Renderer *renderer) override final;
     EXPORT void onRenderQueue(Renderer *renderer) override final;
     EXPORT void onProcess(float delta) override final;
 

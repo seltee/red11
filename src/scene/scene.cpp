@@ -22,14 +22,10 @@ void Scene::process(float delta)
 
 void Scene::render(Renderer *renderer, Camera *camera)
 {
-    renderer->setLightningState(true);
-    renderer->setDepthBufferState(true);
     renderer->setAmbientLight(ambientLight);
 
     for (auto &actor : actors)
-    {
         actor->onRenderQueue(renderer);
-    }
 
     renderer->renderQueue(camera);
     renderer->clearQueue();

@@ -17,6 +17,7 @@ class Camera
 public:
     inline Matrix4 *getProjectionMatrix() { return &projectionMatrix; }
     inline Matrix4 *getViewMatrix() { return &viewMatrix; }
+    inline Matrix4 *getWorldMatrix() { return &worldMatrix; }
     inline int getWidth() { return width; }
     inline int getHeight() { return height; }
 
@@ -26,7 +27,11 @@ public:
     EXPORT void recalcCullingPlanes();
     inline Vector4 *getCullingPlanes() { return cullingPlanes; }
 
-    inline void updateViewMatrix(Matrix4 *worldModelMatrix) { viewMatrix = glm::inverse(*worldModelMatrix); }
+    inline void updateViewMatrix(Matrix4 *worldModelMatrix)
+    {
+        this->worldMatrix = *worldModelMatrix;
+        this->viewMatrix = glm::inverse(*worldModelMatrix);
+    }
     EXPORT PointWithDirection screenToWorld(float x, float y, Matrix4 *worldModelMatrix);
 
     inline CameraType getType() { return type; }
@@ -35,6 +40,7 @@ protected:
     Vector4 cullingPlanes[6];
     Matrix4 projectionMatrix;
     Matrix4 viewMatrix;
+    Matrix4 worldMatrix;
     CameraType type = CameraType::None;
 
     int width = 0, height = 0;

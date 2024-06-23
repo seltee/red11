@@ -20,6 +20,8 @@ struct VertexDataUV
     Vector3 position;
     Vector2 uv;
     Vector3 normal;
+    Vector3 tangent;
+    Vector3 bitangent;
     int index;
 
     VertexDataUV()
@@ -28,6 +30,8 @@ struct VertexDataUV
         this->position = Vector3(0.0f);
         this->uv = Vector2(0.0f);
         this->normal = Vector3(0.0f);
+        this->tangent = Vector3(0.0f);
+        this->bitangent = Vector3(0.0f);
     }
 
     VertexDataUV(int index, Vector3 position, Vector2 uv, Vector3 normal)
@@ -36,6 +40,8 @@ struct VertexDataUV
         this->position = position;
         this->uv = uv;
         this->normal = normal;
+        this->tangent = Vector3(0.0f);
+        this->bitangent = Vector3(0.0f);
     }
 
     VertexDataUV(int index, float px, float py, float pz, float u, float v, float nx, float ny, float nz)
@@ -44,6 +50,8 @@ struct VertexDataUV
         this->position = Vector3(px, py, pz);
         this->uv = Vector2(u, v);
         this->normal = Vector3(nx, ny, nz);
+        this->tangent = Vector3(0.0f);
+        this->bitangent = Vector3(0.0f);
     }
 };
 
@@ -123,6 +131,9 @@ public:
     inline VertexDataType getType() { return type; }
 
 protected:
+    void rebuildTangents();
+    void getTangentBitangent(VertexDataUV &v1, VertexDataUV &v2, VertexDataUV &v3, Vector3 *tangent, Vector3 *bitangent);
+
     VertexDataType type = VertexDataType::PositionUV;
     VertexData verticies;
     int vLength = 0;

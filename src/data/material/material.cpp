@@ -9,4 +9,5 @@ Material::Material()
 
     index = lastIndex;
     lastIndex++;
+    updIndex = 0;
 }
