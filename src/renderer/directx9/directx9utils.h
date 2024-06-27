@@ -24,6 +24,8 @@ struct QueuedMeshRenderData
     std::vector<BoneTransform> *bones;
     Material *material;
     Matrix4 *model;
+    Vector3 centroid;
+    float distance;
 };
 
 struct QueuedLineRenderData
@@ -81,14 +83,19 @@ struct DX9LightShaderStruct
 struct DX9Material
 {
     float useAlbedoTexture;
+    float useAlphaTexture;
     float useNormalTexture;
     float useMetallicTexture;
-    float useRoughnessTexture;
 
+    float useRoughnessTexture;
     float useAOTexture;
     float useEmissionTexture;
+    float notUsed1;
+
     float roughnessValue;
     float metallicValue;
+    float alphaValue;
+    float alphaHalfQuite;
 };
 
 #endif

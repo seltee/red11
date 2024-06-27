@@ -5,6 +5,7 @@
 #include "red11.h"
 #include "window/windows/windowsWindow.h"
 #include <string>
+#include <algorithm>
 
 DirectX9Renderer::DirectX9Renderer(Window *window) : Renderer(window)
 {
@@ -36,24 +37,30 @@ void DirectX9Renderer::clearBuffer(Color color)
 
 void DirectX9Renderer::queueMesh(Mesh *mesh, Material *material, Matrix4 *model)
 {
+    material = material ? material : defaultMaterial;
     if (queueCurrentMesh < MAX_QUEUE_MESH_COUNT && mesh)
     {
         queueMeshes[queueCurrentMesh].mesh = mesh;
-        queueMeshes[queueCurrentMesh].material = material ? material : defaultMaterial;
+        queueMeshes[queueCurrentMesh].material = material;
         queueMeshes[queueCurrentMesh].model = model;
         queueMeshes[queueCurrentMesh].bones = nullptr;
+        if (material->isAlphaPhase())
+            queueMeshes[queueCurrentMesh].centroid = Vector3(mesh->getCentroid() * *model);
         queueCurrentMesh++;
     }
 }
 
 void DirectX9Renderer::queueMeshSkinned(Mesh *mesh, Material *material, Matrix4 *model, std::vector<BoneTransform> *bones)
 {
+    material = material ? material : defaultMaterial;
     if (queueCurrentMesh < MAX_QUEUE_MESH_COUNT && mesh)
     {
         queueMeshes[queueCurrentMesh].mesh = mesh;
-        queueMeshes[queueCurrentMesh].material = material ? material : defaultMaterial;
+        queueMeshes[queueCurrentMesh].material = material;
         queueMeshes[queueCurrentMesh].model = model;
         queueMeshes[queueCurrentMesh].bones = bones;
+        if (material->isAlphaPhase())
+            queueMeshes[queueCurrentMesh].centroid = Vector3(mesh->getCentroid() * *model);
         queueCurrentMesh++;
     }
 }
@@ -80,8 +87,10 @@ void DirectX9Renderer::queueLight(Light *light)
 
 void DirectX9Renderer::renderQueue(Camera *camera)
 {
-    renderQueueDepthBuffer(camera);
-    renderQueueDepthEqual(camera);
+    Vector3 camPosition = Vector3(*camera->getWorldMatrix() * Vector4(0.0f, 0.0f, 0.0f, 1.0f));
+    recalcDistanceInQueue(camPosition);
+    renderQueueDepthBuffer(camPosition, camera);
+    renderQueueDepthEqual(camPosition, camera);
 }
 
 void DirectX9Renderer::clearQueue()
@@ -224,6 +233,10 @@ void DirectX9Renderer::initD3D(HWND hWnd, bool bIsFullscreen, int width, int hei
         printf("Shader compilation failed\n");
     if (d3ddev->CreatePixelShader((const DWORD *)UVSimpleFragmentShader_pso, &pUVSimpleFragmentShader) != D3D_OK)
         printf("Shader compilation failed\n");
+    if (d3ddev->CreateVertexShader((const DWORD *)UVSimpleMaskVertexShader_vso, &pUVSimpleMaskVertexShader) != D3D_OK)
+        printf("Shader compilation failed\n");
+    if (d3ddev->CreatePixelShader((const DWORD *)UVSimpleMaskFragmentShader_pso, &pUVSimpleMaskFragmentShader) != D3D_OK)
+        printf("Shader compilation failed\n");
     if (d3ddev->CreateVertexShader((const DWORD *)UVVertexShader_vso, &pUVVertexShader) != D3D_OK)
         printf("Shader compilation failed\n");
     if (d3ddev->CreatePixelShader((const DWORD *)UVFragmentShader_pso, &pUVFragmentShader) != D3D_OK)
@@ -265,7 +278,7 @@ void DirectX9Renderer::initD3D(HWND hWnd, bool bIsFullscreen, int width, int hei
     defaultMaterial = new MaterialSimple(Color(0.6f, 0.6f, 0.6f));
 }
 
-void DirectX9Renderer::renderQueueDepthBuffer(Camera *camera)
+void DirectX9Renderer::renderQueueDepthBuffer(Vector3 &cameraPosition, Camera *camera)
 {
     // Enable z buffer
     d3ddev->SetRenderState(D3DRS_ZENABLE, true);
@@ -276,28 +289,42 @@ void DirectX9Renderer::renderQueueDepthBuffer(Camera *camera)
     // Set the depth comparison function (default is D3DCMP_LESSEQUAL)
     d3ddev->SetRenderState(D3DRS_ZFUNC, D3DCMP_LESSEQUAL);
 
+    d3ddev->SetRenderState(D3DRS_ALPHABLENDENABLE, false);
+
     Vector3 camPosition = Vector3(*camera->getWorldMatrix() * Vector4(0.0f, 0.0f, 0.0f, 1.0f));
 
     for (int i = 0; i < queueCurrentMesh; i++)
     {
-        if (queueMeshes[i].bones)
+        if (!queueMeshes[i].material->isAlphaPhase())
         {
-            d3ddev->SetVertexShader(pUVSkinnedVertexShader);
-            d3ddev->SetPixelShader(pUVSkinnedFragmentShader);
+            if (queueMeshes[i].bones)
+            {
+                d3ddev->SetVertexShader(pUVSkinnedVertexShader);
+                d3ddev->SetPixelShader(pUVSkinnedFragmentShader);
 
-            renderMeshSkinned(camera, &camPosition, queueMeshes[i].mesh, queueMeshes[i].model, queueMeshes[i].bones);
-        }
-        else
-        {
-            d3ddev->SetVertexShader(pUVSimpleVertexShader);
-            d3ddev->SetPixelShader(pUVSimpleFragmentShader);
+                renderMeshSkinned(camera, &camPosition, queueMeshes[i].mesh, queueMeshes[i].model, queueMeshes[i].bones);
+            }
+            else
+            {
+                if (queueMeshes[i].material->getDisplay() == MaterialDisplay::SolidMask)
+                {
+                    setupBasicMaterial(queueMeshes[i].material);
+                    d3ddev->SetVertexShader(pUVSimpleMaskVertexShader);
+                    d3ddev->SetPixelShader(pUVSimpleMaskFragmentShader);
+                }
+                else
+                {
+                    d3ddev->SetVertexShader(pUVSimpleVertexShader);
+                    d3ddev->SetPixelShader(pUVSimpleFragmentShader);
+                }
 
-            renderMesh(camera, &camPosition, queueMeshes[i].mesh, queueMeshes[i].model);
+                renderMesh(camera, &camPosition, queueMeshes[i].mesh, queueMeshes[i].model);
+            }
         }
     }
 }
 
-void DirectX9Renderer::renderQueueDepthEqual(Camera *camera)
+void DirectX9Renderer::renderQueueDepthEqual(Vector3 &cameraPosition, Camera *camera)
 {
     // Enable z buffer
     d3ddev->SetRenderState(D3DRS_ZENABLE, true);
@@ -309,47 +336,29 @@ void DirectX9Renderer::renderQueueDepthEqual(Camera *camera)
     d3ddev->SetRenderState(D3DRS_ZFUNC, D3DCMP_EQUAL);
 
     // Ambient Color is shared
-    d3ddev->SetPixelShaderConstantF(14, ambientColor.getAsFloatArray(), 1);
+    d3ddev->SetPixelShaderConstantF(18, ambientColor.getAsFloatArray(), 1);
 
     // Camera position is shared among all render targets
-    Vector3 camPosition = Vector3(*camera->getWorldMatrix() * Vector4(0.0f, 0.0f, 0.0f, 1.0f));
-    d3ddev->SetPixelShaderConstantF(17, (const float *)value_ptr(camPosition), 1);
+    d3ddev->SetPixelShaderConstantF(17, (const float *)value_ptr(cameraPosition), 1);
 
+    std::vector<QueuedMeshRenderData *> alphaRenderMeshes;
+
+    // === Render Solid Meshes ===
     for (int i = 0; i < queueCurrentMesh; i++)
     {
-        setupLights(*queueMeshes[i].model * Vector4(0.0f, 0.0f, 0.0f, 1.0f), 0.1f);
-        setupMaterial(queueMeshes[i].material);
-
-        if (queueMeshes[i].bones)
-        {
-            if (queueMeshes[i].material->isUsingNormalMap())
-            {
-                d3ddev->SetVertexShader(pUVSkinnedNormalVertexShader);
-                d3ddev->SetPixelShader(pUVSkinnedNormalFragmentShader);
-            }
-            else
-            {
-                d3ddev->SetVertexShader(pUVSkinnedVertexShader);
-                d3ddev->SetPixelShader(pUVSkinnedFragmentShader);
-            }
-
-            renderMeshSkinned(camera, &camPosition, queueMeshes[i].mesh, queueMeshes[i].model, queueMeshes[i].bones);
-        }
+        if (queueMeshes[i].material->isAlphaPhase())
+            alphaRenderMeshes.push_back(&queueMeshes[i]);
         else
-        {
-            if (queueMeshes[i].material->isUsingNormalMap())
-            {
-                // normals require some additional caluclations, done for performance
-                d3ddev->SetVertexShader(pUVNormalVertexShader);
-                d3ddev->SetPixelShader(pUVNormalFragmentShader);
-            }
-            else
-            {
-                d3ddev->SetVertexShader(pUVVertexShader);
-                d3ddev->SetPixelShader(pUVFragmentShader);
-            }
-            renderMesh(camera, &camPosition, queueMeshes[i].mesh, queueMeshes[i].model);
-        }
+            renderMeshData(camera, cameraPosition, &queueMeshes[i]);
+    }
+
+    // === Sort and Render Alpha Meshes ===
+    d3ddev->SetRenderState(D3DRS_ZFUNC, D3DCMP_LESSEQUAL);
+    std::sort(alphaRenderMeshes.begin(), alphaRenderMeshes.end(), [](const QueuedMeshRenderData *a, const QueuedMeshRenderData *b)
+              { return a->distance > b->distance; });
+    for (auto &renderMesh : alphaRenderMeshes)
+    {
+        renderMeshData(camera, cameraPosition, renderMesh);
     }
 
     if (queueCurrentLine > 0)
@@ -547,6 +556,7 @@ void DirectX9Renderer::setupMaterial(Material *material)
     MaterialSimple *materialSimple = reinterpret_cast<MaterialSimple *>(material);
 
     Directx9TextureRenderData *albedoTextureData = materialSimple->getAlbedoTexture() ? getTextureRenderData(materialSimple->getAlbedoTexture()) : nullptr;
+    Directx9TextureRenderData *alphaTextureData = materialSimple->getAlphaTexture() ? getTextureRenderData(materialSimple->getAlphaTexture()) : nullptr;
     Directx9TextureRenderData *emissionTextureData = materialSimple->getEmissionTexture() ? getTextureRenderData(materialSimple->getEmissionTexture()) : nullptr;
     Directx9TextureRenderData *normalTextureData = materialSimple->getNormalTexture() ? getTextureRenderData(materialSimple->getNormalTexture()) : nullptr;
     Directx9TextureRenderData *metallicTextureData = materialSimple->getMetallicTexture() ? getTextureRenderData(materialSimple->getMetallicTexture()) : nullptr;
@@ -555,7 +565,7 @@ void DirectX9Renderer::setupMaterial(Material *material)
 
     // === Setup material data ===
     Directx9MaterialRenderData *materialRenderData = getMaterialRenderData(material);
-    d3ddev->SetPixelShaderConstantF(12, (const float *)materialRenderData->getData(), 2);
+    d3ddev->SetPixelShaderConstantF(12, (const float *)materialRenderData->getData(), 3);
 
     // === Setup colors ===
     // Albedo Color
@@ -567,14 +577,97 @@ void DirectX9Renderer::setupMaterial(Material *material)
     // === Setup textures ===
     if (albedoTextureData)
         d3ddev->SetTexture(0, albedoTextureData->d3dtexture);
+    if (alphaTextureData)
+        d3ddev->SetTexture(1, alphaTextureData->d3dtexture);
     if (emissionTextureData)
-        d3ddev->SetTexture(1, emissionTextureData->d3dtexture);
+        d3ddev->SetTexture(2, emissionTextureData->d3dtexture);
     if (normalTextureData)
-        d3ddev->SetTexture(2, normalTextureData->d3dtexture);
+        d3ddev->SetTexture(3, normalTextureData->d3dtexture);
     if (metallicTextureData)
-        d3ddev->SetTexture(3, metallicTextureData->d3dtexture);
+        d3ddev->SetTexture(4, metallicTextureData->d3dtexture);
     if (roughnessTextureData)
-        d3ddev->SetTexture(4, roughnessTextureData->d3dtexture);
+        d3ddev->SetTexture(5, roughnessTextureData->d3dtexture);
     if (aoTextureData)
-        d3ddev->SetTexture(5, aoTextureData->d3dtexture);
+        d3ddev->SetTexture(6, aoTextureData->d3dtexture);
+
+    switch (materialSimple->getDisplay())
+    {
+    case MaterialDisplay::Alpha:
+        d3ddev->SetRenderState(D3DRS_ALPHABLENDENABLE, true);
+        d3ddev->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
+        d3ddev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+        break;
+
+    default:
+        d3ddev->SetRenderState(D3DRS_ALPHABLENDENABLE, false);
+        break;
+    }
+}
+
+void DirectX9Renderer::setupBasicMaterial(Material *material)
+{
+    MaterialSimple *materialSimple = reinterpret_cast<MaterialSimple *>(material);
+
+    Directx9TextureRenderData *albedoTextureData = materialSimple->getAlbedoTexture() ? getTextureRenderData(materialSimple->getAlbedoTexture()) : nullptr;
+    Directx9TextureRenderData *alphaTextureData = materialSimple->getAlphaTexture() ? getTextureRenderData(materialSimple->getAlphaTexture()) : nullptr;
+
+    // === Setup material data ===
+    Directx9MaterialRenderData *materialRenderData = getMaterialRenderData(material);
+    d3ddev->SetPixelShaderConstantF(12, (const float *)materialRenderData->getData(), 3);
+
+    // === Setup colors ===
+    // Albedo Color
+    d3ddev->SetPixelShaderConstantF(15, materialSimple->getAlbedoColor().getAsFloatArray(), 1);
+
+    // === Setup textures ===
+    if (albedoTextureData)
+        d3ddev->SetTexture(0, albedoTextureData->d3dtexture);
+    if (alphaTextureData)
+        d3ddev->SetTexture(1, alphaTextureData->d3dtexture);
+}
+
+void DirectX9Renderer::renderMeshData(Camera *camera, Vector3 &cameraPosition, QueuedMeshRenderData *mesh)
+{
+    setupLights(*mesh->model * Vector4(0.0f, 0.0f, 0.0f, 1.0f), 0.1f);
+    setupMaterial(mesh->material);
+
+    if (mesh->bones)
+    {
+        if (mesh->material->isUsingNormalMap())
+        {
+            d3ddev->SetVertexShader(pUVSkinnedNormalVertexShader);
+            d3ddev->SetPixelShader(pUVSkinnedNormalFragmentShader);
+        }
+        else
+        {
+            d3ddev->SetVertexShader(pUVSkinnedVertexShader);
+            d3ddev->SetPixelShader(pUVSkinnedFragmentShader);
+        }
+
+        renderMeshSkinned(camera, &cameraPosition, mesh->mesh, mesh->model, mesh->bones);
+    }
+    else
+    {
+        if (mesh->material->isUsingNormalMap())
+        {
+            // normals require some additional caluclations, done for performance
+            d3ddev->SetVertexShader(pUVNormalVertexShader);
+            d3ddev->SetPixelShader(pUVNormalFragmentShader);
+        }
+        else
+        {
+            d3ddev->SetVertexShader(pUVVertexShader);
+            d3ddev->SetPixelShader(pUVFragmentShader);
+        }
+        renderMesh(camera, &cameraPosition, mesh->mesh, mesh->model);
+    }
+}
+
+void DirectX9Renderer::recalcDistanceInQueue(Vector3 &cameraPosition)
+{
+    for (int i = 0; i < queueCurrentMesh; i++)
+    {
+        if (queueMeshes[i].material->isAlphaPhase())
+            queueMeshes[i].distance = glm::distance2(cameraPosition, queueMeshes[i].centroid);
+    }
 }

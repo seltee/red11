@@ -1,7 +1,8 @@
 sampler2D albedoTexSampler : register(s0);
-sampler2D emissionTexSampler : register(s1);
-sampler2D normalTexSampler : register(s2);
-sampler2D metallicTexSampler : register(s3);
+sampler2D alphaTexSampler : register(s1);
+sampler2D emissionTexSampler : register(s2);
+sampler2D normalTexSampler : register(s3);
+sampler2D metallicTexSampler : register(s4);
 sampler2D roughnessTexSampler : register(s5);
 sampler2D aoTexSampler : register(s6);
 
@@ -23,27 +24,32 @@ struct Light
     float4 color;    // r, g, b
 };
 
-// useAlbedoTexture, useNormalTexture, useMetallicTexture, useRoughnessTexture;
+// useAlbedoTexture, useAlphaTexture, useNormalTexture, useMetallicTexture;
 float4 MaterialData1 : register(c12);
-// useAOTexture, useEmissionTexture, roughnessValue, metallicValue;
+// useRoughnessTexture, useAOTexture, useEmissionTexture;
 float4 MaterialData2 : register(c13);
+// roughnessValue, metallicValue, alphaValue, discardLowAlpha;
+float4 MaterialData3 : register(c14);
 
-float4 AmbientLightColor : register(c14);
 float4 AlbedoColor : register(c15);
 float4 EmissionColor : register(c16);
 float4 CameraPosition : register(c17);
+float4 AmbientLightColor : register(c18);
 
 Light Lights[8] : register(c20);
 
 float4 main(VS_Output pin) : SV_TARGET
 {
     // Simplified material properties
-    float3 albedo = MaterialData1[0] == 1.0f ? tex2D(albedoTexSampler, pin.texCoord).xyz * (float3)AlbedoColor : (float3)AlbedoColor;
-    float3 normalMapSample = MaterialData1[1] == 1.0f ? tex2D(normalTexSampler, pin.texCoord).xyz * 2.0 - 1.0 : float3(0.0f, 1.0f, 0.0);
-    float3 emission = MaterialData2[1] == 1.0f ? tex2D(emissionTexSampler, pin.texCoord).xyz * (float3)EmissionColor : (float3)EmissionColor;
-    float metallic = MaterialData1[2] == 1.0f ? tex2D(metallicTexSampler, pin.texCoord).r * MaterialData2[3] : MaterialData2[3];
-    float roughness = max(MaterialData1[3] == 1.0f ? tex2D(roughnessTexSampler, pin.texCoord).r * MaterialData2[2] : MaterialData2[2], 0.0001);
-    float ao = MaterialData2[0] ? tex2D(aoTexSampler, pin.texCoord).r : 1.0;
+    float alpha = MaterialData1[1] == 1.0f ? (float3)tex2D(alphaTexSampler, pin.texCoord).a * MaterialData3[2] : MaterialData3[2];
+    if (MaterialData3[3] == 1.0f && alpha < 0.5f)
+        discard;
+    float3 albedo = MaterialData1[0] == 1.0f ? (float3)tex2D(albedoTexSampler, pin.texCoord) * (float3)AlbedoColor : (float3)AlbedoColor;
+    float3 normalMapSample = MaterialData1[2] == 1.0f ? tex2D(normalTexSampler, pin.texCoord).xyz * 2.0 - 1.0 : float3(0.0f, 0.0f, 1.0);
+    float3 emission = MaterialData2[2] == 1.0f ? (float3)tex2D(emissionTexSampler, pin.texCoord) * (float3)EmissionColor : (float3)EmissionColor;
+    float metallic = MaterialData1[3] == 1.0f ? tex2D(metallicTexSampler, pin.texCoord).r * MaterialData3[1] : MaterialData3[1];
+    float roughness = max(MaterialData2[0] == 1.0f ? tex2D(roughnessTexSampler, pin.texCoord).r * MaterialData3[0] : MaterialData3[0], 0.0001);
+    float ao = MaterialData2[1] ? tex2D(aoTexSampler, pin.texCoord).r : 1.0;
 
     normalMapSample.xy = -normalMapSample.xy;
 

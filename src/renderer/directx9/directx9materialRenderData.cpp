@@ -21,12 +21,17 @@ void Directx9MaterialRenderData::rebuildData()
     lastUpdIndex = this->material->getUpdateIndex();
 
     data.useAlbedoTexture = materialSimple->getAlbedoTexture() ? 1.0f : 0.0f;
+    data.useAlphaTexture = materialSimple->getAlphaTexture() ? 1.0f : 0.0f;
     data.useNormalTexture = materialSimple->getNormalTexture() ? 1.0f : 0.0f;
     data.useMetallicTexture = materialSimple->getMetallicTexture() ? 1.0f : 0.0f;
+
     data.useRoughnessTexture = materialSimple->getRoughnessTexture() ? 1.0f : 0.0f;
     data.useAOTexture = materialSimple->getAOTexture() ? 1.0f : 0.0f;
     data.useEmissionTexture = materialSimple->getEmissionTexture() ? 1.0f : 0.0f;
+    data.notUsed1 = 0.0f;
 
     data.roughnessValue = materialSimple->getRoughness();
     data.metallicValue = materialSimple->getMetallic();
+    data.alphaValue = materialSimple->getAlpha();
+    data.alphaHalfQuite = materialSimple->getDisplay() == MaterialDisplay::SolidMask ? 1.0f : 0.0f;
 }

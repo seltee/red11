@@ -29,6 +29,10 @@ APPMAIN
     crateMaterial->setRoughness(0.7f);
     crateMaterial->setMetallic(0.2f);
 
+    auto crateAlphaMaterial = new MaterialSimple(MaterialDisplay::Alpha, 0.5f, crateTexture);
+    crateAlphaMaterial->setRoughness(0.7f);
+    crateAlphaMaterial->setMetallic(0.2f);
+
     auto mushroomTexture = new TextureFile("Mushroom", "./data/mushroom_albedo.jpg");
     auto mushroomMaterial = new MaterialSimple(mushroomTexture);
     mushroomMaterial->setRoughness(0.5f);
@@ -41,6 +45,10 @@ APPMAIN
     test2Material->setAlbedoColor(Color(0.5f, 0.5f, 0.5f));
     test2Material->setRoughness(0.8f);
     test2Material->setMetallic(0.1f);
+
+    auto plateTexture = new TextureFile("Plate", "./data/plate.png");
+    auto test3Material = new MaterialSimple(MaterialDisplay::SolidMask, 1.0f, plateTexture);
+    test3Material->setRoughness(0.01f);
 
     // Meshes
     auto cubeMesh = Red11::getMeshBuilder()->createCube(0.1f);
@@ -68,12 +76,12 @@ APPMAIN
 
     auto cube2 = scene->createActor<Actor>("Cube 2");
     cubeComponent = cube2->createComponentMesh(cubeMesh);
-    cubeComponent->setMaterial(crateMaterial);
+    cubeComponent->setMaterial(crateAlphaMaterial);
     cube2->setPosition(Vector3(0.1f, 0.0f, -0.6f));
 
     auto cube3 = scene->createActor<Actor>("Cube 3");
     cubeComponent = cube3->createComponentMesh(cubeMesh);
-    cubeComponent->setMaterial(crateMaterial);
+    cubeComponent->setMaterial(test3Material);
     cube3->setPosition(Vector3(-0.05f, 0.1f, -0.65f));
 
     if (mushroomMesh)

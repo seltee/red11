@@ -1,5 +1,7 @@
 fxc.exe .\UVSimpleVertexShader.hlsl /Fo /Tvs_3_0
 fxc.exe .\UVSimpleFragmentShader.hlsl /Fo /Tps_3_0
+fxc.exe .\UVSimpleMaskVertexShader.hlsl /Fo /Tvs_3_0
+fxc.exe .\UVSimpleMaskFragmentShader.hlsl /Fo /Tps_3_0
 fxc.exe .\UVVertexShader.hlsl /Fo /Tvs_3_0
 fxc.exe .\UVFragmentShader.hlsl /Fo /Tps_3_0
 fxc.exe .\UVNormalVertexShader.hlsl /Fo /Tvs_3_0
@@ -10,6 +12,8 @@ fxc.exe .\UVSkinnedNormalVertexShader.hlsl /Fo /Tvs_3_0
 fxc.exe .\UVSkinnedNormalFragmentShader.hlsl /Fo /Tps_3_0
 bin2header.exe .\UVSimpleVertexShader.vso
 bin2header.exe .\UVSimpleFragmentShader.pso
+bin2header.exe .\UVSimpleMaskVertexShader.vso
+bin2header.exe .\UVSimpleMaskFragmentShader.pso
 bin2header.exe .\UVVertexShader.vso
 bin2header.exe .\UVFragmentShader.pso
 bin2header.exe .\UVNormalVertexShader.vso

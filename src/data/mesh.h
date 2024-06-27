@@ -130,6 +130,8 @@ public:
     inline std::vector<Deform *> *getDeforms() { return &deforms; }
     inline VertexDataType getType() { return type; }
 
+    inline Vector4 getCentroid() { return centroid; }
+
 protected:
     void rebuildTangents();
     void getTangentBitangent(VertexDataUV &v1, VertexDataUV &v2, VertexDataUV &v3, Vector3 *tangent, Vector3 *bitangent);
@@ -139,6 +141,7 @@ protected:
     int vLength = 0;
     PolygonTriPoints *polygons = nullptr;
     int pLength = 0;
+    Vector4 centroid;
 
     unsigned int index;
 

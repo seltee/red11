@@ -12,6 +12,8 @@
 #include "renderer/renderer.h"
 #include "shaders/UVSimpleFragmentShader.pso.h"
 #include "shaders/UVSimpleVertexShader.vso.h"
+#include "shaders/UVSimpleMaskFragmentShader.pso.h"
+#include "shaders/UVSimpleMaskVertexShader.vso.h"
 #include "shaders/UVFragmentShader.pso.h"
 #include "shaders/UVVertexShader.vso.h"
 #include "shaders/UVNormalFragmentShader.pso.h"
@@ -60,8 +62,8 @@ public:
 
 protected:
     void initD3D(HWND hWnd, bool bIsFullscreen, int width, int height); // sets up and initializes Direct3D
-    void renderQueueDepthBuffer(Camera *camera);
-    void renderQueueDepthEqual(Camera *camera);
+    void renderQueueDepthBuffer(Vector3 &cameraPosition, Camera *camera);
+    void renderQueueDepthEqual(Vector3 &cameraPosition, Camera *camera);
     void cleanD3D(void);
 
     Directx9MeshRenderData *getMeshRenderData(Mesh *mesh);
@@ -69,7 +71,13 @@ protected:
     Directx9TextureRenderData *getTextureRenderData(Texture *texture);
 
     void setupLights(Vector3 objectPosition, float objectRadius);
+    // Full material render
     void setupMaterial(Material *material);
+    // Enough to render masks
+    void setupBasicMaterial(Material *material);
+    void renderMeshData(Camera *camera, Vector3 &cameraPosition, QueuedMeshRenderData *mesh);
+
+    void recalcDistanceInQueue(Vector3 &cameraPosition);
 
     Color ambientColor = Color(1.0f, 1.0f, 1.0f);
 
@@ -96,6 +104,10 @@ protected:
     IDirect3DVertexShader9 *pUVSimpleVertexShader = nullptr;
     IDirect3DPixelShader9 *pUVSimpleFragmentShader = nullptr;
 
+    // To render depth into depth buffer without color but with mask of discarded alpha
+    IDirect3DVertexShader9 *pUVSimpleMaskVertexShader = nullptr;
+    IDirect3DPixelShader9 *pUVSimpleMaskFragmentShader = nullptr;
+
     // Default fast shader with not normal maps
     IDirect3DVertexShader9 *pUVVertexShader = nullptr;
     IDirect3DPixelShader9 *pUVFragmentShader = nullptr;
@@ -107,11 +119,10 @@ protected:
     // Default fast shader with bones but no normal maps
     IDirect3DVertexShader9 *pUVSkinnedVertexShader = nullptr;
     IDirect3DPixelShader9 *pUVSkinnedFragmentShader = nullptr;
-    
+
     // Default fast shader with bones but no normal maps
     IDirect3DVertexShader9 *pUVSkinnedNormalVertexShader = nullptr;
     IDirect3DPixelShader9 *pUVSkinnedNormalFragmentShader = nullptr;
-
 
     LPDIRECT3DVERTEXDECLARATION9 pVertexDeclNormalUV = nullptr;
     LPDIRECT3DVERTEXDECLARATION9 pVertexDeclNormalUVSkinned = nullptr;

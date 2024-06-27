@@ -15,7 +15,8 @@ public:
         Color albedoColor,
         Color emissionColor = Color(0.0f, 0.0f, 0.0f),
         float metallic = 0.0f,
-        float roughness = 0.5f);
+        float roughness = 0.5f,
+        float alpha = 1.0f);
 
     EXPORT MaterialSimple(
         Texture *albedoTexture,
@@ -25,20 +26,43 @@ public:
         Texture *roughnessTexture = nullptr,
         Texture *AOTexture = nullptr);
 
+    EXPORT MaterialSimple(
+        MaterialDisplay display,
+        Color albedoColor,
+        Color emissionColor = Color(0.0f, 0.0f, 0.0f),
+        float alpha = 1.0f,
+        float metallic = 0.0f,
+        float roughness = 0.5f);
+
+    EXPORT MaterialSimple(
+        MaterialDisplay display,
+        float alpha = 1.0f,
+        Texture *albedoTexture = nullptr,
+        Texture *normalTexture = nullptr,
+        Texture *emissionTexture = nullptr,
+        Texture *metallicTexture = nullptr,
+        Texture *roughnessTexture = nullptr,
+        Texture *AOTexture = nullptr);
+
     EXPORT MaterialType getType() override;
+    EXPORT MaterialDisplay getDisplay() override;
     EXPORT bool isUsingNormalMap() override;
+    EXPORT bool isAlphaPhase() override;
 
     inline Color &getAlbedoColor() { return albedoColor; }
     inline Color &getEmissionColor() { return emissionColor; }
     inline float getMetallic() { return metallic; }
     inline float getRoughness() { return roughness; }
+    inline float getAlpha() { return alpha; }
 
     EXPORT void setAlbedoColor(Color albedoColor);
     EXPORT void setEmissionColor(Color emissionColor);
     EXPORT void setMetallic(float metallic);
     EXPORT void setRoughness(float roughness);
+    EXPORT void setAlpha(float alpha);
 
     inline Texture *getAlbedoTexture() { return albedoTexture; }
+    inline Texture *getAlphaTexture() { return alphaTexture; }
     inline Texture *getEmissionTexture() { return emissionTexture; }
     inline Texture *getNormalTexture() { return normalTexture; }
     inline Texture *getMetallicTexture() { return metallicTexture; }
@@ -46,6 +70,7 @@ public:
     inline Texture *getAOTexture() { return AOTexture; }
 
     EXPORT void setAlbedoTexture(Texture *texture);
+    EXPORT void setAlphaTexture(Texture *texture);
     EXPORT void setEmissionTexture(Texture *texture);
     EXPORT void setNormalTexture(Texture *texture);
     EXPORT void setMetallicTexture(Texture *texture);
@@ -57,11 +82,15 @@ protected:
     Color emissionColor = Color(0.0f, 0.0f, 0.0f);
     float metallic = 0.0f;
     float roughness = 0.5f;
+    float alpha = 1.0f;
 
     Texture *albedoTexture = nullptr;
+    Texture *alphaTexture = nullptr;
     Texture *emissionTexture = nullptr;
     Texture *normalTexture = nullptr;
     Texture *metallicTexture = nullptr;
     Texture *roughnessTexture = nullptr;
     Texture *AOTexture = nullptr;
+
+    MaterialDisplay display = MaterialDisplay::Solid;
 };

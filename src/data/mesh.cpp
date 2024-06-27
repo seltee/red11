@@ -3,6 +3,8 @@
 
 #include "mesh.h"
 
+#define FLOAT_PREC_DIV_CONST 0.00001f
+
 Mesh::Mesh(VertexDataType type, void *verticies, int vLength, PolygonTriPoints *polygons, int pLength, Matrix4 *transformation)
 {
     this->type = type;
@@ -14,6 +16,8 @@ Mesh::Mesh(VertexDataType type, void *verticies, int vLength, PolygonTriPoints *
     Matrix3 mModelInverseTranspose;
     if (transformation)
         mModelInverseTranspose = glm::transpose(glm::inverse(*transformation));
+
+    Vector3 centroidCalc = Vector3(0.0f);
 
     if (type == VertexDataType::PositionUV)
     {
@@ -28,12 +32,14 @@ Mesh::Mesh(VertexDataType type, void *verticies, int vLength, PolygonTriPoints *
             }
             else
                 this->verticies.vertexPositionUV[i] = ((VertexDataUV *)verticies)[i];
+            centroidCalc += this->verticies.vertexPositionUV[i].position * FLOAT_PREC_DIV_CONST;
         }
     }
     if (type == VertexDataType::PositionColor)
     {
         this->verticies.vertexPositionColor = new VertexDataColored[vLength];
         for (int i = 0; i < vLength; i++)
+        {
             if (transformation)
             {
                 this->verticies.vertexPositionColor[i] = ((VertexDataColored *)verticies)[i];
@@ -42,7 +48,13 @@ Mesh::Mesh(VertexDataType type, void *verticies, int vLength, PolygonTriPoints *
             }
             else
                 this->verticies.vertexPositionColor[i] = ((VertexDataColored *)verticies)[i];
+            centroidCalc += this->verticies.vertexPositionUV[i].position * FLOAT_PREC_DIV_CONST;
+        }
     }
+
+    centroidCalc /= (float)vLength;
+    centroidCalc /= FLOAT_PREC_DIV_CONST;
+    centroid = Vector4(centroidCalc, 1.0f);
 
     this->polygons = new PolygonTriPoints[pLength];
     this->pLength = pLength;

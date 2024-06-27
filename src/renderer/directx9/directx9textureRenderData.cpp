@@ -5,7 +5,7 @@
 
 Directx9TextureRenderData::Directx9TextureRenderData(LPDIRECT3DDEVICE9 d3ddev, Texture *texture)
 {
-    HRESULT res = d3ddev->CreateTexture(texture->getWidth(), texture->getHeight(), 0, 0, D3DFORMAT::D3DFMT_X8R8G8B8, D3DPOOL::D3DPOOL_MANAGED, &d3dtexture, nullptr);
+    HRESULT res = d3ddev->CreateTexture(texture->getWidth(), texture->getHeight(), 0, 0, D3DFORMAT::D3DFMT_A8R8G8B8, D3DPOOL::D3DPOOL_MANAGED, &d3dtexture, nullptr);
 
     if (res != D3D_OK)
     {

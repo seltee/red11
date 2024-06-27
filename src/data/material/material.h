@@ -13,12 +13,21 @@ enum class MaterialType
     Complex
 };
 
+enum class MaterialDisplay
+{
+    Solid,
+    SolidMask,
+    Alpha
+};
+
 class Material
 {
 public:
     EXPORT Material();
     virtual MaterialType getType() = 0;
+    virtual MaterialDisplay getDisplay() = 0;
     virtual bool isUsingNormalMap() = 0;
+    virtual bool isAlphaPhase() = 0;
 
     inline unsigned int getIndex() { return index; }
     inline unsigned int getUpdateIndex() { return updIndex; }
