@@ -5,7 +5,7 @@
 #include "utils/glm/gtc/type_ptr.hpp"
 #include "utils/glm/gtc/matrix_access.inl"
 
-void Camera::setupAsOrthographic(int width, int height, float nearDistance, float farDistance)
+void Camera::setupAsOrthographic(float width, float height, float nearDistance, float farDistance)
 {
     type = CameraType::Orthographic;
     this->width = width;
@@ -13,18 +13,18 @@ void Camera::setupAsOrthographic(int width, int height, float nearDistance, floa
     this->nearDistance = nearDistance;
     this->farDistance = farDistance;
 
-    orthoRight = (float)width / 2.0f;
+    orthoRight = width / 2.0f;
     orthoLeft = -orthoRight;
-    orthoBottom = -(float)height / 2.0f;
+    orthoBottom = -height / 2.0f;
     orthoTop = -orthoBottom;
 
-    projectionMatrix = glm::ortho(orthoLeft, orthoRight, orthoBottom, orthoBottom, nearDistance, farDistance);
+    projectionMatrix = glm::ortho(orthoLeft, orthoRight, orthoBottom, orthoTop, nearDistance, farDistance);
     viewMatrix = Matrix4(1.0f);
 
     recalcCullingPlanes();
 }
 
-void Camera::setupAsPerspective(int width, int height, float nearDistance, float farDistance, float fov)
+void Camera::setupAsPerspective(float width, float height, float nearDistance, float farDistance, float fov)
 {
     type = CameraType::Perspective;
     this->width = width;

@@ -9,6 +9,7 @@ Light::Light()
 {
     this->type = LightType::Directional;
     this->normal = Vector3(0.0f, 0.0f, -1.0f);
+    this->originalNormal = Vector3(0.0f, 0.0f, -1.0f);
     this->attenuation = Attenuation();
     this->position = Vector3(0.0f, 0.0f, 0.0f);
     this->color = Color(0.8f, 0.8f, 0.8f);
@@ -16,12 +17,15 @@ Light::Light()
     this->radius = 1.0f;
     this->innerRadius = 0.0f;
     this->falloff = 1.0f;
+
+    rebuildShadowTextures();
 }
 
-Light::Light(Vector3 &directionalNormal, Color &directionalColor)
+Light::Light(Vector3 &directionalNormal, Color &directionalColor, bool bShadowEnabled, LightShadowQuality shadowQuality)
 {
     this->type = LightType::Directional;
     this->normal = glm::normalize(directionalNormal);
+    this->originalNormal = this->normal;
     this->attenuation = Attenuation();
     this->position = Vector3(0.0f, 0.0f, 0.0f);
     this->color = directionalColor;
@@ -29,39 +33,54 @@ Light::Light(Vector3 &directionalNormal, Color &directionalColor)
     this->radius = 1.0f;
     this->innerRadius = 0.0f;
     this->falloff = 1.0f;
+    this->bShadowEnabled = bShadowEnabled;
+    this->shadowQuality = shadowQuality;
+
+    rebuildShadowTextures();
 }
 
-Light::Light(Vector3 &omniPosition, Attenuation &omniAttenuation, float omniRange, Color &omniColor)
+Light::Light(Attenuation &omniAttenuation, float omniRange, Color &omniColor, bool bShadowEnabled, LightShadowQuality shadowQuality)
 {
     this->type = LightType::Omni;
     this->normal = Vector3(0.0f, 0.0f, -1.0f);
+    this->originalNormal = this->normal;
     this->attenuation = omniAttenuation;
-    this->position = omniPosition;
+    this->position = Vector3(0.0f, 0.0f, 0.0f);
     this->color = omniColor;
     this->range = omniRange;
     this->radius = 0.0f;
     this->innerRadius = 0.0f;
     this->falloff = 1.0f;
+    this->bShadowEnabled = bShadowEnabled;
+    this->shadowQuality = shadowQuality;
+
+    rebuildShadowTextures();
 }
 
-Light::Light(Vector3 &spotPosition,
-             Vector3 &spotDirection,
+Light::Light(Vector3 &spotDirection,
              Attenuation &spotAttenuation,
              float spotOuterRadius,
              float spotInnerRadius,
              float spotRange,
              float spotFalloff,
-             Color &spotColor)
+             Color &spotColor,
+             bool bShadowEnabled,
+             LightShadowQuality shadowQuality)
 {
     this->type = LightType::Spot;
     this->normal = glm::normalize(spotDirection);
+    this->originalNormal = this->normal;
     this->attenuation = spotAttenuation;
-    this->position = spotPosition;
+    this->position = Vector3(0.0f, 0.0f, 0.0f);
     this->color = spotColor;
     this->radius = spotOuterRadius;
     this->innerRadius = spotInnerRadius;
     this->range = spotRange;
     this->falloff = spotFalloff;
+    this->bShadowEnabled = bShadowEnabled;
+    this->shadowQuality = shadowQuality;
+
+    rebuildShadowTextures();
 }
 
 bool Light::isAffecting(Vector3 point, float radius)
@@ -71,30 +90,115 @@ bool Light::isAffecting(Vector3 point, float radius)
     return false;
 }
 
-Light Light::transform(Entity *entity)
+void Light::rebuildShadowTextures()
+{
+    if (shadowTextures)
+    {
+        for (int i = 0; i < numOfCascades; i++)
+            shadowTextures[i]->destroy();
+        shadowTextures = nullptr;
+        numOfCascades = 0;
+    }
+
+    if (!bShadowEnabled)
+        return;
+
+    if (type == LightType::Directional)
+    {
+        switch (shadowQuality)
+        {
+        case LightShadowQuality::Low:
+            numOfCascades = 1;
+            bufferSize = 1024;
+            cascadeDistance = 2.2f;
+            break;
+        case LightShadowQuality::Medium:
+            bufferSize = 1024;
+            numOfCascades = 1;
+            cascadeDistance = 2.2f;
+            break;
+        case LightShadowQuality::High:
+            bufferSize = 2048;
+            numOfCascades = 1;
+            cascadeDistance = 2.8f;
+            break;
+        case LightShadowQuality::Ultra:
+            bufferSize = 2048;
+            numOfCascades = 1;
+            cascadeDistance = 2.8f;
+            break;
+        case LightShadowQuality::AmountOfValues:
+        case LightShadowQuality::Maximum:
+            bufferSize = 4096;
+            numOfCascades = 1;
+            cascadeDistance = 4.0f;
+            break;
+        }
+    }
+
+    if (type == LightType::Omni)
+    {
+        numOfCascades = 6;
+        switch (shadowQuality)
+        {
+        case LightShadowQuality::Low:
+            bufferSize = 256;
+            break;
+        case LightShadowQuality::Medium:
+            bufferSize = 512;
+            break;
+        case LightShadowQuality::High:
+            bufferSize = 1024;
+            break;
+        case LightShadowQuality::Ultra:
+            bufferSize = 2048;
+            break;
+        case LightShadowQuality::AmountOfValues:
+        case LightShadowQuality::Maximum:
+            bufferSize = 4096;
+            break;
+        }
+    }
+
+    if (type == LightType::Spot)
+        return;
+
+    texelSize = 1.0f / ((float)bufferSize);
+
+    shadowTextures = new Texture *[numOfCascades];
+    for (int i = 0; i < numOfCascades; i++)
+    {
+        shadowTextures[i] = new Texture("LightShadowCascade_" + std::to_string(numOfCascades), TextureType::GpuStencil);
+        shadowTextures[i]->setGpuRenderSize(bufferSize, bufferSize);
+    }
+}
+
+void Light::transform(Entity *entity)
 {
     Matrix4 *m = entity->getModelMatrix();
 
     if (type == LightType::Directional)
     {
         Quat rotation = glm::quat_cast(*m);
-        Vector3 newNormal = glm::normalize(Vector3(rotation * Vector4(normal, 1.0f)));
-        return Light(newNormal, color);
+        normal = glm::normalize(Vector3(rotation * Vector4(originalNormal, 1.0f)));
     }
 
     if (type == LightType::Omni)
     {
-        Vector3 newPosition = *m * Vector4(position, 1.0f);
-        return Light(newPosition, attenuation, range, color);
+        position = *m * Vector4(0.0f, 0.0f, 0.0f, 1.0f);
     }
 
     if (type == LightType::Spot)
     {
-        Vector3 newPosition = *m * Vector4(position, 1.0f);
+        position = *m * Vector4(0.0f, 0.0f, 0.0f, 1.0f);
         Quat rotation = glm::quat_cast(*m);
-        Vector3 newNormal = glm::normalize(Vector3(rotation * Vector4(normal, 1.0f)));
-        return Light(newPosition, newNormal, attenuation, radius, innerRadius, range, falloff, color);
+        normal = glm::normalize(Vector3(rotation * Vector4(originalNormal, 1.0f)));
     }
+}
 
-    return Light(normal, color);
+void Light::setShadowState(bool bShadowEnabled, LightShadowQuality shadowQuality)
+{
+    this->bShadowEnabled = bShadowEnabled;
+    this->shadowQuality = shadowQuality;
+    rebuildShadowTextures();
 }

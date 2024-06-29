@@ -10,23 +10,12 @@
 DirectX9Renderer::DirectX9Renderer(Window *window) : Renderer(window)
 {
     WindowsWindow *winWindow = (WindowsWindow *)window;
-
-    ZeroMemory(meshRenderData, sizeof(Directx9MeshRenderData *) * MAX_MESH_COUNT);
-    ZeroMemory(textureRenderData, sizeof(Directx9TextureRenderData *) * MAX_TEXTURES_COUNT);
-    ZeroMemory(materialRenderData, sizeof(Directx9MaterialRenderData *) * MAX_MATERIALS_COUNT);
-    ZeroMemory(queueMeshes, sizeof(QueuedMeshRenderData) * MAX_QUEUE_MESH_COUNT);
-    ZeroMemory(queueLights, sizeof(QueuedLightRenderData) * MAX_QUEUE_LIGHTS_COUNT);
     initD3D(winWindow->getHwnd(), winWindow->isFullscreen(), window->getWidth(), window->getHeight());
 }
 
 RendererType DirectX9Renderer::getType()
 {
     return RendererType::DirectX9;
-}
-
-void DirectX9Renderer::startRendering()
-{
-    d3ddev->BeginScene();
 }
 
 void DirectX9Renderer::clearBuffer(Color color)
@@ -38,73 +27,44 @@ void DirectX9Renderer::clearBuffer(Color color)
 void DirectX9Renderer::queueMesh(Mesh *mesh, Material *material, Matrix4 *model)
 {
     material = material ? material : defaultMaterial;
-    if (queueCurrentMesh < MAX_QUEUE_MESH_COUNT && mesh)
-    {
-        queueMeshes[queueCurrentMesh].mesh = mesh;
-        queueMeshes[queueCurrentMesh].material = material;
-        queueMeshes[queueCurrentMesh].model = model;
-        queueMeshes[queueCurrentMesh].bones = nullptr;
-        if (material->isAlphaPhase())
-            queueMeshes[queueCurrentMesh].centroid = Vector3(mesh->getCentroid() * *model);
-        queueCurrentMesh++;
-    }
+    data.addMesh(mesh, material, model);
 }
 
 void DirectX9Renderer::queueMeshSkinned(Mesh *mesh, Material *material, Matrix4 *model, std::vector<BoneTransform> *bones)
 {
     material = material ? material : defaultMaterial;
-    if (queueCurrentMesh < MAX_QUEUE_MESH_COUNT && mesh)
-    {
-        queueMeshes[queueCurrentMesh].mesh = mesh;
-        queueMeshes[queueCurrentMesh].material = material;
-        queueMeshes[queueCurrentMesh].model = model;
-        queueMeshes[queueCurrentMesh].bones = bones;
-        if (material->isAlphaPhase())
-            queueMeshes[queueCurrentMesh].centroid = Vector3(mesh->getCentroid() * *model);
-        queueCurrentMesh++;
-    }
+    data.addMeshSkinned(mesh, material, model, bones);
 }
 
 void DirectX9Renderer::queueLine(Vector3 vFrom, Vector3 vTo, Color color)
 {
-    if (queueCurrentLine < MAX_QUEUE_LINES)
-    {
-        queueLines[queueCurrentLine].vFrom = vFrom;
-        queueLines[queueCurrentLine].vTo = vTo;
-        queueLines[queueCurrentLine].color = color;
-        queueCurrentLine++;
-    }
+    data.addLine(vFrom, vTo, color);
 }
 
 void DirectX9Renderer::queueLight(Light *light)
 {
-    if (queueCurrentLight < MAX_QUEUE_LIGHTS_COUNT)
-    {
-        queueLights[queueCurrentLight].light = light;
-        queueCurrentLight++;
-    }
+    data.addLight(light);
 }
 
 void DirectX9Renderer::renderQueue(Camera *camera)
 {
     Vector3 camPosition = Vector3(*camera->getWorldMatrix() * Vector4(0.0f, 0.0f, 0.0f, 1.0f));
-    recalcDistanceInQueue(camPosition);
+    data.recalcDistanceInQueue(camPosition);
+    renderShadowBuffers(camPosition);
     renderQueueDepthBuffer(camPosition, camera);
     renderQueueDepthEqual(camPosition, camera);
 }
 
 void DirectX9Renderer::clearQueue()
 {
-    queueCurrentLight = 0;
-    queueCurrentMesh = 0;
-    queueCurrentLine = 0;
+    data.clearQueue();
 }
 
 void DirectX9Renderer::renderMesh(Camera *camera, Vector3 *cameraPosition, Mesh *mesh, Matrix4 *model)
 {
     if (!mesh)
         return;
-    Directx9MeshRenderData *meshData = getMeshRenderData(mesh);
+    Directx9MeshRenderData *meshData = data.getMeshRenderData(mesh);
 
     // === Setup matricies ===
     // View projection for rendering correct positions
@@ -138,15 +98,15 @@ void DirectX9Renderer::renderMeshSkinned(Camera *camera, Vector3 *cameraPosition
 {
     if (!mesh)
         return;
-    Directx9MeshRenderData *meshData = getMeshRenderData(mesh);
+    Directx9MeshRenderData *meshData = data.getMeshRenderData(mesh);
 
-    // set bone matrices, base register is 52, so, 51 bone is availalbe
+    // set bone matrices, base register is 60, so, 49 bone is availalbe
     for (auto &bone : *bones)
     {
         Deform *deform = mesh->getDeformByName(*bone.name);
         if (deform)
         {
-            int reg = 52 + deform->index * 4;
+            int reg = 60 + deform->index * 4;
             Matrix4 boneMatrix = *bone.model * deform->getInvBindMatrix();
             boneMatrix = glm::transpose(boneMatrix);
             d3ddev->SetVertexShaderConstantF(reg, (const float *)value_ptr(boneMatrix), 4);
@@ -190,11 +150,6 @@ void DirectX9Renderer::setAmbientLight(Color &ambientColor)
     this->ambientColor = ambientColor;
 }
 
-void DirectX9Renderer::endRendering()
-{
-    d3ddev->EndScene();
-}
-
 void DirectX9Renderer::present()
 {
     d3ddev->Present(NULL, NULL, NULL, NULL);
@@ -224,7 +179,7 @@ void DirectX9Renderer::initD3D(HWND hWnd, bool bIsFullscreen, int width, int hei
                       &d3dpp,
                       &d3ddev);
 
-    d3ddev->SetRenderState(D3DRS_NORMALIZENORMALS, TRUE);
+    data.d3ddev = d3ddev;
 
     cubeMesh = Red11::getMeshBuilder()->createCube(1.0f);
     lineMaterial = new MaterialSimple(Color(0.0, 0.0, 0.0), Color(0.2, 1.0, 0.2));
@@ -253,6 +208,16 @@ void DirectX9Renderer::initD3D(HWND hWnd, bool bIsFullscreen, int width, int hei
         printf("Shader compilation failed\n");
     if (d3ddev->CreatePixelShader((const DWORD *)UVSkinnedNormalFragmentShader_pso, &pUVSkinnedNormalFragmentShader) != D3D_OK)
         printf("Shader compilation failed\n");
+    if (d3ddev->CreateVertexShader((const DWORD *)UVShadowVertexShader_vso, &pUVShadowVertexShader) != D3D_OK)
+        printf("Shader compilation failed\n");
+    if (d3ddev->CreatePixelShader((const DWORD *)UVShadowFragmentShader_pso, &pUVShadowFragmentShader) != D3D_OK)
+        printf("Shader compilation failed\n");
+    if (d3ddev->CreateVertexShader((const DWORD *)UVShadowMaskVertexShader_vso, &pUVShadowMaskVertexShader) != D3D_OK)
+        printf("Shader compilation failed\n");
+    if (d3ddev->CreatePixelShader((const DWORD *)UVShadowMaskFragmentShader_pso, &pUVShadowMaskFragmentShader) != D3D_OK)
+        printf("Shader compilation failed\n");
+    if (d3ddev->CreateVertexShader((const DWORD *)UVShadowSkinnedVertexShader_vso, &pUVShadowSkinnedVertexShader) != D3D_OK)
+        printf("Shader compilation failed\n");
 
     D3DVERTEXELEMENT9 VertexElementsNormalUV[] = {
         {0, offsetof(DX9VertexNormalUV, x), D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0},
@@ -276,6 +241,17 @@ void DirectX9Renderer::initD3D(HWND hWnd, bool bIsFullscreen, int width, int hei
     d3ddev->CreateVertexDeclaration(VertexElementsNormalUVSkinned, &pVertexDeclNormalUVSkinned);
 
     defaultMaterial = new MaterialSimple(Color(0.6f, 0.6f, 0.6f));
+
+    // shadow slots setup
+    for (int i = 8; i < 16; i++)
+    {
+        d3ddev->SetSamplerState(i, D3DSAMP_ADDRESSU, D3DTADDRESS_BORDER);
+        d3ddev->SetSamplerState(i, D3DSAMP_ADDRESSV, D3DTADDRESS_BORDER);
+        d3ddev->SetSamplerState(i, D3DSAMP_BORDERCOLOR, D3DCOLOR_XRGB(255, 255, 255));
+        d3ddev->SetSamplerState(i, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);
+        d3ddev->SetSamplerState(i, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
+        d3ddev->SetSamplerState(i, D3DSAMP_MIPFILTER, D3DTEXF_LINEAR);
+    }
 }
 
 void DirectX9Renderer::renderQueueDepthBuffer(Vector3 &cameraPosition, Camera *camera)
@@ -291,37 +267,32 @@ void DirectX9Renderer::renderQueueDepthBuffer(Vector3 &cameraPosition, Camera *c
 
     d3ddev->SetRenderState(D3DRS_ALPHABLENDENABLE, false);
 
-    Vector3 camPosition = Vector3(*camera->getWorldMatrix() * Vector4(0.0f, 0.0f, 0.0f, 1.0f));
-
-    for (int i = 0; i < queueCurrentMesh; i++)
+    d3ddev->BeginScene();
+    for (int i = 0; i < data.queueCurrentMesh; i++)
     {
-        if (!queueMeshes[i].material->isAlphaPhase())
-        {
-            if (queueMeshes[i].bones)
-            {
-                d3ddev->SetVertexShader(pUVSkinnedVertexShader);
-                d3ddev->SetPixelShader(pUVSkinnedFragmentShader);
-
-                renderMeshSkinned(camera, &camPosition, queueMeshes[i].mesh, queueMeshes[i].model, queueMeshes[i].bones);
-            }
-            else
-            {
-                if (queueMeshes[i].material->getDisplay() == MaterialDisplay::SolidMask)
-                {
-                    setupBasicMaterial(queueMeshes[i].material);
-                    d3ddev->SetVertexShader(pUVSimpleMaskVertexShader);
-                    d3ddev->SetPixelShader(pUVSimpleMaskFragmentShader);
-                }
-                else
-                {
-                    d3ddev->SetVertexShader(pUVSimpleVertexShader);
-                    d3ddev->SetPixelShader(pUVSimpleFragmentShader);
-                }
-
-                renderMesh(camera, &camPosition, queueMeshes[i].mesh, queueMeshes[i].model);
-            }
-        }
+        if (!data.queueMeshes[i].material->isAlphaPhase())
+            renderMeshDepthData(camera, cameraPosition, &data.queueMeshes[i]);
     }
+    d3ddev->EndScene();
+}
+
+void DirectX9Renderer::renderQueueLightDepthBuffer(Vector3 &cameraPosition, Camera *camera)
+{
+    // Enable z buffer
+    d3ddev->SetRenderState(D3DRS_ZENABLE, true);
+    // Disable writing to the color buffer
+    d3ddev->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_BLUE | D3DCOLORWRITEENABLE_ALPHA);
+    // Enable depth writing
+    d3ddev->SetRenderState(D3DRS_ZWRITEENABLE, true);
+    // Set the depth comparison function (default is D3DCMP_LESSEQUAL)
+    d3ddev->SetRenderState(D3DRS_ZFUNC, D3DCMP_LESSEQUAL);
+
+    d3ddev->SetRenderState(D3DRS_ALPHABLENDENABLE, false);
+
+    d3ddev->BeginScene();
+    for (int i = 0; i < data.queueCurrentMesh; i++)
+        renderMeshShadowDepthData(camera, cameraPosition, &data.queueMeshes[i]);
+    d3ddev->EndScene();
 }
 
 void DirectX9Renderer::renderQueueDepthEqual(Vector3 &cameraPosition, Camera *camera)
@@ -343,13 +314,15 @@ void DirectX9Renderer::renderQueueDepthEqual(Vector3 &cameraPosition, Camera *ca
 
     std::vector<QueuedMeshRenderData *> alphaRenderMeshes;
 
+    d3ddev->BeginScene();
+
     // === Render Solid Meshes ===
-    for (int i = 0; i < queueCurrentMesh; i++)
+    for (int i = 0; i < data.queueCurrentMesh; i++)
     {
-        if (queueMeshes[i].material->isAlphaPhase())
-            alphaRenderMeshes.push_back(&queueMeshes[i]);
+        if (data.queueMeshes[i].material->isAlphaPhase())
+            alphaRenderMeshes.push_back(&data.queueMeshes[i]);
         else
-            renderMeshData(camera, cameraPosition, &queueMeshes[i]);
+            renderMeshColorData(camera, cameraPosition, &data.queueMeshes[i]);
     }
 
     // === Sort and Render Alpha Meshes ===
@@ -358,25 +331,27 @@ void DirectX9Renderer::renderQueueDepthEqual(Vector3 &cameraPosition, Camera *ca
               { return a->distance > b->distance; });
     for (auto &renderMesh : alphaRenderMeshes)
     {
-        renderMeshData(camera, cameraPosition, renderMesh);
+        renderMeshColorData(camera, cameraPosition, renderMesh);
     }
 
-    if (queueCurrentLine > 0)
+    if (data.queueCurrentLine > 0)
     {
         d3ddev->SetRenderState(D3DRS_ZENABLE, false);
-        setupMaterial(lineMaterial);
-        for (int i = 0; i < queueCurrentLine; i++)
+        setupMaterialColorRender(lineMaterial);
+        for (int i = 0; i < data.queueCurrentLine; i++)
         {
             // Emission Color
-            Vector4 color = Vector4(queueLines[i].color.r, queueLines[i].color.g, queueLines[i].color.b, 1.0f);
+            Vector4 color = Vector4(data.queueLines[i].color.r, data.queueLines[i].color.g, data.queueLines[i].color.b, 1.0f);
             d3ddev->SetPixelShaderConstantF(16, (const float *)value_ptr(color), 1);
 
             d3ddev->SetVertexShader(pUVVertexShader);
             d3ddev->SetPixelShader(pUVFragmentShader);
 
-            renderLine(camera, queueLines[i].vFrom, queueLines[i].vTo);
+            renderLine(camera, data.queueLines[i].vFrom, data.queueLines[i].vTo);
         }
     }
+
+    d3ddev->EndScene();
 }
 
 void DirectX9Renderer::cleanD3D(void)
@@ -391,81 +366,22 @@ void DirectX9Renderer::cleanD3D(void)
         d3d->Release(); // close and release Direct3D
         d3d = nullptr;
     }
-    for (int i = 0; i < MAX_MESH_COUNT; i++)
-    {
-        if (meshRenderData[i])
-        {
-            delete meshRenderData[i];
-            meshRenderData[i] = nullptr;
-        }
-    }
-}
-
-Directx9MeshRenderData *DirectX9Renderer::getMeshRenderData(Mesh *mesh)
-{
-    if (!mesh)
-        return nullptr;
-
-    int meshIndex = mesh->getIndex();
-    Directx9MeshRenderData *meshData = meshRenderData[meshIndex];
-    if (!meshData)
-    {
-        meshData = new Directx9MeshRenderData(d3ddev, mesh);
-        meshRenderData[meshIndex] = meshData;
-    }
-    return meshData;
-}
-
-Directx9MaterialRenderData *DirectX9Renderer::getMaterialRenderData(Material *material)
-{
-    if (!material)
-        return nullptr;
-
-    int materialIndex = material->getIndex();
-    Directx9MaterialRenderData *materialData = materialRenderData[materialIndex];
-    if (!materialData)
-    {
-        materialData = new Directx9MaterialRenderData(material);
-        materialRenderData[materialIndex] = materialData;
-    }
-    return materialData;
-}
-
-Directx9TextureRenderData *DirectX9Renderer::getTextureRenderData(Texture *texture)
-{
-    if (!texture)
-        return nullptr;
-
-    int tIndex = texture->getIndex();
-
-    auto textureDXData = textureRenderData[tIndex];
-    if (!textureDXData)
-    {
-        textureDXData = new Directx9TextureRenderData(d3ddev, texture);
-        if (!textureDXData->isReadyState)
-        {
-            delete textureDXData;
-            textureDXData = nullptr;
-        }
-        textureRenderData[tIndex] = textureDXData;
-    }
-
-    return textureDXData;
 }
 
 void DirectX9Renderer::setupLights(Vector3 objectPosition, float objectRadius)
 {
     // registers for lights:
-    // 16 - 48 - light data
+    // 20 - 52 - light data
+    // 52 - 60 - light matricies
     // type, typeData, typeData, typeData
     // positionv3, xxx
     // normalv3, power
     // colorv3, radius
 
     std::vector<Light *> affectingLights;
-    for (int lightNum = 0; lightNum < queueCurrentLight; lightNum++)
+    for (int lightNum = 0; lightNum < data.queueCurrentLight; lightNum++)
     {
-        Light *lightData = queueLights[lightNum].light;
+        Light *lightData = data.queueLights[lightNum].light;
         if (lightData->isAffecting(objectPosition, objectRadius))
             affectingLights.push_back(lightData);
     }
@@ -473,6 +389,8 @@ void DirectX9Renderer::setupLights(Vector3 objectPosition, float objectRadius)
     affectingLights.resize(MAX_LIGHTS_PER_MESH_COUNT);
 
     int baseReg = 20;
+    int shadowMatrixBaseReg = 52;
+    int shadowTextureBaseReg = 8;
     DX9LightShaderStruct dxLight;
     memset(&dxLight, 0, sizeof(DX9LightShaderStruct));
 
@@ -487,149 +405,51 @@ void DirectX9Renderer::setupLights(Vector3 objectPosition, float objectRadius)
         {
             Color lightColor = light->getColor();
             Vector3 lightDirection = light->getNormal();
+            bool castShadow = light->isShadowsEnabled() && (shadowMatrixBaseReg < 60);
+            // bool castShadow = false;
 
             dxLight.type = 1.0f;
+            dxLight.castShadow = castShadow ? 1.0f : 0.0f;
+            dxLight.texelSize = light->getShadowTextureTexelSize();
             dxLight.data0 = 1.0f;
             dxLight.data1 = 1.0f;
+            dxLight.data2 = 1.0f;
+            dxLight.data3 = 1.0f;
+
             dxLight.normal[0] = lightDirection.x;
             dxLight.normal[1] = lightDirection.y;
             dxLight.normal[2] = lightDirection.z;
+
             dxLight.color[0] = lightColor.r;
             dxLight.color[1] = lightColor.g;
             dxLight.color[2] = lightColor.b;
 
             d3ddev->SetPixelShaderConstantF(baseReg, (const float *)&dxLight, 4);
+
+            if (castShadow)
+            {
+                for (int c = 0; c < light->getNumOfCascades(); c++)
+                {
+                    Directx9TextureRenderData *cascade = data.getTextureRenderData(light->getShadowTexture(c));
+                    if (cascade)
+                    {
+                        d3ddev->SetTexture(shadowTextureBaseReg + c, cascade->texture);
+                    }
+                }
+
+                d3ddev->SetVertexShaderConstantF(shadowMatrixBaseReg, (const float *)value_ptr(light->getShadowViewProjectionMatrix()), 4);
+            }
         }
         baseReg += 4;
-    }
-
-    /*
-        if (lightData->getType() == LightType::Directional)
-        {
-            Color color = lightData->getColor();
-            Vector3 direction = lightData->getNormal();
-
-            light.Type = D3DLIGHT_DIRECTIONAL;
-            light.Diffuse = {color.r, color.g, color.b, color.a};
-            light.Direction = {direction.x, direction.y, direction.z};
-        }
-
-        if (lightData->getType() == LightType::Omni)
-        {
-            Color color = lightData->getColor();
-            Vector3 position = lightData->getPosition();
-            Attenuation attenuation = lightData->getAttenuation();
-
-            light.Type = D3DLIGHT_POINT;
-            light.Diffuse = {color.r, color.g, color.b, color.a};
-            light.Position = {position.x, position.y, position.z};
-            light.Range = lightData->getRange();
-            light.Attenuation0 = attenuation.att0;
-            light.Attenuation1 = attenuation.att1;
-            light.Attenuation2 = attenuation.att2;
-        }
-
-        if (lightData->getType() == LightType::Spot)
-        {
-            Color color = lightData->getColor();
-            Vector3 position = lightData->getPosition();
-            Vector3 direction = lightData->getNormal();
-            Attenuation attenuation = lightData->getAttenuation();
-
-            light.Type = D3DLIGHT_SPOT;
-            light.Diffuse = {color.r, color.g, color.b, color.a};
-            light.Position = {position.x, position.y, position.z};
-            light.Direction = {direction.x, direction.y, direction.z};
-            light.Range = lightData->getRange();
-            light.Attenuation0 = attenuation.att0;
-            light.Attenuation1 = attenuation.att1;
-            light.Attenuation2 = attenuation.att2;
-            light.Phi = lightData->getRadius();
-            light.Theta = lightData->getInnerRadius();
-            light.Falloff = lightData->getFalloff();
-        }
-        */
-}
-
-void DirectX9Renderer::setupMaterial(Material *material)
-{
-    MaterialSimple *materialSimple = reinterpret_cast<MaterialSimple *>(material);
-
-    Directx9TextureRenderData *albedoTextureData = materialSimple->getAlbedoTexture() ? getTextureRenderData(materialSimple->getAlbedoTexture()) : nullptr;
-    Directx9TextureRenderData *alphaTextureData = materialSimple->getAlphaTexture() ? getTextureRenderData(materialSimple->getAlphaTexture()) : nullptr;
-    Directx9TextureRenderData *emissionTextureData = materialSimple->getEmissionTexture() ? getTextureRenderData(materialSimple->getEmissionTexture()) : nullptr;
-    Directx9TextureRenderData *normalTextureData = materialSimple->getNormalTexture() ? getTextureRenderData(materialSimple->getNormalTexture()) : nullptr;
-    Directx9TextureRenderData *metallicTextureData = materialSimple->getMetallicTexture() ? getTextureRenderData(materialSimple->getMetallicTexture()) : nullptr;
-    Directx9TextureRenderData *roughnessTextureData = materialSimple->getRoughnessTexture() ? getTextureRenderData(materialSimple->getRoughnessTexture()) : nullptr;
-    Directx9TextureRenderData *aoTextureData = materialSimple->getAOTexture() ? getTextureRenderData(materialSimple->getAOTexture()) : nullptr;
-
-    // === Setup material data ===
-    Directx9MaterialRenderData *materialRenderData = getMaterialRenderData(material);
-    d3ddev->SetPixelShaderConstantF(12, (const float *)materialRenderData->getData(), 3);
-
-    // === Setup colors ===
-    // Albedo Color
-    d3ddev->SetPixelShaderConstantF(15, materialSimple->getAlbedoColor().getAsFloatArray(), 1);
-
-    // Emission Color
-    d3ddev->SetPixelShaderConstantF(16, materialSimple->getEmissionColor().getAsFloatArray(), 1);
-
-    // === Setup textures ===
-    if (albedoTextureData)
-        d3ddev->SetTexture(0, albedoTextureData->d3dtexture);
-    if (alphaTextureData)
-        d3ddev->SetTexture(1, alphaTextureData->d3dtexture);
-    if (emissionTextureData)
-        d3ddev->SetTexture(2, emissionTextureData->d3dtexture);
-    if (normalTextureData)
-        d3ddev->SetTexture(3, normalTextureData->d3dtexture);
-    if (metallicTextureData)
-        d3ddev->SetTexture(4, metallicTextureData->d3dtexture);
-    if (roughnessTextureData)
-        d3ddev->SetTexture(5, roughnessTextureData->d3dtexture);
-    if (aoTextureData)
-        d3ddev->SetTexture(6, aoTextureData->d3dtexture);
-
-    switch (materialSimple->getDisplay())
-    {
-    case MaterialDisplay::Alpha:
-        d3ddev->SetRenderState(D3DRS_ALPHABLENDENABLE, true);
-        d3ddev->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
-        d3ddev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
-        break;
-
-    default:
-        d3ddev->SetRenderState(D3DRS_ALPHABLENDENABLE, false);
-        break;
+        shadowMatrixBaseReg += 4;
+        shadowTextureBaseReg += 2;
     }
 }
 
-void DirectX9Renderer::setupBasicMaterial(Material *material)
-{
-    MaterialSimple *materialSimple = reinterpret_cast<MaterialSimple *>(material);
-
-    Directx9TextureRenderData *albedoTextureData = materialSimple->getAlbedoTexture() ? getTextureRenderData(materialSimple->getAlbedoTexture()) : nullptr;
-    Directx9TextureRenderData *alphaTextureData = materialSimple->getAlphaTexture() ? getTextureRenderData(materialSimple->getAlphaTexture()) : nullptr;
-
-    // === Setup material data ===
-    Directx9MaterialRenderData *materialRenderData = getMaterialRenderData(material);
-    d3ddev->SetPixelShaderConstantF(12, (const float *)materialRenderData->getData(), 3);
-
-    // === Setup colors ===
-    // Albedo Color
-    d3ddev->SetPixelShaderConstantF(15, materialSimple->getAlbedoColor().getAsFloatArray(), 1);
-
-    // === Setup textures ===
-    if (albedoTextureData)
-        d3ddev->SetTexture(0, albedoTextureData->d3dtexture);
-    if (alphaTextureData)
-        d3ddev->SetTexture(1, alphaTextureData->d3dtexture);
-}
-
-void DirectX9Renderer::renderMeshData(Camera *camera, Vector3 &cameraPosition, QueuedMeshRenderData *mesh)
+void DirectX9Renderer::renderMeshColorData(Camera *camera, Vector3 &cameraPosition, QueuedMeshRenderData *mesh)
 {
     setupLights(*mesh->model * Vector4(0.0f, 0.0f, 0.0f, 1.0f), 0.1f);
-    setupMaterial(mesh->material);
+    setupMaterialColorRender(mesh->material);
 
     if (mesh->bones)
     {
@@ -663,11 +483,111 @@ void DirectX9Renderer::renderMeshData(Camera *camera, Vector3 &cameraPosition, Q
     }
 }
 
-void DirectX9Renderer::recalcDistanceInQueue(Vector3 &cameraPosition)
+void DirectX9Renderer::renderMeshDepthData(Camera *camera, Vector3 &cameraPosition, QueuedMeshRenderData *mesh)
 {
-    for (int i = 0; i < queueCurrentMesh; i++)
+    if (mesh->bones)
     {
-        if (queueMeshes[i].material->isAlphaPhase())
-            queueMeshes[i].distance = glm::distance2(cameraPosition, queueMeshes[i].centroid);
+        d3ddev->SetVertexShader(pUVSkinnedVertexShader);
+        d3ddev->SetPixelShader(pUVSkinnedFragmentShader);
+
+        renderMeshSkinned(camera, &cameraPosition, mesh->mesh, mesh->model, mesh->bones);
     }
+    else
+    {
+        if (mesh->material->getDisplay() == MaterialDisplay::SolidMask)
+        {
+            setupMaterialDepthRender(mesh->material);
+            d3ddev->SetVertexShader(pUVSimpleMaskVertexShader);
+            d3ddev->SetPixelShader(pUVSimpleMaskFragmentShader);
+        }
+        else
+        {
+            d3ddev->SetVertexShader(pUVSimpleVertexShader);
+            d3ddev->SetPixelShader(pUVSimpleFragmentShader);
+        }
+
+        renderMesh(camera, &cameraPosition, mesh->mesh, mesh->model);
+    }
+}
+
+void DirectX9Renderer::renderMeshShadowDepthData(Camera *camera, Vector3 &cameraPosition, QueuedMeshRenderData *mesh)
+{
+    if (mesh->bones)
+    {
+        d3ddev->SetVertexShader(pUVShadowSkinnedVertexShader);
+        d3ddev->SetPixelShader(pUVShadowFragmentShader);
+
+        renderMeshSkinned(camera, &cameraPosition, mesh->mesh, mesh->model, mesh->bones);
+    }
+    else
+    {
+        if (mesh->material->getDisplay() == MaterialDisplay::Solid)
+        {
+
+            d3ddev->SetVertexShader(pUVShadowVertexShader);
+            d3ddev->SetPixelShader(pUVShadowFragmentShader);
+        }
+        else
+        {
+            setupMaterialDepthRender(mesh->material);
+            d3ddev->SetVertexShader(pUVSimpleMaskVertexShader);
+            d3ddev->SetPixelShader(pUVSimpleMaskFragmentShader);
+        }
+
+        renderMesh(camera, &cameraPosition, mesh->mesh, mesh->model);
+    }
+}
+
+void DirectX9Renderer::renderShadowBuffers(Vector3 &cameraPosition)
+{
+    for (int i = 0; i < data.queueCurrentLight; i++)
+    {
+        if (data.queueLights[i].light && data.queueLights[i].light->isShadowsEnabled())
+        {
+            if (data.queueLights[i].light->getType() == LightType::Directional)
+                renderShadowBuffersDirectional(cameraPosition, data.queueLights[i].light);
+        }
+    }
+}
+
+void DirectX9Renderer::renderShadowBuffersDirectional(Vector3 &cameraPosition, Light *light)
+{
+    Vector3 forward = glm::vec3(0.0f, 0.0f, -1.0f);
+    IDirect3DSurface9 *originalRenderTarget = NULL;
+    IDirect3DSurface9 *originalDepthStencil = NULL;
+    Camera camera;
+    Entity cameraEntity;
+
+    d3ddev->GetRenderTarget(0, &originalRenderTarget);
+    d3ddev->GetDepthStencilSurface(&originalDepthStencil);
+
+    for (int i = 0; i < light->getNumOfCascades(); i++)
+    {
+        float cascadeSize = light->getCascadeDistance() * float(i + 1);
+
+        Directx9TextureRenderData *cascade = data.getTextureRenderData(light->getShadowTexture(i));
+        if (!cascade)
+            continue;
+
+        Vector3 lightShotPosition = cameraPosition + light->getNormal() * cascadeSize * -2.0f;
+        camera.setupAsOrthographic(cascadeSize, cascadeSize, cascadeSize * -4.0f, cascadeSize * 4.0f);
+        cameraEntity.setPosition(lightShotPosition);
+        cameraEntity.setRotation(glm::rotation(forward, light->getNormal()));
+        camera.updateViewMatrix(cameraEntity.getModelMatrix());
+
+        d3ddev->SetRenderTarget(0, cascade->surface);
+        d3ddev->SetDepthStencilSurface(cascade->depthDataSurface);
+
+        d3ddev->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_XRGB(0, 0, 0), 1.0f, 0);
+        d3ddev->Clear(0, NULL, D3DCLEAR_ZBUFFER, D3DCOLOR_XRGB(0, 0, 0), 1.0f, 0);
+
+        renderQueueLightDepthBuffer(lightShotPosition, &camera);
+        if (i == 0)
+        {
+            light->setShadowViewProjectionMatrix(glm::transpose(*camera.getProjectionMatrix() * *camera.getViewMatrix()));
+        }
+    }
+
+    d3ddev->SetRenderTarget(0, originalRenderTarget);
+    d3ddev->SetDepthStencilSurface(originalDepthStencil);
 }

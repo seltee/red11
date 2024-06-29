@@ -14,12 +14,19 @@
 class Directx9TextureRenderData
 {
 public:
-    Directx9TextureRenderData(LPDIRECT3DDEVICE9 d3ddev, Texture *texture);
+    Directx9TextureRenderData(LPDIRECT3DDEVICE9 d3ddev, Texture *dataTexture);
 
-    IDirect3DTexture9 *d3dtexture = nullptr;
+    IDirect3DTexture9 *texture = nullptr;
+    IDirect3DSurface9 *surface = nullptr;
+    IDirect3DTexture9 *depthDataTexture = nullptr;
+    IDirect3DSurface9 *depthDataSurface = nullptr;
     int updIndex;
 
     bool isReadyState = false;
+
+protected:
+    void createNormalTexture(LPDIRECT3DDEVICE9 d3ddev, Texture *dataTexture);
+    void createStencilTexture(LPDIRECT3DDEVICE9 d3ddev, Texture *dataTexture);
 };
 
 #endif

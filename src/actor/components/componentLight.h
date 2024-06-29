@@ -11,25 +11,37 @@
 class ComponentLight : public Component
 {
 public:
-    EXPORT void setupDirectional(Vector3 directionalNormal, Color directionalColor);
-    EXPORT void setupOmni(Vector3 ommiPosition, Attenuation omniAttenuation, float omniRange, Color omniColor);
-    EXPORT void setupSpot(Vector3 spotPosition,
-                          Vector3 spotDirection,
+    EXPORT void setupDirectional(
+        Vector3 directionalNormal,
+        Color directionalColor,
+        bool bEnableShadow = false,
+        LightShadowQuality shadowQuality = LightShadowQuality::Low);
+
+    EXPORT void setupOmni(Attenuation omniAttenuation,
+                          float omniRange,
+                          Color omniColor,
+                          bool bEnableShadow = false,
+                          LightShadowQuality shadowQuality = LightShadowQuality::Low);
+
+    EXPORT void setupSpot(Vector3 spotDirection,
                           Attenuation spotAttenuation,
                           float spotInnerRadius,
                           float spotOuterRadius,
                           float spotRange,
                           float spotFalloff,
-                          Color spotColor);
+                          Color spotColor,
+                          bool bEnableShadow = false,
+                          LightShadowQuality shadowQuality = LightShadowQuality::Low);
 
     EXPORT void onRenderQueue(Renderer *renderer) override final;
 
+    EXPORT void setShadowState(bool bShadowEnabled, LightShadowQuality shadowQuality);
+
     inline void setEnabled(bool bState) { bEnabled = bState; }
-    inline bool getEnabledState() { return bEnabled; }
+    inline bool isEnabled() { return bEnabled; }
+    inline Light *getLight() { return light; }
 
 protected:
-    Light light;
-    Light worldLight;
-
+    Light *light = nullptr;
     bool bEnabled = true;
 };

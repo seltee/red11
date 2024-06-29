@@ -12,16 +12,22 @@
 #include "data/material/materialSimple.h"
 #include "directx9utils.h"
 
+class Directx9data;
+
 class Directx9MaterialRenderData
 {
 public:
-    Directx9MaterialRenderData(Material *material);
+    Directx9MaterialRenderData(LPDIRECT3DDEVICE9 d3ddev, Material *material);
 
     DX9Material *getData();
+
+    void setupForRender(Directx9data *dxData);
+    void setupForDepth(Directx9data *dxData);
 
 protected:
     void rebuildData();
 
+    LPDIRECT3DDEVICE9 d3ddev;
     Material *material;
     DX9Material data;
     unsigned int lastUpdIndex = 0xffffffff;

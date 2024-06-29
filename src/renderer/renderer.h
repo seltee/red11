@@ -28,7 +28,6 @@ public:
 
     virtual RendererType getType() = 0;
 
-    virtual void startRendering() = 0;
     virtual void clearBuffer(Color color) = 0;
     virtual void queueMesh(Mesh *mesh, Material *material, Matrix4 *model) = 0;
     virtual void queueMeshSkinned(Mesh *mesh, Material *material, Matrix4 *model, std::vector<BoneTransform> *bones) = 0;
@@ -39,7 +38,6 @@ public:
     virtual void renderMesh(Camera *camera, Vector3 *cameraPosition, Mesh *mesh, Matrix4 *model) = 0;
     virtual void renderMeshSkinned(Camera *camera, Vector3 *cameraPosition, Mesh *mesh, Matrix4 *model, std::vector<BoneTransform> *bones) = 0;
     virtual void setAmbientLight(Color &ambientColor) = 0;
-    virtual void endRendering() = 0;
     virtual void present() = 0;
 
 protected:

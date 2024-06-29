@@ -125,7 +125,6 @@ APPMAIN
         window->processWindow();
         window->setMousePosition(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2);
 
-        renderer->startRendering();
         renderer->clearBuffer(Color(0.4, 0.5, 0.8));
 
         player->rotate(Quat(Vector3(0, playerControl.rotateX * 0.0016f, 0)));
@@ -174,7 +173,6 @@ APPMAIN
         scene->process(delta);
         scene->render(renderer, cameraComponent->getCamera());
 
-        renderer->endRendering();
         renderer->present();
     }
 

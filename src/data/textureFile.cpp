@@ -4,7 +4,7 @@
 #include "textureFile.h"
 #include "utils/image/stb_image.h"
 
-TextureFile::TextureFile(std::string name, std::string filePath) : Texture(name)
+TextureFile::TextureFile(std::string name, std::string filePath) : Texture(name, TextureType::Normal)
 {
     this->filePath = filePath;
     this->bStaticBuffer = false;
@@ -44,7 +44,7 @@ Texture *TextureFile::getFileDataAsTexture(std::string name)
 {
     if (getBufferData() || getWidth() || getHeight())
     {
-        Texture *texture = new Texture(name);
+        Texture *texture = new Texture(name, TextureType::Normal);
         texture->setBuffer(getWidth(), getHeight());
         unsigned char *copiedData = texture->getBufferData();
         memcpy(copiedData, data, getWidth() * getHeight() * 4);

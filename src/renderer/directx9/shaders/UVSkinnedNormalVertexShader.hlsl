@@ -17,15 +17,18 @@ struct VS_Output
     float2 texCoord : TEXCOORD;
     float3 tangent : TEXCOORD3;
     float3 bitangent : TEXCOORD4;
+    float3 shadowCoord[2] : TEXCOORD5;
 };
 
 matrix ViewProj : register(c0);
 
-// 0 - 16 - shader data
-// 20 - 52 - light data
-// 52 - 256 - bones data = 51 bones
+matrix LightsShadowMatricies[2] : register(c52);
 
-matrix BoneMatrices[52] : register(c52);
+// 0 - 16 - shader data
+// 20 - 60 - light data
+// 60 - 256 - bones data = 49 bones
+
+matrix BoneMatrices[49] : register(c60);
 
 VS_Output main(VS_Input vin)
 {
@@ -55,6 +58,12 @@ VS_Output main(VS_Input vin)
     vout.tangent = normalize(tangent);
     vout.bitangent = normalize(bitangent);
     vout.texCoord = vin.texCoord;
-
+    for (int i = 0; i < 2; i++)
+    {
+        float4 shadowCoord = mul(float4(vout.worldPos, 1.0), LightsShadowMatricies[i]);
+        shadowCoord.xy = shadowCoord.xy * 0.5 + 0.5;
+        shadowCoord.y = 1.0 - shadowCoord.y;
+        vout.shadowCoord[i] = shadowCoord.xyz;
+    }
     return vout;
 }

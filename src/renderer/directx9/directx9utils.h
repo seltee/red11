@@ -65,18 +65,18 @@ struct DX9VertexNormalUVSkinned
 struct DX9LightShaderStruct
 {
     float type;
+    float castShadow;
+    float texelSize;
     float data0;
-    float data1;
-    float data2;
 
     float position[3];
-    float data3;
+    float data1;
 
     float normal[3];
-    float data4;
+    float data2;
 
     float color[3];
-    float data5;
+    float data3;
 };
 
 //

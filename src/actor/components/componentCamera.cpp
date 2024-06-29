@@ -7,12 +7,12 @@ void ComponentCamera::onCreated()
 {
 }
 
-void ComponentCamera::setupAsOrthographic(int width, int height, float nearDistance, float farDistance)
+void ComponentCamera::setupAsOrthographic(float width, float height, float nearDistance, float farDistance)
 {
     camera.setupAsOrthographic(width, height, nearDistance, farDistance);
 }
 
-void ComponentCamera::setupAsPerspective(int width, int height, float nearDistance, float farDistance, float fov)
+void ComponentCamera::setupAsPerspective(float width, float height, float nearDistance, float farDistance, float fov)
 {
     camera.setupAsPerspective(width, height, nearDistance, farDistance, fov);
 }

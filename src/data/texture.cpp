@@ -5,9 +5,15 @@
 
 std::list<Texture *> Texture::textures;
 
-Texture::Texture(std::string name)
+Texture::Texture(TextureType textureType)
+{
+    Texture("texture_" + std::to_string(index + 1), textureType);
+}
+
+Texture::Texture(std::string name, TextureType textureType)
 {
     this->name = name;
+    this->textureType = textureType;
     static unsigned int lastIndex = 0;
     index = lastIndex;
     lastIndex++;
@@ -80,4 +86,15 @@ unsigned int Texture::getColorAtPoint(int x, int y)
             return reinterpret_cast<unsigned int *>(dt)[p];
     }
     return 0;
+}
+
+void Texture::setGpuRenderSize(int width, int height)
+{
+    this->width = width;
+    this->height = height;
+}
+
+void Texture::destroy()
+{
+    delete this;
 }

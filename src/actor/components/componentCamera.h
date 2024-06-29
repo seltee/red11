@@ -12,8 +12,8 @@ class ComponentCamera : public Component
 public:
     EXPORT void onCreated() override;
 
-    EXPORT void setupAsOrthographic(int width, int height, float nearDistance = -1400.0f, float farDistance = 1400.0f);
-    EXPORT void setupAsPerspective(int width, int height, float nearDistance = 0.01f, float farDistance = 80.0f, float fov = 45.0f);
+    EXPORT void setupAsOrthographic(float width, float height, float nearDistance = -1400.0f, float farDistance = 1400.0f);
+    EXPORT void setupAsPerspective(float width, float height, float nearDistance = 0.01f, float farDistance = 80.0f, float fov = 45.0f);
 
     EXPORT void onProcess(float delta) override final;
 

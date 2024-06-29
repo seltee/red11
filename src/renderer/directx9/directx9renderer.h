@@ -10,6 +10,7 @@
 #include <d3d9.h>
 #include <vector>
 #include "renderer/renderer.h"
+#include "data/boneTransform.h"
 #include "shaders/UVSimpleFragmentShader.pso.h"
 #include "shaders/UVSimpleVertexShader.vso.h"
 #include "shaders/UVSimpleMaskFragmentShader.pso.h"
@@ -22,21 +23,18 @@
 #include "shaders/UVSkinnedVertexShader.vso.h"
 #include "shaders/UVSkinnedNormalVertexShader.vso.h"
 #include "shaders/UVSkinnedNormalFragmentShader.pso.h"
+#include "shaders/UVShadowVertexShader.vso.h"
+#include "shaders/UVShadowFragmentShader.pso.h"
+#include "shaders/UVShadowMaskVertexShader.vso.h"
+#include "shaders/UVShadowMaskFragmentShader.pso.h"
+#include "shaders/UVShadowSkinnedVertexShader.vso.h"
 #include "directx9meshRenderData.h"
 #include "directx9materialRenderData.h"
 #include "directx9textureRenderData.h"
 #include "directx9utils.h"
+#include "directx9data.h"
 
 #pragma comment(lib, "d3d9.lib")
-
-#define MAX_QUEUE_LIGHTS_COUNT (8 * 1024)
-#define MAX_QUEUE_MESH_COUNT (256 * 1024)
-#define MAX_QUEUE_LINES (1 * 1024)
-#define MAX_TEXTURES_COUNT (128 * 1024)
-#define MAX_MATERIALS_COUNT (32 * 1024)
-#define MAX_LIGHTS_PER_MESH_COUNT 8
-
-#define LineFVF (D3DFVF_XYZRHW | D3DFVF_DIFFUSE)
 
 class DirectX9Renderer : public Renderer
 {
@@ -45,7 +43,6 @@ public:
 
     RendererType getType();
 
-    void startRendering();
     void clearBuffer(Color color);
     void queueMesh(Mesh *mesh, Material *material, Matrix4 *model);
     void queueMeshSkinned(Mesh *mesh, Material *material, Matrix4 *model, std::vector<BoneTransform> *bones);
@@ -57,45 +54,42 @@ public:
     void renderMeshSkinned(Camera *camera, Vector3 *cameraPosition, Mesh *mesh, Matrix4 *model, std::vector<BoneTransform> *bones);
     void renderLine(Camera *camera, Vector3 vFrom, Vector3 vTo);
     void setAmbientLight(Color &ambientColor);
-    void endRendering();
     void present();
 
 protected:
     void initD3D(HWND hWnd, bool bIsFullscreen, int width, int height); // sets up and initializes Direct3D
     void renderQueueDepthBuffer(Vector3 &cameraPosition, Camera *camera);
+    void renderQueueLightDepthBuffer(Vector3 &cameraPosition, Camera *camera);
     void renderQueueDepthEqual(Vector3 &cameraPosition, Camera *camera);
     void cleanD3D(void);
 
-    Directx9MeshRenderData *getMeshRenderData(Mesh *mesh);
-    Directx9MaterialRenderData *getMaterialRenderData(Material *material);
-    Directx9TextureRenderData *getTextureRenderData(Texture *texture);
-
     void setupLights(Vector3 objectPosition, float objectRadius);
-    // Full material render
-    void setupMaterial(Material *material);
-    // Enough to render masks
-    void setupBasicMaterial(Material *material);
-    void renderMeshData(Camera *camera, Vector3 &cameraPosition, QueuedMeshRenderData *mesh);
 
-    void recalcDistanceInQueue(Vector3 &cameraPosition);
+    inline void setupMaterialColorRender(Material *material)
+    {
+        Directx9MaterialRenderData *materialRenderData = data.getMaterialRenderData(material);
+        if (materialRenderData)
+            materialRenderData->setupForRender(&data);
+    }
+
+    inline void setupMaterialDepthRender(Material *material)
+    {
+        Directx9MaterialRenderData *materialRenderData = data.getMaterialRenderData(material);
+        if (materialRenderData)
+            materialRenderData->setupForDepth(&data);
+    }
+
+    void renderMeshColorData(Camera *camera, Vector3 &cameraPosition, QueuedMeshRenderData *mesh);
+    void renderMeshDepthData(Camera *camera, Vector3 &cameraPosition, QueuedMeshRenderData *mesh);
+    void renderMeshShadowDepthData(Camera *camera, Vector3 &cameraPosition, QueuedMeshRenderData *mesh);
+
+    void renderShadowBuffers(Vector3 &cameraPosition);
+    void renderShadowBuffersDirectional(Vector3 &cameraPosition, Light *light);
 
     Color ambientColor = Color(1.0f, 1.0f, 1.0f);
 
     LPDIRECT3D9 d3d = nullptr;          // the pointer to our Direct3D interface
     LPDIRECT3DDEVICE9 d3ddev = nullptr; // the pointer to the device class
-
-    Directx9MeshRenderData *meshRenderData[MAX_MESH_COUNT];
-    Directx9TextureRenderData *textureRenderData[MAX_TEXTURES_COUNT];
-    Directx9MaterialRenderData *materialRenderData[MAX_MATERIALS_COUNT];
-
-    int queueCurrentMesh = 0;
-    QueuedMeshRenderData queueMeshes[MAX_QUEUE_MESH_COUNT];
-
-    int queueCurrentLight = 0;
-    QueuedLightRenderData queueLights[MAX_QUEUE_LIGHTS_COUNT];
-
-    int queueCurrentLine = 0;
-    QueuedLineRenderData queueLines[MAX_QUEUE_LINES];
 
     Mesh *cubeMesh = nullptr;
     Material *lineMaterial = nullptr;
@@ -124,10 +118,23 @@ protected:
     IDirect3DVertexShader9 *pUVSkinnedNormalVertexShader = nullptr;
     IDirect3DPixelShader9 *pUVSkinnedNormalFragmentShader = nullptr;
 
+    // Shadow render of depth
+    IDirect3DVertexShader9 *pUVShadowVertexShader = nullptr;
+    IDirect3DPixelShader9 *pUVShadowFragmentShader = nullptr;
+
+    // Shadow render of depth
+    IDirect3DVertexShader9 *pUVShadowMaskVertexShader = nullptr;
+    IDirect3DPixelShader9 *pUVShadowMaskFragmentShader = nullptr;
+
+    // Shadow skinned without mask, uses shadow fragment shader
+    IDirect3DVertexShader9 *pUVShadowSkinnedVertexShader = nullptr;
+
     LPDIRECT3DVERTEXDECLARATION9 pVertexDeclNormalUV = nullptr;
     LPDIRECT3DVERTEXDECLARATION9 pVertexDeclNormalUVSkinned = nullptr;
 
     Material *defaultMaterial;
+
+    Directx9data data;
 };
 
 #endif

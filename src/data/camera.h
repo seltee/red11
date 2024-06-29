@@ -21,8 +21,8 @@ public:
     inline int getWidth() { return width; }
     inline int getHeight() { return height; }
 
-    EXPORT void setupAsOrthographic(int width, int height, float nearDistance = -1400.0f, float farDistance = 1400.0f);
-    EXPORT void setupAsPerspective(int width, int height, float nearDistance = 0.01f, float farDistance = 80.0f, float fov = 45.0f);
+    EXPORT void setupAsOrthographic(float width, float height, float nearDistance = -200.0f, float farDistance = 600.0f);
+    EXPORT void setupAsPerspective(float width, float height, float nearDistance = 0.01f, float farDistance = 80.0f, float fov = 45.0f);
 
     EXPORT void recalcCullingPlanes();
     inline Vector4 *getCullingPlanes() { return cullingPlanes; }
@@ -43,7 +43,7 @@ protected:
     Matrix4 worldMatrix;
     CameraType type = CameraType::None;
 
-    int width = 0, height = 0;
+    float width = 0.0f, height = 0.0f;
     float farDistance = 100.0f, nearDistance = 0.1f;
     float perspFov = 45.0f;
 

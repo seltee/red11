@@ -13,6 +13,8 @@ struct CameraControl
     float sideMove;
     float rotateX;
     float rotateY;
+    bool lowerShadowQuality;
+    bool higherShadowQuality;
 };
 
 APPMAIN
@@ -31,6 +33,7 @@ APPMAIN
     auto concreteTexture = new TextureFile("Concrete", "./data/concrete_albedo.jpg");
     auto sphereNormalTexture = new TextureFile("SphereNormal", "./data/spehere_normal.png");
     auto concreteMaterial = new MaterialSimple(concreteTexture, sphereNormalTexture);
+    // auto concreteMaterial = new MaterialSimple(concreteTexture);
 
     // Meshes
     auto minerIdleFileData = new Data3DFile("./data/miner_anim_idle.fbx");
@@ -83,7 +86,17 @@ APPMAIN
 
     auto lightSun = scene->createActor<Actor>("Light");
     auto lightSunComponent = lightSun->createComponent<ComponentLight>();
-    lightSunComponent->setupDirectional(glm::normalize(Vector3(-1.0f, -1.0f, -1.0)), Color(6.8f, 5.8f, 5.2f));
+    int shadowQuality = (int)LightShadowQuality::Low;
+    lightSunComponent->setupDirectional(glm::normalize(Vector3(-1.0f, -1.0f, -1.0)), Color(6.8f, 5.8f, 5.2f), true, (LightShadowQuality)shadowQuality);
+
+    // light shadow presenter
+    auto lightShadowPresenter = scene->createActor<Actor>("LightShadowPresenter");
+    auto lightShadowComponent = lightShadowPresenter->createComponentMesh(cubeMesh);
+    auto lightShadowMaterial = new MaterialSimple(lightSunComponent->getLight()->getShadowTexture(0));
+    lightShadowMaterial->setAlbedoColor(Color(1, 0, 0));
+    lightShadowComponent->setMaterial(lightShadowMaterial);
+    lightShadowComponent->setPosition(0.0f, 0.9f, -2.5f);
+    lightShadowComponent->setScale(Vector3(4.0f, 4.0f, 4.0f));
 
     Camera *camera = new Camera();
     camera->setupAsPerspective(WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -121,6 +134,16 @@ APPMAIN
     input->addInput(rotateCameraYList, &cameraControl, [](InputType type, InputData *data, float value, void *userData)
                     { ((CameraControl *)userData)->rotateY = -value; });
 
+    InputDescriptorList lowerShadowQualityList;
+    lowerShadowQualityList.addKeyboardInput(KeyboardCode::KeyQ, 1.0f);
+    input->addInput(lowerShadowQualityList, &cameraControl, [](InputType type, InputData *data, float value, void *userData)
+                    { ((CameraControl *)userData)->lowerShadowQuality = value > 0.5; });
+
+    InputDescriptorList higherShadowQualityList;
+    higherShadowQualityList.addKeyboardInput(KeyboardCode::KeyE, 1.0f);
+    input->addInput(higherShadowQualityList, &cameraControl, [](InputType type, InputData *data, float value, void *userData)
+                    { ((CameraControl *)userData)->higherShadowQuality = value > 0.5; });
+
     InputDescriptorList quitButtonList;
     quitButtonList.addKeyboardInput(KeyboardCode::Escape, 1.0f);
     input->addInput(quitButtonList, window, [](InputType type, InputData *data, float value, void *userData)
@@ -134,7 +157,6 @@ APPMAIN
         window->processWindow();
         window->setMousePosition(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2);
 
-        renderer->startRendering();
         renderer->clearBuffer(Color(0.4, 0.5, 0.8));
 
         scene->process(delta);
@@ -144,15 +166,36 @@ APPMAIN
         cameraTransform.rotate(Quat(Vector3(cameraControl.rotateY * 0.0016f, 0, 0)));
         cameraControl.rotateY = 0.0f;
 
-        auto forward = cameraTransform.getRotation() * Vector3(0, 0, 0.2f);
+        auto forward = cameraTransform.getRotation() * Vector3(0, 0, 0.4f);
         cameraTransform.translate(forward * delta * cameraControl.move);
-        auto side = cameraTransform.getRotation() * Vector3(0.2f, 0, 0);
+        auto side = cameraTransform.getRotation() * Vector3(0.4f, 0, 0);
         cameraTransform.translate(side * delta * cameraControl.sideMove);
+
+        if (cameraControl.lowerShadowQuality)
+        {
+            cameraControl.lowerShadowQuality = false;
+            if (shadowQuality > 0)
+            {
+                shadowQuality--;
+                lightSunComponent->setShadowState(true, (LightShadowQuality)shadowQuality);
+                lightShadowMaterial->setAlbedoTexture(lightSunComponent->getLight()->getShadowTexture(0));
+            }
+        }
+
+        if (cameraControl.higherShadowQuality)
+        {
+            cameraControl.higherShadowQuality = false;
+            if (shadowQuality < (int)LightShadowQuality::AmountOfValues - 1)
+            {
+                shadowQuality++;
+                lightSunComponent->setShadowState(true, (LightShadowQuality)shadowQuality);
+                lightShadowMaterial->setAlbedoTexture(lightSunComponent->getLight()->getShadowTexture(0));
+            }
+        }
 
         camera->updateViewMatrix(cameraTransform.getModelMatrix());
         scene->render(renderer, camera);
 
-        renderer->endRendering();
         renderer->present();
     }
 

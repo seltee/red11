@@ -7,10 +7,17 @@
 #include <list>
 #include <string>
 
+enum class TextureType
+{
+    Normal,
+    GpuStencil
+};
+
 class Texture
 {
 public:
-    EXPORT Texture(std::string name);
+    EXPORT Texture(TextureType textureType);
+    EXPORT Texture(std::string name, TextureType textureType);
     EXPORT virtual ~Texture();
 
     EXPORT virtual unsigned char *getBufferData();
@@ -18,8 +25,12 @@ public:
     EXPORT virtual unsigned char *setBuffer(int width, int height);
     EXPORT virtual int getWidth();
     EXPORT virtual int getHeight();
-    
+
     EXPORT unsigned int getColorAtPoint(int x, int y);
+
+    EXPORT void setGpuRenderSize(int width, int height);
+
+    EXPORT virtual void destroy();
 
     inline unsigned int getIndex() { return index; }
     inline unsigned int getUpdIndex() { return updIndex; }
@@ -27,10 +38,14 @@ public:
     inline void markAsStatic(bool state) { bStaticBuffer = state; }
     inline bool isStaticBuffer() { return bStaticBuffer; }
 
+    inline TextureType getType() { return textureType; }
+    inline std::string &getName() { return name; }
+
     static inline std::list<Texture *> *getTextureList() { return &textures; }
 
 protected:
     std::string name;
+    TextureType textureType = TextureType::Normal;
 
     int index = 0;
     int updIndex = 0;

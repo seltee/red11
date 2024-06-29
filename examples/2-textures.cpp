@@ -162,7 +162,6 @@ APPMAIN
         window->processWindow();
         window->setMousePosition(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2);
 
-        renderer->startRendering();
         renderer->clearBuffer(Color(0.4, 0.5, 0.8));
 
         cube->rotate(Vector3(0.0f, 0.5f * delta, 0.0f));
@@ -184,7 +183,6 @@ APPMAIN
         camera->updateViewMatrix(cameraTransform.getModelMatrix());
         scene->render(renderer, camera);
 
-        renderer->endRendering();
         renderer->present();
     }
 
