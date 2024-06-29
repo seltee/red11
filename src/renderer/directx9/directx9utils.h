@@ -98,4 +98,10 @@ struct DX9Material
     float alphaHalfQuite;
 };
 
+struct DX9AffectingLight
+{
+    float distance;
+    Light *light;
+};
+
 #endif

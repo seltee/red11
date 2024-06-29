@@ -28,29 +28,50 @@ enum class LightType
 
 struct Attenuation
 {
-    float att0;
-    float att1;
-    float att2;
+    float constant;
+    float linear;
+    float quadratic;
 
     Attenuation()
     {
-        this->att0 = 0.1f;
-        this->att1 = 0.125f;
-        this->att2 = 0.2f;
+        this->constant = 1.0f;
+        this->linear = 0.1f;
+        this->quadratic = 0.01f;
     }
 
-    Attenuation(float att1)
+    Attenuation(float linear)
     {
-        this->att0 = 0.0f;
-        this->att1 = att1;
-        this->att2 = 0.0f;
+        this->constant = 1.0f;
+        this->linear = linear;
+        this->quadratic = 0.01f;
     }
 
-    Attenuation(float att0, float att1, float att2)
+    Attenuation(float constant, float linear, float quadratic)
     {
-        this->att0 = att0;
-        this->att1 = att1;
-        this->att2 = att2;
+        this->constant = constant;
+        this->linear = linear;
+        this->quadratic = quadratic;
+    }
+
+    inline float calcRadius()
+    {
+        const float threshold = 0.01f;
+        const float target = 1.0f / threshold;
+
+        float discriminant = linear * linear - 4 * quadratic * (constant - target);
+
+        if (discriminant < 0)
+        {
+            return 0.0f;
+        }
+        else
+        {
+            float R1 = (-linear + sqrt(discriminant)) / (2 * quadratic);
+            float R2 = (-linear - sqrt(discriminant)) / (2 * quadratic);
+
+            // Select the positive solution
+            return fmaxf(R1, R2);
+        }
     }
 };
 
@@ -66,7 +87,6 @@ public:
 
     EXPORT Light(
         Attenuation &omniAttenuation,
-        float omniRadius,
         Color &omniColor,
         bool bShadowEnabled = false,
         LightShadowQuality shadowQuality = LightShadowQuality::Low);
@@ -75,13 +95,13 @@ public:
                  Attenuation &spotAttenuation,
                  float spotOuterRadius,
                  float spotInnerRadius,
-                 float spotRange,
                  float spotFalloff,
                  Color &spotColor,
                  bool bShadowEnabled = false,
                  LightShadowQuality shadowQuality = LightShadowQuality::Low);
 
-    EXPORT bool isAffecting(Vector3 point, float radius);
+    // returns distance or 0.0f if not
+    EXPORT float isAffecting(Vector3 point, float radius);
 
     EXPORT void rebuildShadowTextures();
 
@@ -95,7 +115,6 @@ public:
     inline Attenuation &getAttenuation() { return attenuation; }
     inline float getRadius() { return radius; }
     inline float getInnerRadius() { return innerRadius; }
-    inline float getRange() { return range; }
     inline float getFalloff() { return falloff; }
     inline Color &getColor() { return color; }
     inline bool isShadowsEnabled() { return shadowTextures && bShadowEnabled; }
@@ -130,6 +149,5 @@ protected:
 
     float radius;
     float innerRadius;
-    float range;
     float falloff;
 };

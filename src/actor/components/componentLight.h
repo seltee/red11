@@ -18,7 +18,6 @@ public:
         LightShadowQuality shadowQuality = LightShadowQuality::Low);
 
     EXPORT void setupOmni(Attenuation omniAttenuation,
-                          float omniRange,
                           Color omniColor,
                           bool bEnableShadow = false,
                           LightShadowQuality shadowQuality = LightShadowQuality::Low);
@@ -27,7 +26,6 @@ public:
                           Attenuation spotAttenuation,
                           float spotInnerRadius,
                           float spotOuterRadius,
-                          float spotRange,
                           float spotFalloff,
                           Color spotColor,
                           bool bEnableShadow = false,

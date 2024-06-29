@@ -12,7 +12,6 @@ void ComponentLight::setupDirectional(Vector3 directionalNormal, Color direction
 }
 
 void ComponentLight::setupOmni(Attenuation omniAttenuation,
-                               float omniRange,
                                Color omniColor,
                                bool bEnableShadow,
                                LightShadowQuality shadowQuality)
@@ -20,14 +19,13 @@ void ComponentLight::setupOmni(Attenuation omniAttenuation,
     if (this->light)
         delete this->light;
 
-    this->light = new Light(omniAttenuation, omniRange, omniColor, bEnableShadow, shadowQuality);
+    this->light = new Light(omniAttenuation, omniColor, bEnableShadow, shadowQuality);
 }
 
 void ComponentLight::setupSpot(Vector3 spotDirection,
                                Attenuation spotAttenuation,
                                float spotInnerRadius,
                                float spotOuterRadius,
-                               float spotRange,
                                float spotFalloff,
                                Color spotColor,
                                bool bEnableShadow,
@@ -41,7 +39,6 @@ void ComponentLight::setupSpot(Vector3 spotDirection,
         spotAttenuation,
         spotInnerRadius,
         spotOuterRadius,
-        spotRange,
         spotFalloff,
         spotColor,
         bEnableShadow,

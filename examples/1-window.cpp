@@ -38,7 +38,7 @@ APPMAIN
 
     auto lightOmni = scene->createActor<Actor>("Omni");
     auto lightOmniComponent = lightOmni->createComponent<ComponentLight>();
-    lightOmniComponent->setupOmni(Attenuation(), 5.0f, Color(1.0f * 0.15f, 0.953f * 0.15f, 0.737f * 0.15f));
+    lightOmniComponent->setupOmni(Attenuation(), Color(2.0f, 1.953f, 1.737f));
     auto lightCubeComponent = lightOmni->createComponentMesh(cubeMesh);
     lightCubeComponent->setMaterial(new MaterialSimple(Color(0.8, 0.8, 0.8), Color(0.8, 0.4, 0.2)));
     lightCubeComponent->setScale(0.12f, 0.12f, 0.12f);

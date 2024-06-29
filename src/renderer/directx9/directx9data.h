@@ -15,7 +15,7 @@
 #define MAX_QUEUE_LINES (1 * 1024)
 #define MAX_TEXTURES_COUNT (128 * 1024)
 #define MAX_MATERIALS_COUNT (32 * 1024)
-#define MAX_LIGHTS_PER_MESH_COUNT 7
+#define MAX_LIGHTS_PER_MESH_COUNT 8
 
 class Directx9data
 {

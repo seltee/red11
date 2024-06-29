@@ -83,8 +83,8 @@ protected:
     void renderMeshDepthData(Camera *camera, Vector3 &cameraPosition, QueuedMeshRenderData *mesh);
     void renderMeshShadowDepthData(Camera *camera, Vector3 &cameraPosition, QueuedMeshRenderData *mesh);
 
-    void renderShadowBuffers(Vector3 &cameraPosition);
-    void renderShadowBuffersDirectional(Vector3 &cameraPosition, Light *light);
+    void renderShadowBuffers(Vector3 &cameraPosition, Vector3 &cameraFrowardVector);
+    void renderShadowBuffersDirectional(Vector3 &cameraPosition, Vector3 &cameraFrowardVector, Light *light);
 
     Color ambientColor = Color(1.0f, 1.0f, 1.0f);
 

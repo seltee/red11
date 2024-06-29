@@ -13,7 +13,6 @@ Light::Light()
     this->attenuation = Attenuation();
     this->position = Vector3(0.0f, 0.0f, 0.0f);
     this->color = Color(0.8f, 0.8f, 0.8f);
-    this->range = 1.0f;
     this->radius = 1.0f;
     this->innerRadius = 0.0f;
     this->falloff = 1.0f;
@@ -29,7 +28,6 @@ Light::Light(Vector3 &directionalNormal, Color &directionalColor, bool bShadowEn
     this->attenuation = Attenuation();
     this->position = Vector3(0.0f, 0.0f, 0.0f);
     this->color = directionalColor;
-    this->range = 1.0f;
     this->radius = 1.0f;
     this->innerRadius = 0.0f;
     this->falloff = 1.0f;
@@ -39,7 +37,7 @@ Light::Light(Vector3 &directionalNormal, Color &directionalColor, bool bShadowEn
     rebuildShadowTextures();
 }
 
-Light::Light(Attenuation &omniAttenuation, float omniRange, Color &omniColor, bool bShadowEnabled, LightShadowQuality shadowQuality)
+Light::Light(Attenuation &omniAttenuation, Color &omniColor, bool bShadowEnabled, LightShadowQuality shadowQuality)
 {
     this->type = LightType::Omni;
     this->normal = Vector3(0.0f, 0.0f, -1.0f);
@@ -47,8 +45,7 @@ Light::Light(Attenuation &omniAttenuation, float omniRange, Color &omniColor, bo
     this->attenuation = omniAttenuation;
     this->position = Vector3(0.0f, 0.0f, 0.0f);
     this->color = omniColor;
-    this->range = omniRange;
-    this->radius = 0.0f;
+    this->radius = omniAttenuation.calcRadius();
     this->innerRadius = 0.0f;
     this->falloff = 1.0f;
     this->bShadowEnabled = bShadowEnabled;
@@ -61,7 +58,6 @@ Light::Light(Vector3 &spotDirection,
              Attenuation &spotAttenuation,
              float spotOuterRadius,
              float spotInnerRadius,
-             float spotRange,
              float spotFalloff,
              Color &spotColor,
              bool bShadowEnabled,
@@ -75,7 +71,6 @@ Light::Light(Vector3 &spotDirection,
     this->color = spotColor;
     this->radius = spotOuterRadius;
     this->innerRadius = spotInnerRadius;
-    this->range = spotRange;
     this->falloff = spotFalloff;
     this->bShadowEnabled = bShadowEnabled;
     this->shadowQuality = shadowQuality;
@@ -83,11 +78,18 @@ Light::Light(Vector3 &spotDirection,
     rebuildShadowTextures();
 }
 
-bool Light::isAffecting(Vector3 point, float radius)
+float Light::isAffecting(Vector3 point, float radius)
 {
     if (type == LightType::Directional)
-        return true;
-    return false;
+        return 0.00001f;
+    if (type == LightType::Omni)
+    {
+        float distance = glm::distance(position, point);
+        // if (distance < radius + this->radius)
+        return distance + 0.000011f; // to make it always more far than directional lights
+        // return 0.0f;
+    }
+    return 0.0f;
 }
 
 void Light::rebuildShadowTextures()
@@ -110,28 +112,28 @@ void Light::rebuildShadowTextures()
         case LightShadowQuality::Low:
             numOfCascades = 1;
             bufferSize = 1024;
-            cascadeDistance = 2.2f;
+            cascadeDistance = 2.4f;
             break;
         case LightShadowQuality::Medium:
             bufferSize = 1024;
             numOfCascades = 1;
-            cascadeDistance = 2.2f;
+            cascadeDistance = 2.4f;
             break;
         case LightShadowQuality::High:
             bufferSize = 2048;
             numOfCascades = 1;
-            cascadeDistance = 2.8f;
+            cascadeDistance = 3.2f;
             break;
         case LightShadowQuality::Ultra:
             bufferSize = 2048;
             numOfCascades = 1;
-            cascadeDistance = 2.8f;
+            cascadeDistance = 3.2f;
             break;
         case LightShadowQuality::AmountOfValues:
         case LightShadowQuality::Maximum:
             bufferSize = 4096;
             numOfCascades = 1;
-            cascadeDistance = 4.0f;
+            cascadeDistance = 4.4f;
             break;
         }
     }
@@ -185,12 +187,12 @@ void Light::transform(Entity *entity)
 
     if (type == LightType::Omni)
     {
-        position = *m * Vector4(0.0f, 0.0f, 0.0f, 1.0f);
+        position = Vector3(*m * Vector4(0.0f, 0.0f, 0.0f, 1.0f));
     }
 
     if (type == LightType::Spot)
     {
-        position = *m * Vector4(0.0f, 0.0f, 0.0f, 1.0f);
+        position = Vector3(*m * Vector4(0.0f, 0.0f, 0.0f, 1.0f));
         Quat rotation = glm::quat_cast(*m);
         normal = glm::normalize(Vector3(rotation * Vector4(originalNormal, 1.0f)));
     }

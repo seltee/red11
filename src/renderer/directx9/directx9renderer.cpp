@@ -49,8 +49,11 @@ void DirectX9Renderer::queueLight(Light *light)
 void DirectX9Renderer::renderQueue(Camera *camera)
 {
     Vector3 camPosition = Vector3(*camera->getWorldMatrix() * Vector4(0.0f, 0.0f, 0.0f, 1.0f));
+    Vector3 camDirection = camera->getForwardVector();
+    camDirection.y = 0;
+    camDirection = glm::normalize(camDirection);
     data.recalcDistanceInQueue(camPosition);
-    renderShadowBuffers(camPosition);
+    renderShadowBuffers(camPosition, camDirection);
     renderQueueDepthBuffer(camPosition, camera);
     renderQueueDepthEqual(camPosition, camera);
 }
@@ -141,7 +144,7 @@ void DirectX9Renderer::renderLine(Camera *camera, Vector3 vFrom, Vector3 vTo)
     entity.setScale(Vector3(0.0008f, 0.0008f, glm::length(difference)));
     entity.setRotation(Vector3(CONST_PI / 2 - x, -y - CONST_PI / 2.0f, 0.0f));
 
-    Vector3 camPosition = Vector3(Vector4(0.0f, 0.0f, 0.0f, 1.0f) * *camera->getWorldMatrix());
+    Vector3 camPosition = Vector3(*camera->getWorldMatrix() * Vector4(0.0f, 0.0f, 0.0f, 1.0f));
     renderMesh(camera, &camPosition, cubeMesh, entity.getModelMatrix());
 }
 
@@ -378,15 +381,20 @@ void DirectX9Renderer::setupLights(Vector3 objectPosition, float objectRadius)
     // normalv3, power
     // colorv3, radius
 
-    std::vector<Light *> affectingLights;
+    std::vector<DX9AffectingLight> affectingLights;
     for (int lightNum = 0; lightNum < data.queueCurrentLight; lightNum++)
     {
         Light *lightData = data.queueLights[lightNum].light;
-        if (lightData->isAffecting(objectPosition, objectRadius))
-            affectingLights.push_back(lightData);
+        float distance = lightData->isAffecting(objectPosition, objectRadius);
+        if (distance > 0.0f)
+            affectingLights.push_back({distance, lightData});
     }
 
-    affectingLights.resize(MAX_LIGHTS_PER_MESH_COUNT);
+    std::sort(affectingLights.begin(), affectingLights.end(), [](const DX9AffectingLight a, const DX9AffectingLight b)
+              { return (b.distance > a.distance); });
+
+    if (affectingLights.size() > MAX_LIGHTS_PER_MESH_COUNT)
+        affectingLights.resize(MAX_LIGHTS_PER_MESH_COUNT);
 
     int baseReg = 20;
     int shadowMatrixBaseReg = 52;
@@ -394,8 +402,10 @@ void DirectX9Renderer::setupLights(Vector3 objectPosition, float objectRadius)
     DX9LightShaderStruct dxLight;
     memset(&dxLight, 0, sizeof(DX9LightShaderStruct));
 
-    for (auto &light : affectingLights)
+    for (int i = 0; i < MAX_LIGHTS_PER_MESH_COUNT; i++)
     {
+        auto lightData = i < affectingLights.size() ? &affectingLights.at(i) : nullptr;
+        auto light = lightData ? lightData->light : nullptr;
         if (!light)
         {
             dxLight.type = 0.0f;
@@ -406,7 +416,6 @@ void DirectX9Renderer::setupLights(Vector3 objectPosition, float objectRadius)
             Color lightColor = light->getColor();
             Vector3 lightDirection = light->getNormal();
             bool castShadow = light->isShadowsEnabled() && (shadowMatrixBaseReg < 60);
-            // bool castShadow = false;
 
             dxLight.type = 1.0f;
             dxLight.castShadow = castShadow ? 1.0f : 0.0f;
@@ -436,9 +445,31 @@ void DirectX9Renderer::setupLights(Vector3 objectPosition, float objectRadius)
                         d3ddev->SetTexture(shadowTextureBaseReg + c, cascade->texture);
                     }
                 }
-
                 d3ddev->SetVertexShaderConstantF(shadowMatrixBaseReg, (const float *)value_ptr(light->getShadowViewProjectionMatrix()), 4);
             }
+        }
+        else if (light->getType() == LightType::Omni)
+        {
+            Color lightColor = light->getColor();
+            Vector3 lightPosition = light->getPosition();
+
+            dxLight.type = 2.0f;
+            dxLight.castShadow = 0.0f;
+            dxLight.texelSize = 0.0f;
+            dxLight.data0 = light->getAttenuation().constant;
+            dxLight.data1 = light->getAttenuation().linear;
+            dxLight.data2 = light->getAttenuation().quadratic;
+            dxLight.data3 = 0.0f;
+
+            dxLight.position[0] = lightPosition.x;
+            dxLight.position[1] = lightPosition.y;
+            dxLight.position[2] = lightPosition.z;
+
+            dxLight.color[0] = lightColor.r;
+            dxLight.color[1] = lightColor.g;
+            dxLight.color[2] = lightColor.b;
+
+            d3ddev->SetPixelShaderConstantF(baseReg, (const float *)&dxLight, 4);
         }
         baseReg += 4;
         shadowMatrixBaseReg += 4;
@@ -448,7 +479,7 @@ void DirectX9Renderer::setupLights(Vector3 objectPosition, float objectRadius)
 
 void DirectX9Renderer::renderMeshColorData(Camera *camera, Vector3 &cameraPosition, QueuedMeshRenderData *mesh)
 {
-    setupLights(*mesh->model * Vector4(0.0f, 0.0f, 0.0f, 1.0f), 0.1f);
+    setupLights(Vector3(*mesh->model * Vector4(mesh->centroid, 1.0f)), 1.0f);
     setupMaterialColorRender(mesh->material);
 
     if (mesh->bones)
@@ -538,19 +569,19 @@ void DirectX9Renderer::renderMeshShadowDepthData(Camera *camera, Vector3 &camera
     }
 }
 
-void DirectX9Renderer::renderShadowBuffers(Vector3 &cameraPosition)
+void DirectX9Renderer::renderShadowBuffers(Vector3 &cameraPosition, Vector3 &cameraFrowardVector)
 {
     for (int i = 0; i < data.queueCurrentLight; i++)
     {
         if (data.queueLights[i].light && data.queueLights[i].light->isShadowsEnabled())
         {
             if (data.queueLights[i].light->getType() == LightType::Directional)
-                renderShadowBuffersDirectional(cameraPosition, data.queueLights[i].light);
+                renderShadowBuffersDirectional(cameraPosition, cameraFrowardVector, data.queueLights[i].light);
         }
     }
 }
 
-void DirectX9Renderer::renderShadowBuffersDirectional(Vector3 &cameraPosition, Light *light)
+void DirectX9Renderer::renderShadowBuffersDirectional(Vector3 &cameraPosition, Vector3 &cameraFrowardVector, Light *light)
 {
     Vector3 forward = glm::vec3(0.0f, 0.0f, -1.0f);
     IDirect3DSurface9 *originalRenderTarget = NULL;
@@ -569,7 +600,7 @@ void DirectX9Renderer::renderShadowBuffersDirectional(Vector3 &cameraPosition, L
         if (!cascade)
             continue;
 
-        Vector3 lightShotPosition = cameraPosition + light->getNormal() * cascadeSize * -2.0f;
+        Vector3 lightShotPosition = cameraPosition + light->getNormal() * cascadeSize * -2.0f + cameraFrowardVector * 0.5f * cascadeSize;
         camera.setupAsOrthographic(cascadeSize, cascadeSize, cascadeSize * -4.0f, cascadeSize * 4.0f);
         cameraEntity.setPosition(lightShotPosition);
         cameraEntity.setRotation(glm::rotation(forward, light->getNormal()));

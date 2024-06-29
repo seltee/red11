@@ -87,7 +87,7 @@ APPMAIN
     auto lightSun = scene->createActor<Actor>("Light");
     auto lightSunComponent = lightSun->createComponent<ComponentLight>();
     int shadowQuality = (int)LightShadowQuality::Low;
-    lightSunComponent->setupDirectional(glm::normalize(Vector3(-1.0f, -1.0f, -1.0)), Color(6.8f, 5.8f, 5.2f), true, (LightShadowQuality)shadowQuality);
+    lightSunComponent->setupDirectional(glm::normalize(Vector3(-1.0f, -1.0f, -1.0)), Color(2.2f, 1.5f, 1.4f), true, (LightShadowQuality)shadowQuality);
 
     // light shadow presenter
     auto lightShadowPresenter = scene->createActor<Actor>("LightShadowPresenter");
@@ -97,6 +97,21 @@ APPMAIN
     lightShadowComponent->setMaterial(lightShadowMaterial);
     lightShadowComponent->setPosition(0.0f, 0.9f, -2.5f);
     lightShadowComponent->setScale(Vector3(4.0f, 4.0f, 4.0f));
+
+    // rotating lights
+    const int omniLightsAmount = 20;
+    Actor *omniActors[omniLightsAmount];
+    for (int i = 0; i < omniLightsAmount; i++)
+    {
+        omniActors[i] = scene->createActor<Actor>(std::string("LightOmni_") + std::to_string(i));
+        Color color = Color(randf(20.0f, 60.0f), randf(20.0f, 60.0f), randf(20.0f, 60.0f));
+        auto omniComponentBox = omniActors[i]->createComponentMesh(cubeMesh);
+        auto omniMaterial = new MaterialSimple(Color(0, 0, 0), color);
+        omniComponentBox->setMaterial(omniMaterial);
+        omniComponentBox->setScale(0.3f);
+        auto lightOmniComponent = omniActors[i]->createComponent<ComponentLight>();
+        lightOmniComponent->setupOmni(Attenuation(16.0f, 4.0f, 40.0f), color);
+    }
 
     Camera *camera = new Camera();
     camera->setupAsPerspective(WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -150,10 +165,13 @@ APPMAIN
                     { ((Window *)userData)->close(); });
 
     DeltaCounter deltaCounter;
+    float boxRotateCounter = 0.0f;
 
     while (!window->isCloseRequested())
     {
         float delta = deltaCounter.getDelta();
+        boxRotateCounter += delta * 0.06f;
+
         window->processWindow();
         window->setMousePosition(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2);
 
@@ -191,6 +209,14 @@ APPMAIN
                 lightSunComponent->setShadowState(true, (LightShadowQuality)shadowQuality);
                 lightShadowMaterial->setAlbedoTexture(lightSunComponent->getLight()->getShadowTexture(0));
             }
+        }
+
+        float omniStep = CONST_PI2 / ((float)omniLightsAmount);
+        for (int i = 0; i < omniLightsAmount; i++)
+        {
+            float angle = ((float)i) * omniStep + boxRotateCounter;
+            const float distance = 2.6f;
+            omniActors[i]->setPosition(Vector3(sinf(angle) * distance, 0.16f, cosf(angle) * distance));
         }
 
         camera->updateViewMatrix(cameraTransform.getModelMatrix());

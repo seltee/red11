@@ -94,6 +94,8 @@ float4 main(VS_Output pin) : SV_TARGET
     {
         if (Lights[i].type[0] == 0.0f)
             break;
+
+        // Directional
         if (Lights[i].type[0] == 1.0f)
         {
             // Directional light direction is usually opposite
@@ -110,7 +112,7 @@ float4 main(VS_Output pin) : SV_TARGET
             float3 specular = F * pow(NdotH, 8.0 / roughness);
 
             float shadow = 1.0f;
-            if (Lights[i].type[1] == 1.0f)
+            if (Lights[i].type[1] == 1.0f && i < 2)
             {
                 // shadow enabled
                 shadow = 1.0 - ShadowCalculation(shadowTexSampler[i * 2], pin.shadowCoord[i], L, pin.normal, Lights[i].type[2]);
@@ -118,6 +120,32 @@ float4 main(VS_Output pin) : SV_TARGET
 
             // Accumulate lighting contributions
             color += (kD * diffuse + specular) * (float3)Lights[i].color * NdotL * shadow;
+        }
+
+        // Omni
+        if (Lights[i].type[0] == 2.0f)
+        {
+            L = (float3)Lights[i].position - pin.worldPos;
+            float distance = length(L);
+            L = normalize(L);
+            H = normalize(V + L);
+            F = float3(0.04, 0.04, 0.04) + (float3(0.96, 0.96, 0.96)) * pow(1.0 - max(dot(H, V), 0.0), 5.0);
+
+            // NdotL and NdotH
+            float NdotL = max(dot(N, L), 0.0);
+            float NdotH = max(dot(N, H), 0.0);
+            float3 kD = (float3(1.0, 1.0, 1.0) - F) * (1.0 - metallic);
+
+            // Simplified specular
+            float3 specular = F * pow(NdotH, 8.0 / roughness);
+
+            float attenuation = 1.0 / (Lights[i].type[3] +
+                                       Lights[i].position[3] * distance +
+                                       Lights[i].normal[3] * distance * distance);
+            // Accumulate lighting contributions
+            if (attenuation >= 0.01)
+                color += (kD * diffuse + specular) * (float3)Lights[i].color * NdotL * attenuation;
+            continue;
         }
     }
     // gamma

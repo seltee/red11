@@ -32,6 +32,11 @@ public:
         this->worldMatrix = *worldModelMatrix;
         this->viewMatrix = glm::inverse(*worldModelMatrix);
     }
+    inline Vector3 getForwardVector()
+    {
+        return Matrix3(worldMatrix) * Vector3(0.0f, 0.0f, -1.0f);
+    }
+
     EXPORT PointWithDirection screenToWorld(float x, float y, Matrix4 *worldModelMatrix);
 
     inline CameraType getType() { return type; }
