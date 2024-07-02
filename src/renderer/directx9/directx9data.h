@@ -7,11 +7,12 @@
 #include "directx9materialRenderData.h"
 #include "directx9textureRenderData.h"
 #include "directx9utils.h"
+#include "data/sphere.h"
 #include <vector>
 
 #ifdef WINDOWS_ONLY
 #define MAX_QUEUE_LIGHTS_COUNT (1 * 1024)
-#define MAX_QUEUE_MESH_COUNT (256 * 1024)
+#define MAX_QUEUE_MESH_COUNT (128 * 1024)
 #define MAX_QUEUE_LINES (1 * 1024)
 #define MAX_TEXTURES_COUNT (128 * 1024)
 #define MAX_MATERIALS_COUNT (32 * 1024)
@@ -84,6 +85,10 @@ public:
 
     void recalcDistanceInQueue(Vector3 &cameraPosition);
 
+    void remakeActiveQueueForCamera(Camera *camera);
+    bool isMeshVisibleToCamera(QueuedMeshRenderData *mesh, Camera *camera);
+    bool isLightVisibleToCamera(QueuedLightRenderData *light, Camera *camera);
+
     Directx9MeshRenderData *meshRenderData[MAX_MESH_COUNT];
     Directx9TextureRenderData *textureRenderData[MAX_TEXTURES_COUNT];
     Directx9MaterialRenderData *materialRenderData[MAX_MATERIALS_COUNT];
@@ -91,8 +96,14 @@ public:
     int queueCurrentMesh = 0;
     QueuedMeshRenderData queueMeshes[MAX_QUEUE_MESH_COUNT];
 
+    int queueActiveCurrentMesh = 0;
+    QueuedMeshRenderData *queueActiveMeshes[MAX_QUEUE_MESH_COUNT];
+
     int queueCurrentLight = 0;
     QueuedLightRenderData queueLights[MAX_QUEUE_LIGHTS_COUNT];
+
+    int queueActiveCurrentLight = 0;
+    QueuedLightRenderData *queueActiveLights[MAX_QUEUE_LIGHTS_COUNT];
 
     int queueCurrentLine = 0;
     QueuedLineRenderData queueLines[MAX_QUEUE_LINES];

@@ -53,6 +53,7 @@ void DirectX9Renderer::renderQueue(Camera *camera)
     camDirection.y = 0;
     camDirection = glm::normalize(camDirection);
     data.recalcDistanceInQueue(camPosition);
+    data.remakeActiveQueueForCamera(camera);
     renderShadowBuffers(camPosition, camDirection);
     renderQueueDepthBuffer(camPosition, camera);
     renderQueueDepthEqual(camPosition, camera);
@@ -271,10 +272,10 @@ void DirectX9Renderer::renderQueueDepthBuffer(Vector3 &cameraPosition, Camera *c
     d3ddev->SetRenderState(D3DRS_ALPHABLENDENABLE, false);
 
     d3ddev->BeginScene();
-    for (int i = 0; i < data.queueCurrentMesh; i++)
+    for (int i = 0; i < data.queueActiveCurrentMesh; i++)
     {
-        if (!data.queueMeshes[i].material->isAlphaPhase())
-            renderMeshDepthData(camera, cameraPosition, &data.queueMeshes[i]);
+        if (!data.queueActiveMeshes[i]->material->isAlphaPhase())
+            renderMeshDepthData(camera, cameraPosition, data.queueActiveMeshes[i]);
     }
     d3ddev->EndScene();
 }
@@ -294,7 +295,10 @@ void DirectX9Renderer::renderQueueLightDepthBuffer(Vector3 &cameraPosition, Came
 
     d3ddev->BeginScene();
     for (int i = 0; i < data.queueCurrentMesh; i++)
-        renderMeshShadowDepthData(camera, cameraPosition, &data.queueMeshes[i]);
+    {
+        if (data.isMeshVisibleToCamera(&data.queueMeshes[i], camera))
+            renderMeshShadowDepthData(camera, cameraPosition, &data.queueMeshes[i]);
+    }
     d3ddev->EndScene();
 }
 
@@ -320,12 +324,12 @@ void DirectX9Renderer::renderQueueDepthEqual(Vector3 &cameraPosition, Camera *ca
     d3ddev->BeginScene();
 
     // === Render Solid Meshes ===
-    for (int i = 0; i < data.queueCurrentMesh; i++)
+    for (int i = 0; i < data.queueActiveCurrentMesh; i++)
     {
-        if (data.queueMeshes[i].material->isAlphaPhase())
-            alphaRenderMeshes.push_back(&data.queueMeshes[i]);
+        if (data.queueActiveMeshes[i]->material->isAlphaPhase())
+            alphaRenderMeshes.push_back(data.queueActiveMeshes[i]);
         else
-            renderMeshColorData(camera, cameraPosition, &data.queueMeshes[i]);
+            renderMeshColorData(camera, cameraPosition, data.queueActiveMeshes[i]);
     }
 
     // === Sort and Render Alpha Meshes ===
@@ -382,9 +386,9 @@ void DirectX9Renderer::setupLights(Vector3 objectPosition, float objectRadius)
     // colorv3, radius
 
     std::vector<DX9AffectingLight> affectingLights;
-    for (int lightNum = 0; lightNum < data.queueCurrentLight; lightNum++)
+    for (int lightNum = 0; lightNum < data.queueActiveCurrentLight; lightNum++)
     {
-        Light *lightData = data.queueLights[lightNum].light;
+        Light *lightData = data.queueActiveLights[lightNum]->light;
         float distance = lightData->isAffecting(objectPosition, objectRadius);
         if (distance > 0.0f)
             affectingLights.push_back({distance, lightData});
@@ -571,12 +575,12 @@ void DirectX9Renderer::renderMeshShadowDepthData(Camera *camera, Vector3 &camera
 
 void DirectX9Renderer::renderShadowBuffers(Vector3 &cameraPosition, Vector3 &cameraFrowardVector)
 {
-    for (int i = 0; i < data.queueCurrentLight; i++)
+    for (int i = 0; i < data.queueActiveCurrentLight; i++)
     {
-        if (data.queueLights[i].light && data.queueLights[i].light->isShadowsEnabled())
+        if (data.queueActiveLights[i]->light && data.queueActiveLights[i]->light->isShadowsEnabled())
         {
-            if (data.queueLights[i].light->getType() == LightType::Directional)
-                renderShadowBuffersDirectional(cameraPosition, cameraFrowardVector, data.queueLights[i].light);
+            if (data.queueActiveLights[i]->light->getType() == LightType::Directional)
+                renderShadowBuffersDirectional(cameraPosition, cameraFrowardVector, data.queueActiveLights[i]->light);
         }
     }
 }
@@ -614,9 +618,7 @@ void DirectX9Renderer::renderShadowBuffersDirectional(Vector3 &cameraPosition, V
 
         renderQueueLightDepthBuffer(lightShotPosition, &camera);
         if (i == 0)
-        {
             light->setShadowViewProjectionMatrix(glm::transpose(*camera.getProjectionMatrix() * *camera.getViewMatrix()));
-        }
     }
 
     d3ddev->SetRenderTarget(0, originalRenderTarget);

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 
 #include "mesh.h"
+#include "utils/makeSmallestSphere.h"
 
 #define FLOAT_PREC_DIV_CONST 0.00001f
 
@@ -61,6 +62,8 @@ Mesh::Mesh(VertexDataType type, void *verticies, int vLength, PolygonTriPoints *
     for (int i = 0; i < pLength; i++)
         this->polygons[i] = polygons[i];
 
+    boundVolume = makeSmallestSphere((const float *)this->verticies.ptr, vLength, getVertexDataTypeSize(type) / sizeof(float));
+
     rebuildTangents();
 }
 
@@ -76,6 +79,10 @@ Mesh::~Mesh()
 
 void Mesh::addDeform(Deform *deform)
 {
+    // TODO calc visibility of bone animated meshes by their bone volumes
+    if (deforms.size() == 0)
+        boundVolume.radius *= 1.25f;
+
     deform->index = deforms.size();
     deforms.push_back(deform);
 }

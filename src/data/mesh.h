@@ -4,6 +4,7 @@
 #pragma once
 #include "utils/primitives.h"
 #include "data/deform.h"
+#include "data/sphere.h"
 #include <string>
 
 #define MAX_MESH_COUNT 100000
@@ -132,6 +133,8 @@ public:
 
     inline Vector4 getCentroid() { return centroid; }
 
+    inline Sphere &getBoundVolumeSphere() { return boundVolume; }
+
 protected:
     void rebuildTangents();
     void getTangentBitangent(VertexDataUV &v1, VertexDataUV &v2, VertexDataUV &v3, Vector3 *tangent, Vector3 *bitangent);
@@ -146,4 +149,5 @@ protected:
     unsigned int index;
 
     std::vector<Deform *> deforms;
+    Sphere boundVolume;
 };

@@ -78,3 +78,51 @@ void Directx9data::recalcDistanceInQueue(Vector3 &cameraPosition)
             queueMeshes[i].distance = glm::distance2(cameraPosition, queueMeshes[i].centroid);
     }
 }
+
+void Directx9data::remakeActiveQueueForCamera(Camera *camera)
+{
+    queueActiveCurrentMesh = 0;
+    queueActiveCurrentLight = 0;
+    for (int i = 0; i < queueCurrentMesh; i++)
+    {
+        if (isMeshVisibleToCamera(&queueMeshes[i], camera))
+        {
+            queueActiveMeshes[queueActiveCurrentMesh] = &queueMeshes[i];
+            queueActiveCurrentMesh++;
+        }
+    }
+    for (int i = 0; i < queueCurrentLight; i++)
+    {
+        if (queueLights[i].light && isLightVisibleToCamera(&queueLights[i], camera))
+        {
+            queueActiveLights[queueActiveCurrentLight] = &queueLights[i];
+            queueActiveCurrentLight++;
+        }
+    }
+}
+
+bool Directx9data::isMeshVisibleToCamera(QueuedMeshRenderData *mesh, Camera *camera)
+{
+    Matrix4 mv = *camera->getViewMatrix() * *mesh->model;
+    if (mesh->mesh->getBoundVolumeSphere().isSphereInFrustum(&mv, camera->getCullingPlanes()))
+        return true;
+    return false;
+}
+
+bool Directx9data::isLightVisibleToCamera(QueuedLightRenderData *light, Camera *camera)
+{
+    if (light->light->getType() == LightType::Directional)
+        return true;
+
+    if (light->light->getType() == LightType::Omni)
+    {
+        Vector3 position = light->light->getPosition();
+        Sphere sphere;
+        sphere.setup(position, light->light->getRadius());
+        if (sphere.isSphereInFrustum(camera->getViewMatrix(), camera->getCullingPlanes()))
+            return true;
+        return false;
+    }
+
+    return false;
+}
