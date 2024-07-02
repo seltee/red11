@@ -9,7 +9,7 @@
 APPMAIN
 {
     Red11::openConsole();
-    auto window = Red11::createWindow("Window Example", WINDOW_WIDTH, WINDOW_HEIGHT, false);
+    auto window = Red11::createWindow("Window Example", WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_RESIZABLE);
     auto renderer = Red11::createRenderer(window, RendererType::DirectX9);
 
     auto cubeMesh = Red11::getMeshBuilder()->createCube(0.1f);
@@ -46,14 +46,15 @@ APPMAIN
     Camera *camera = new Camera();
     Entity cameraTransform;
 
-    camera->setupAsPerspective(WINDOW_WIDTH, WINDOW_HEIGHT);
-
     DeltaCounter deltaCounter;
     float wsDelta = 0.0f;
     while (!window->isCloseRequested())
     {
         window->processWindow();
         wsDelta += deltaCounter.getDelta();
+
+        renderer->prepareToRender();
+        camera->setupAsPerspective(renderer->getViewWidth(), renderer->getViewHeight());
 
         renderer->clearBuffer(Color(0.4, 0.5, 0.8));
 

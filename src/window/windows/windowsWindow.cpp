@@ -10,13 +10,25 @@
 
 #define CLASS_NAME L"Red11 Window Class"
 
-LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK WindowProcedure(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+    WindowsWindow *window = (WindowsWindow *)GetWindowLongPtr(hWnd, GWLP_USERDATA);
+    PWINDOWPOS winpos;
+    RECT rect;
+
+    if (message == WM_CREATE)
+    {
+        CREATESTRUCT *CreateStruct = (CREATESTRUCT *)lParam;
+        window = (WindowsWindow *)CreateStruct->lpCreateParams;
+        SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)window);
+    }
+
     switch (message)
     {
     case WM_DESTROY:
         PostQuitMessage(0);
         break;
+
     case WM_KEYDOWN:
         InputData keyDownData;
         keyDownData.keyboard.keyCode = (KeyboardCode)wParam;
@@ -41,18 +53,26 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
         InputProvider::provideNewInput(InputType::Mouse, mouseData);
         break;
 
+    case WM_WINDOWPOSCHANGED:
+        winpos = (PWINDOWPOS)lParam;
+        GetClientRect(hWnd, &rect);
+        window->udpateRealSize(rect.right, rect.bottom);
+        break;
+
     default:
-        return DefWindowProcW(hwnd, message, wParam, lParam);
+        return DefWindowProcW(hWnd, message, wParam, lParam);
     }
 
     return 0;
 }
 
-WindowsWindow::WindowsWindow(const char *windowName, int width, int height, bool bIsFulltscreen)
+WindowsWindow::WindowsWindow(const char *windowName, int width, int height, int flags)
 {
-    state.width = width;
-    state.height = height;
-    state.bIsFulltscreen = bIsFulltscreen;
+    state.requesedWidth = width;
+    state.requesedHeight = height;
+    state.bIsFullscreen = (flags & WINDOW_FULLSCREEN) != 0;
+    state.bIsBorderless = (flags & WINDOW_BORDERLESS) != 0;
+    state.bIsResizable = (flags & WINDOW_RESIZABLE) != 0;
     state.bIsValid = true;
     state.bIsCloseRequested = false;
 
@@ -94,28 +114,38 @@ WindowsWindow::WindowsWindow(const char *windowName, int width, int height, bool
         }
     }
 
+    int displayWidth = GetSystemMetrics(SM_CXSCREEN);
+    int displayHeight = GetSystemMetrics(SM_CYSCREEN);
+
+    int positionX = state.bIsFullscreen ? 0 : (displayWidth - width) / 2;
+    int positionY = state.bIsFullscreen ? 0 : (displayHeight - height) / 2;
+    state.realWidth = state.bIsFullscreen ? displayWidth : width;
+    state.realHeight = state.bIsFullscreen ? displayHeight : height;
+
+    int style = getStyleForState(state);
+
     // CreateWindowHandle
-    hwnd = CreateWindowExW(
-        0,                   // Optional window styles.
-        CLASS_NAME,          // Window class
-        wideTitle.c_str(),   // Window text
-        WS_OVERLAPPEDWINDOW, // Window style
-        // Size and position
-        CW_USEDEFAULT, CW_USEDEFAULT, width, height,
+    hWnd = CreateWindowExW(
+        0,                 // Optional window styles.
+        CLASS_NAME,        // Window class
+        wideTitle.c_str(), // Window text
+        style,             // Window style
+        // position and size
+        positionX, positionY, state.realWidth, state.realHeight,
         NULL,      // Parent window
         NULL,      // Menu
         hInstance, // Instance handle
-        NULL       // Additional application data
+        this       // Additional application data
     );
 
-    if (hwnd == NULL)
+    if (hWnd == NULL)
     {
         state.bIsValid = false;
         return;
     }
 
-    ShowWindow(hwnd, true);
-    UpdateWindow(hwnd);
+    ShowWindow(hWnd, true);
+    UpdateWindow(hWnd);
 }
 
 void WindowsWindow::processWindow()
@@ -137,14 +167,73 @@ void WindowsWindow::processWindow()
     }
 }
 
+void WindowsWindow::setFullscreen(bool fullscreenState)
+{
+    if (state.bIsFullscreen != fullscreenState)
+    {
+        state.bIsFullscreen = fullscreenState;
+
+        int style = getStyleForState(state);
+        SetWindowLong(hWnd, GWL_STYLE, style);
+
+        int displayWidth = GetSystemMetrics(SM_CXSCREEN);
+        int displayHeight = GetSystemMetrics(SM_CYSCREEN);
+        int positionX = fullscreenState ? 0 : (displayWidth - state.requesedWidth) / 2;
+        int positionY = fullscreenState ? 0 : (displayHeight - state.requesedHeight) / 2;
+        int newRealWidth = state.bIsFullscreen ? displayWidth : state.requesedWidth;
+        int newRealHeight = state.bIsFullscreen ? displayHeight : state.requesedHeight;
+
+        SetWindowPos(hWnd, HWND_TOP, positionX, positionY, newRealWidth, newRealHeight, SWP_FRAMECHANGED | SWP_SHOWWINDOW);
+
+        ShowWindow(hWnd, true);
+        UpdateWindow(hWnd);
+    }
+}
+
+void WindowsWindow::setResolution(int width, int height)
+{
+    state.requesedWidth = width;
+    state.requesedHeight = height;
+
+    int displayWidth = GetSystemMetrics(SM_CXSCREEN);
+    int displayHeight = GetSystemMetrics(SM_CYSCREEN);
+    int positionX = state.bIsFullscreen ? 0 : (displayWidth - state.requesedWidth) / 2;
+    int positionY = state.bIsFullscreen ? 0 : (displayHeight - state.requesedHeight) / 2;
+    int newRealWidth = state.bIsFullscreen ? displayWidth : state.requesedWidth;
+    int newRealHeight = state.bIsFullscreen ? displayHeight : state.requesedHeight;
+
+    SetWindowPos(hWnd, HWND_TOP, positionX, positionY, newRealWidth, newRealHeight, SWP_FRAMECHANGED | SWP_SHOWWINDOW);
+
+    ShowWindow(hWnd, true);
+    UpdateWindow(hWnd);
+}
+
 void WindowsWindow::setMousePosition(int x, int y, bool generateMoveEvents)
 {
     POINT p = {x, y};
-    ClientToScreen(hwnd, &p);
-    if (SetCursorPos(p.x, p.y)){
+    ClientToScreen(hWnd, &p);
+    if (SetCursorPos(p.x, p.y))
+    {
         InputProvider::setMousePosition(x, y, generateMoveEvents);
     }
+}
 
+int WindowsWindow::getStyleForState(WindowState &state)
+{
+    int style = WS_OVERLAPPEDWINDOW;
+    if (state.bIsFullscreen)
+    {
+        style = WS_POPUP | WS_VISIBLE;
+    }
+    else if (state.bIsBorderless)
+    {
+        style = WS_POPUP | WS_VISIBLE;
+    }
+    else if (state.bIsResizable)
+    {
+        style = WS_OVERLAPPEDWINDOW | WS_SIZEBOX | WS_VISIBLE;
+    }
+    return style;
 }
 
 #endif

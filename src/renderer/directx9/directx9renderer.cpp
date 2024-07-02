@@ -10,12 +10,20 @@
 DirectX9Renderer::DirectX9Renderer(Window *window) : Renderer(window)
 {
     WindowsWindow *winWindow = (WindowsWindow *)window;
-    initD3D(winWindow->getHwnd(), winWindow->isFullscreen(), window->getWidth(), window->getHeight());
+    initD3D(winWindow->getHwnd(), false, window->getWidth(), window->getHeight());
 }
 
 RendererType DirectX9Renderer::getType()
 {
     return RendererType::DirectX9;
+}
+
+void DirectX9Renderer::prepareToRender()
+{
+    if (viewWidth != window->getWidth() || viewHeight != window->getHeight())
+    {
+        resizeD3D(window->getWidth(), window->getHeight());
+    }
 }
 
 void DirectX9Renderer::clearBuffer(Color color)
@@ -164,18 +172,19 @@ void DirectX9Renderer::initD3D(HWND hWnd, bool bIsFullscreen, int width, int hei
 {
     d3d = Direct3DCreate9(D3D_SDK_VERSION); // create the Direct3D interface
 
+    int displayWidth = GetSystemMetrics(SM_CXSCREEN);
+    int displayHeight = GetSystemMetrics(SM_CYSCREEN);
+
     D3DPRESENT_PARAMETERS d3dpp;       // create a struct to hold various device information
     ZeroMemory(&d3dpp, sizeof(d3dpp)); // clear out the struct for use
     d3dpp.Windowed = !bIsFullscreen;
     d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD; // discard old frames
     d3dpp.hDeviceWindow = hWnd;               // set the window to be used by Direct3D
     d3dpp.BackBufferFormat = D3DFMT_X8R8G8B8; // set the back buffer format to 32-bit
-    d3dpp.BackBufferWidth = width;            // set the width of the buffer
-    d3dpp.BackBufferHeight = height;          // set the height of the buffer
+    d3dpp.BackBufferWidth = displayWidth;     // set the width of the buffer
+    d3dpp.BackBufferHeight = displayHeight;   // set the height of the buffer
     d3dpp.EnableAutoDepthStencil = true;
-    d3dpp.AutoDepthStencilFormat = D3DFMT_D16;
-
-    // create a device class using this information and information from the d3dpp stuct
+    d3dpp.AutoDepthStencilFormat = D3DFMT_D24S8;
     d3d->CreateDevice(D3DADAPTER_DEFAULT,
                       D3DDEVTYPE_HAL,
                       hWnd,
@@ -256,6 +265,12 @@ void DirectX9Renderer::initD3D(HWND hWnd, bool bIsFullscreen, int width, int hei
         d3ddev->SetSamplerState(i, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
         d3ddev->SetSamplerState(i, D3DSAMP_MIPFILTER, D3DTEXF_LINEAR);
     }
+}
+
+void DirectX9Renderer::resizeD3D(int width, int height)
+{
+    this->viewWidth = width;
+    this->viewHeight = height;
 }
 
 void DirectX9Renderer::renderQueueDepthBuffer(Vector3 &cameraPosition, Camera *camera)

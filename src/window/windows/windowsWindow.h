@@ -13,15 +13,21 @@
 class WindowsWindow : public Window
 {
 public:
-    EXPORT WindowsWindow(const char *windowName, int width, int height, bool bIsFulltscreen);
-    inline HWND getHwnd() { return hwnd; }
+    EXPORT WindowsWindow(const char *windowName, int width, int height, int flags = 0);
+    inline HWND getHwnd() { return hWnd; }
 
-    EXPORT void processWindow();
+    EXPORT void processWindow() override final;
 
-    EXPORT void setMousePosition(int x, int y, bool generateMoveEvents = false);
+    EXPORT void setFullscreen(bool fullscreenState) override final;
+
+    EXPORT void setResolution(int width, int height) override final;
+
+    EXPORT void setMousePosition(int x, int y, bool generateMoveEvents = false) override final;
+
+    EXPORT int getStyleForState(WindowState &state);
 
 protected:
-    HWND hwnd;
+    HWND hWnd;
     HINSTANCE hInstance;
 
     bool isWindowsVersionOrGreater(WORD wMajorVersion, WORD wMinorVersion, WORD wServicePackMajor);

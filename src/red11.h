@@ -40,7 +40,7 @@ protected:
 public:
     EXPORT static Scene *createScene();
 
-    EXPORT static Window *createWindow(const char *utf8Name, int width, int height, bool bSetFullscreen);
+    EXPORT static Window *createWindow(const char *utf8Name, int width, int height, int flags = 0);
 
     EXPORT static void openConsole();
 

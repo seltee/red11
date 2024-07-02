@@ -28,6 +28,7 @@ public:
 
     virtual RendererType getType() = 0;
 
+    virtual void prepareToRender() = 0;
     virtual void clearBuffer(Color color) = 0;
     virtual void queueMesh(Mesh *mesh, Material *material, Matrix4 *model) = 0;
     virtual void queueMeshSkinned(Mesh *mesh, Material *material, Matrix4 *model, std::vector<BoneTransform> *bones) = 0;
@@ -40,6 +41,10 @@ public:
     virtual void setAmbientLight(Color &ambientColor) = 0;
     virtual void present() = 0;
 
+    inline int getViewWidth() { return viewWidth; }
+    inline int getViewHeight() { return viewHeight; }
+
 protected:
     int viewWidth = 0, viewHeight = 0;
+    Window *window = nullptr;
 };

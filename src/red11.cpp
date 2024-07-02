@@ -18,9 +18,9 @@ Scene *Red11::createScene()
     return new Scene();
 }
 
-Window *Red11::createWindow(const char *utf8Name, int width, int height, bool bSetFullscreen)
+Window *Red11::createWindow(const char *utf8Name, int width, int height, int flags)
 {
-    return new WindowsWindow(utf8Name, width, height, bSetFullscreen);
+    return new WindowsWindow(utf8Name, width, height, flags);
 }
 
 void Red11::openConsole()

@@ -115,7 +115,7 @@ APPMAIN
     lightSunComponent->setupDirectional(glm::normalize(Vector3(-1.0f, -1.0f, -1.0)), Color(6.7f, 5.9f, 5.0f));
 
     Camera *camera = new Camera();
-    camera->setupAsPerspective(WINDOW_WIDTH, WINDOW_HEIGHT);
+    camera->setupAsPerspective(renderer->getViewWidth(), renderer->getViewHeight());
 
     Entity cameraTransform;
 
@@ -162,6 +162,7 @@ APPMAIN
         window->processWindow();
         window->setMousePosition(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2);
 
+        renderer->prepareToRender();
         renderer->clearBuffer(Color(0.4, 0.5, 0.8));
 
         cube->rotate(Vector3(0.0f, 0.5f * delta, 0.0f));

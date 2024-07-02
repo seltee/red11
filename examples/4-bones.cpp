@@ -4,8 +4,8 @@
 #include "red11.h"
 #include <string>
 
-#define WINDOW_WIDTH 2200
-#define WINDOW_HEIGHT 1400
+#define WINDOW_WIDTH 2200 / 2
+#define WINDOW_HEIGHT 1400 / 2
 
 struct CameraControl
 {
@@ -21,7 +21,7 @@ APPMAIN
 {
     Red11::openConsole();
 
-    auto window = Red11::createWindow("Bones Example", WINDOW_WIDTH, WINDOW_HEIGHT, false);
+    auto window = Red11::createWindow("Bones Example", WINDOW_WIDTH, WINDOW_HEIGHT, 0);
     auto renderer = Red11::createRenderer(window, RendererType::DirectX9);
 
     // Textures & Materials
@@ -114,7 +114,6 @@ APPMAIN
     }
 
     Camera *camera = new Camera();
-    camera->setupAsPerspective(WINDOW_WIDTH, WINDOW_HEIGHT);
 
     Entity cameraTransform;
     cameraTransform.setPosition(0, 0.2, 0);
@@ -142,12 +141,12 @@ APPMAIN
     InputDescriptorList rotateCameraXList;
     rotateCameraXList.addMouseInput(InputMouseType::MoveX, 1.0f);
     input->addInput(rotateCameraXList, &cameraControl, [](InputType type, InputData *data, float value, void *userData)
-                    { ((CameraControl *)userData)->rotateX = -value; });
+                    { ((CameraControl *)userData)->rotateX = glm::clamp(-value, -64.0f, 64.0f); });
 
     InputDescriptorList rotateCameraYList;
     rotateCameraYList.addMouseInput(InputMouseType::MoveY, 1.0f);
     input->addInput(rotateCameraYList, &cameraControl, [](InputType type, InputData *data, float value, void *userData)
-                    { ((CameraControl *)userData)->rotateY = -value; });
+                    { ((CameraControl *)userData)->rotateY = glm::clamp(-value, -64.0f, 64.0f); });
 
     InputDescriptorList lowerShadowQualityList;
     lowerShadowQualityList.addKeyboardInput(KeyboardCode::KeyQ, 1.0f);
@@ -158,6 +157,11 @@ APPMAIN
     higherShadowQualityList.addKeyboardInput(KeyboardCode::KeyE, 1.0f);
     input->addInput(higherShadowQualityList, &cameraControl, [](InputType type, InputData *data, float value, void *userData)
                     { ((CameraControl *)userData)->higherShadowQuality = value > 0.5; });
+
+    InputDescriptorList toggleFullscreen;
+    toggleFullscreen.addKeyboardInput(KeyboardCode::KeyF, 1.0f);
+    input->addInput(toggleFullscreen, window, [](InputType type, InputData *data, float value, void *userData)
+                    { if (value > 0.5f) ((Window *)userData)->setFullscreen(!((Window *)userData)->isFullscreen()); });
 
     InputDescriptorList quitButtonList;
     quitButtonList.addKeyboardInput(KeyboardCode::Escape, 1.0f);
@@ -173,15 +177,17 @@ APPMAIN
         boxRotateCounter += delta * 0.06f;
 
         window->processWindow();
-        window->setMousePosition(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2);
+        window->setMousePosition(renderer->getViewWidth() / 2, renderer->getViewHeight() / 2);
 
+        renderer->prepareToRender();
+        camera->setupAsPerspective(renderer->getViewWidth(), renderer->getViewHeight());
         renderer->clearBuffer(Color(0.4, 0.5, 0.8));
 
         scene->process(delta);
 
-        cameraTransform.rotate(Quat(Vector3(0, cameraControl.rotateX * 0.0016f, 0)));
+        cameraTransform.rotate(Quat(Vector3(0, cameraControl.rotateX * 0.0015f, 0)));
         cameraControl.rotateX = 0.0f;
-        cameraTransform.rotate(Quat(Vector3(cameraControl.rotateY * 0.0016f, 0, 0)));
+        cameraTransform.rotate(Quat(Vector3(cameraControl.rotateY * 0.0015f, 0, 0)));
         cameraControl.rotateY = 0.0f;
 
         auto forward = cameraTransform.getRotation() * Vector3(0, 0, 0.4f);

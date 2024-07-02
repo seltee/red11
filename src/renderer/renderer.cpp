@@ -5,6 +5,7 @@
 
 Renderer::Renderer(Window *window)
 {
+    this->window = window;
     viewWidth = window->getWidth();
     viewHeight = window->getHeight();
 }

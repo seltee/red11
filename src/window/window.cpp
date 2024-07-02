@@ -10,20 +10,26 @@ bool Window::isCloseRequested()
 
 bool Window::isFullscreen()
 {
-    return state.bIsFulltscreen;
+    return state.bIsFullscreen;
 }
 
 int Window::getWidth()
 {
-    return state.width;
+    return state.realWidth;
 }
 
 int Window::getHeight()
 {
-    return state.height;
+    return state.realHeight;
 }
 
 void Window::close()
 {
     state.bIsCloseRequested = true;
+}
+
+void Window::udpateRealSize(int width, int height)
+{
+    state.realWidth = width;
+    state.realHeight = height;
 }

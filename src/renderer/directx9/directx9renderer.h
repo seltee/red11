@@ -43,6 +43,7 @@ public:
 
     RendererType getType();
 
+    void prepareToRender();
     void clearBuffer(Color color);
     void queueMesh(Mesh *mesh, Material *material, Matrix4 *model);
     void queueMeshSkinned(Mesh *mesh, Material *material, Matrix4 *model, std::vector<BoneTransform> *bones);
@@ -58,6 +59,7 @@ public:
 
 protected:
     void initD3D(HWND hWnd, bool bIsFullscreen, int width, int height); // sets up and initializes Direct3D
+    void resizeD3D(int width, int height);
     void renderQueueDepthBuffer(Vector3 &cameraPosition, Camera *camera);
     void renderQueueLightDepthBuffer(Vector3 &cameraPosition, Camera *camera);
     void renderQueueDepthEqual(Vector3 &cameraPosition, Camera *camera);
