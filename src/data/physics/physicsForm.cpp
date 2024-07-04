@@ -42,9 +42,9 @@ ShapePlain *PhysicsForm::createPlain(Vector3 normal, Vector3 point)
     return newPlain;
 }
 
-ShapeSphere *PhysicsForm::createSphere(Vector3 position, float radius)
+ShapeSphere *PhysicsForm::createSphere(Vector3 position, float radius, float density)
 {
-    ShapeSphere *newPlain = new ShapeSphere(position * simScale, radius * simScale);
+    ShapeSphere *newPlain = new ShapeSphere(position * simScale, radius * simScale, density);
     shapes.push_back(newPlain);
     isDataDirty = true;
     recalcParameters();
@@ -80,4 +80,23 @@ void PhysicsForm::recalcParameters()
 
         invertedMass = 1.0f / mass;
     }
+}
+
+AABB PhysicsForm::getAABB(Matrix4 *model)
+{
+    if (shapes.size() == 1)
+    {
+        return shapes.at(0)->getAABB(model);
+    }
+    if (shapes.size() > 1)
+    {
+        AABB aabb = shapes.at(0)->getAABB(model);
+        for (int i = 1; i < shapes.size(); i++)
+        {
+            aabb.extend(shapes.at(i)->getAABB(model));
+        }
+        return aabb;
+    }
+    Vector3 p = Vector3(*model * Vector4(0, 0, 0, 1.0f));
+    return AABB(p, p);
 }

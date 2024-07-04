@@ -35,5 +35,6 @@ public:
 
 protected:
     float simScale;
+    float minRenormalVelocity;
     float totalLambda;
 };

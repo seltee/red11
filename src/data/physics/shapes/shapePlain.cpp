@@ -23,6 +23,11 @@ ShapeCollisionType ShapePlain::getType()
     return ShapeCollisionType::Plain;
 }
 
+AABB ShapePlain::getAABB(Matrix4 *model)
+{
+    return AABB(Vector3(-FLT_MAX, -FLT_MAX, -FLT_MAX), Vector3(FLT_MAX, FLT_MAX, FLT_MAX));
+}
+
 /*
 bool ShapePlain::testRay(const Segment &line, std::vector<RayCollisionPoint> *points)
 {

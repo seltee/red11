@@ -3,14 +3,14 @@
 
 #include "shapeSphere.h"
 
-ShapeSphere::ShapeSphere(const Vector3 &center, float radius)
+ShapeSphere::ShapeSphere(const Vector3 &center, float radius, float density)
 {
     this->radius = radius;
     this->center = center;
 
-    mass = (4.0f / 3.0f) * CONST_PI * radius * radius * radius * 25.0f;
+    mass = (4.0f / 3.0f) * CONST_PI * radius * radius * radius * density;
 
-    float tenValue = 2.0f / 5.0f * mass * this->radius * this->radius;
+    float tenValue = 2.0f / 5.0f * mass * radius * radius;
     inertia[0] = Vector3(tenValue, 0.0f, 0.0f);
     inertia[1] = Vector3(0.0f, tenValue, 0.0f);
     inertia[2] = Vector3(0.0f, 0.0f, tenValue);
@@ -19,6 +19,12 @@ ShapeSphere::ShapeSphere(const Vector3 &center, float radius)
 ShapeCollisionType ShapeSphere::getType()
 {
     return ShapeCollisionType::Sphere;
+}
+
+AABB ShapeSphere::getAABB(Matrix4 *model)
+{
+    Vector3 absoluteCenter = Vector3(*model * Vector4(center, 1.0f));
+    return AABB(absoluteCenter - radius, absoluteCenter + radius);
 }
 
 /*

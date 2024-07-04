@@ -29,6 +29,7 @@ public:
     virtual ~Shape();
     EXPORT virtual ShapeCollisionType getType() = 0;
     EXPORT virtual Matrix3 &getInertiaTensor() = 0;
+    EXPORT virtual AABB getAABB(Matrix4 *model) = 0;
     EXPORT inline void setMass(float mass) { this->mass = mass; }
     EXPORT inline float getMass() { return mass; }
     EXPORT static std::string getTypeName(ShapeCollisionType type);

@@ -11,16 +11,15 @@ class PhysicsWorld;
 class ShapeSphere : public Shape
 {
 public:
-    EXPORT ShapeSphere(const Vector3 &center, float radius);
+    EXPORT ShapeSphere(const Vector3 &center, float radius, float density = 22.0f);
     inline float getRadius() { return radius; }
 
-    EXPORT ShapeCollisionType getType();
-    EXPORT Matrix3 &getInertiaTensor() { return inertia; }
-    inline Vector3 getAbsoluteCenter() { return absoluteCenter; }
+    EXPORT ShapeCollisionType getType() override final;
+    EXPORT Matrix3 &getInertiaTensor() override final { return inertia; }
+    EXPORT AABB getAABB(Matrix4 *model) override final;
 
 protected:
     float radius;
     Vector3 center;
     Matrix3 inertia;
-    Vector3 absoluteCenter;
 };

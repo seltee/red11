@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023 Dmitrii Shashkov
+// SPDX-FileCopyrightText: 2024 Dmitrii Shashkov
 // SPDX-License-Identifier: MIT
 
 #include "collisionSolver.h"
@@ -6,6 +6,7 @@
 CollisionSolver::CollisionSolver(float simScale)
 {
     this->simScale = simScale;
+    minRenormalVelocity = simScale * -0.02f;
 }
 
 void CollisionSolver::solve(PhysicsBody *a, PhysicsBody *b, CollisionManifold &manifold, float delta)
@@ -43,7 +44,7 @@ void CollisionSolver::solve(PhysicsBody *a, PhysicsBody *b, CollisionManifold &m
     // Calculate velocity bias due to restitution
     float combinedRestitution = fmaxf(formA->getRestitution(), formB->getRestitution());
     float normalVelocityBias = 0.0f;
-    if (combinedRestitution > 0.0f && normalVelocity < -0.08f)
+    if (combinedRestitution > 0.0f && normalVelocity < minRenormalVelocity)
         normalVelocityBias = combinedRestitution * normalVelocity;
 
     float lambda = solveAxis(

@@ -19,9 +19,11 @@ public:
 
     EXPORT ShapePlain *createPlain(Vector3 normal, float distance);
     EXPORT ShapePlain *createPlain(Vector3 normal, Vector3 point);
-    EXPORT ShapeSphere *createSphere(Vector3 position, float radius);
+    EXPORT ShapeSphere *createSphere(Vector3 position, float radius, float density = 22.0f);
 
     EXPORT void recalcParameters();
+
+    EXPORT AABB getAABB(Matrix4 *model);
 
     inline Matrix3 &getInvertedInertia() { return invertedInteria; }
 

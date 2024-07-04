@@ -12,9 +12,10 @@ class ShapePlain : public Shape
 public:
     EXPORT ShapePlain(const Vector3 &normal, float distance);
     EXPORT ShapePlain(const Vector3 &normal, const Vector3 &point);
-    EXPORT ShapeCollisionType getType();
+    EXPORT ShapeCollisionType getType() override final;
 
-    EXPORT Matrix3 &getInertiaTensor() { return inertia; }
+    EXPORT Matrix3 &getInertiaTensor() override final { return inertia; }
+    EXPORT AABB getAABB(Matrix4 *model) override final;
 
     inline Vector3 getClosestPoint(const Vector3 &point)
     {

@@ -21,6 +21,7 @@ void PhysicsBody::prepareForSimulation()
 {
     this->position = entity->getPosition() * world->getSimScale();
     this->rotation = entity->getRotation();
+    updateAABB();
 }
 
 void PhysicsBody::finishSimulation()
@@ -88,6 +89,8 @@ void PhysicsBody::applyStep(float delta)
         }
         else
             sleepAccumulator = 0.0f;
+
+        updateAABB();
     }
 
     /*
@@ -123,10 +126,4 @@ void PhysicsBody::addAngularVelocity(Vector3 velocity)
     sleepAccumulator = 0.0f;
     angularVelocity += velocity;
     lock.unlock();
-}
-
-void PhysicsBody::checkLimits()
-{
-    if (glm::length(linearVelocity) > 40.0f)
-        linearVelocity = glm::normalize(linearVelocity) * 40.0f;
 }

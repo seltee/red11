@@ -50,12 +50,12 @@ void _collectPairs(
             if ((*a)->isSleeping() && (*b)->isSleeping())
                 continue;
 
-            // if ((*a)->checkAABB((*b)->getAABB()))
-            //{
-            lock.lock();
-            list->push_back({*a, *b});
-            lock.unlock();
-            //}
+            if ((*a)->getAABB().test((*b)->getAABB()))
+            {
+                lock.lock();
+                list->push_back({*a, *b});
+                lock.unlock();
+            }
         }
     }
 }

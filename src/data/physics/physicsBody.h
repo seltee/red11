@@ -31,8 +31,8 @@ public:
     EXPORT void addAngularVelocity(Vector3 velocity);
 
     inline Vector3 getPointVelocity(const Vector3 &localPoint) { return linearVelocity + glm::cross(angularVelocity, localPoint); }
-    inline Vector3 getLinearVelocity() { return linearVelocity; }
-    inline Vector3 getAngularVelocity() { return angularVelocity; }
+    inline const Vector3 &getLinearVelocity() { return linearVelocity; }
+    inline const Vector3 &getAngularVelocity() { return angularVelocity; }
 
     inline bool isSleeping() { return bIsSleeping; }
     inline void forceWake() { bIsSleeping = false; }
@@ -43,13 +43,24 @@ public:
     inline void setAsleep() { bIsSleeping = true; }
 
     inline ShapeCollisionType getType() { return form->getType(); }
+    inline AABB &getAABB() { return aabb; }
 
-    inline Vector3 getCenterOfMass() { return position; }
+    inline Vector3 &getCenterOfMass() { return position; }
 
     inline PhysicsForm *getForm() { return form; }
 
 protected:
-    void checkLimits();
+    inline void checkLimits()
+    {
+        if (glm::length(linearVelocity) > 60.0f)
+            linearVelocity = glm::normalize(linearVelocity) * 60.0f;
+    }
+    inline void updateAABB()
+    {
+        aabbEntity.setPosition(position);
+        aabbEntity.setRotation(rotation);
+        aabb = form->getAABB(aabbEntity.getModelMatrix());
+    }
 
     // Pointers
     PhysicsWorld *world;
@@ -85,4 +96,7 @@ protected:
 
     // Multithreading protection
     std::mutex lock;
+
+    Entity aabbEntity;
+    AABB aabb;
 };

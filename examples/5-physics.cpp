@@ -28,7 +28,7 @@ APPMAIN
 
     // Meshes
     auto cubeMesh = Red11::getMeshBuilder()->createCube(0.1f);
-    auto sphereMesh = Red11::getMeshBuilder()->createSphere(0.102f);
+    auto sphereMesh = Red11::getMeshBuilder()->createSphere(0.101f);
 
     auto scene = Red11::createScene();
     scene->setAmbientLight(Color(0.4f, 0.4f, 0.6f));
@@ -59,8 +59,8 @@ APPMAIN
     sphereComponent2->setMaterial(concreteMaterial);
     sphereComponent2->setPosition(0.0f, 0.15f, -0.02f);
 
-    auto sphereForm = world->createPhysicsForm(0.9f, 0.5f);
-    sphereForm->createSphere(Vector3(0), 0.1f);
+    auto sphereForm = world->createPhysicsForm(0.9f, 0.4f);
+    sphereForm->createSphere(Vector3(0), 0.1f, 20.0f);
 
     // Floor
     auto floor = scene->createActor<Actor>("Floor");
