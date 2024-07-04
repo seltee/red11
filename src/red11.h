@@ -6,6 +6,7 @@
 #include "utils/math.h"
 #include "utils/meshBuilder.h"
 #include "utils/deltaCounter.h"
+#include "utils/jobQueue.h"
 #include "utils/glm/glm.hpp"
 #include "utils/glm/gtx/vector_angle.inl"
 #include "scene/scene.h"
@@ -51,7 +52,10 @@ public:
 
     EXPORT static InputProvider *getGlobalInputProvider();
 
+    EXPORT static JobQueue *getJobQueue();
+
 protected:
     static MeshBuilder *meshBuilder;
     static InputProvider *globalInputProvider;
+    static JobQueue *jobQueue;
 };

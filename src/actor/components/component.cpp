@@ -10,6 +10,8 @@ Component::Component()
 
 Component::~Component()
 {
+    if (physicsBody)
+        delete physicsBody;
 }
 
 void Component::prepare(Actor *owner)
@@ -22,6 +24,34 @@ void Component::prepare(Actor *owner)
 Actor *Component::getOwner()
 {
     return owner;
+}
+
+void Component::assignPhysicsWorld(PhysicsWorld *physicsWorld)
+{
+    this->physicsWorld = physicsWorld;
+}
+
+void Component::enablePhysics(PhysicsMotionType motionType, PhysicsForm *physicsForm)
+{
+    if (!physicsBody && physicsWorld)
+    {
+        Vector3 position = *getModelMatrix() * Vector4(0, 0, 0, 1.0f);
+        Quat rotation = glm::quat_cast(*getModelMatrix());
+
+        physicsBody = physicsWorld->createPhysicsBody(motionType, physicsForm, this, position, rotation);
+
+        this->setTransformationParent(nullptr);
+    }
+}
+
+void Component::disablePhysics()
+{
+    if (physicsBody)
+    {
+        delete physicsBody;
+        physicsBody = nullptr;
+        setParent(parent);
+    }
 }
 
 void Component::onCreated()
@@ -41,11 +71,13 @@ void Component::setParent(Component *parent)
     if (parent && parent->getOwner() == owner)
     {
         this->parent = parent;
-        this->setTransformationParent(parent);
+        if (!physicsBody)
+            this->setTransformationParent(parent);
     }
     else
     {
         this->parent = nullptr;
-        this->setTransformationParent(owner);
+        if (!physicsBody)
+            this->setTransformationParent(owner);
     }
 }

@@ -6,6 +6,7 @@
 #include "utils/destroyable.h"
 #include "renderer/renderer.h"
 #include "data/entity.h"
+#include "data/physics/physicsWorld.h"
 
 class Actor;
 
@@ -17,6 +18,11 @@ public:
     EXPORT void prepare(Actor *owner);
     EXPORT Actor *getOwner();
 
+    EXPORT void assignPhysicsWorld(PhysicsWorld *physicsWorld);
+    EXPORT void enablePhysics(PhysicsMotionType motionType, PhysicsForm *physicsForm);
+    EXPORT void disablePhysics();
+    inline PhysicsBody *getPhysicsBody() { return physicsBody; }
+
     EXPORT virtual void onCreated();
     EXPORT virtual void onRenderQueue(Renderer *renderer);
     EXPORT virtual void onProcess(float delta);
@@ -26,4 +32,6 @@ public:
 protected:
     Actor *owner = nullptr;
     Component *parent = nullptr;
+    PhysicsWorld *physicsWorld = nullptr;
+    PhysicsBody *physicsBody = nullptr;
 };

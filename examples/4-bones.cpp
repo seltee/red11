@@ -113,8 +113,7 @@ APPMAIN
         lightOmniComponent->setupOmni(Attenuation(16.0f, 4.0f, 40.0f), color);
     }
 
-    Camera *camera = new Camera();
-
+    Camera camera;
     Entity cameraTransform;
     cameraTransform.setPosition(0, 0.2, 0);
 
@@ -170,6 +169,7 @@ APPMAIN
 
     DeltaCounter deltaCounter;
     float boxRotateCounter = 0.0f;
+    float cameraRX = 0, cameraRY = 0;
 
     while (!window->isCloseRequested())
     {
@@ -180,15 +180,15 @@ APPMAIN
         window->setMousePosition(renderer->getViewWidth() / 2, renderer->getViewHeight() / 2);
 
         renderer->prepareToRender();
-        camera->setupAsPerspective(renderer->getViewWidth(), renderer->getViewHeight());
+        camera.setupAsPerspective(renderer->getViewWidth(), renderer->getViewHeight());
         renderer->clearBuffer(Color(0.4, 0.5, 0.8));
 
         scene->process(delta);
 
-        cameraTransform.rotate(Quat(Vector3(0, cameraControl.rotateX * 0.0015f, 0)));
-        cameraControl.rotateX = 0.0f;
-        cameraTransform.rotate(Quat(Vector3(cameraControl.rotateY * 0.0015f, 0, 0)));
-        cameraControl.rotateY = 0.0f;
+        cameraRX += cameraControl.rotateY * 0.0015f;
+        cameraRY += cameraControl.rotateX * 0.0015f;
+        cameraRX = glm::clamp(cameraRX, -1.2f, 1.0f);
+        cameraTransform.setRotation(Vector3(cameraRX, cameraRY, 0));
 
         auto forward = cameraTransform.getRotation() * Vector3(0, 0, 0.4f);
         cameraTransform.translate(forward * delta * cameraControl.move);
@@ -225,8 +225,8 @@ APPMAIN
             omniActors[i]->setPosition(Vector3(sinf(angle) * distance, 0.16f, cosf(angle) * distance));
         }
 
-        camera->updateViewMatrix(cameraTransform.getModelMatrix());
-        scene->render(renderer, camera);
+        camera.updateViewMatrix(cameraTransform.getModelMatrix());
+        scene->render(renderer, &camera);
 
         renderer->present();
     }

@@ -13,7 +13,6 @@
 LRESULT CALLBACK WindowProcedure(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     WindowsWindow *window = (WindowsWindow *)GetWindowLongPtr(hWnd, GWLP_USERDATA);
-    PWINDOWPOS winpos;
     RECT rect;
 
     if (message == WM_CREATE)
@@ -54,7 +53,6 @@ LRESULT CALLBACK WindowProcedure(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
         break;
 
     case WM_WINDOWPOSCHANGED:
-        winpos = (PWINDOWPOS)lParam;
         GetClientRect(hWnd, &rect);
         window->udpateRealSize(rect.right, rect.bottom);
         break;

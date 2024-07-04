@@ -5,6 +5,7 @@
 #include "actor/actor.h"
 #include "renderer/renderer.h"
 #include "data/camera.h"
+#include "data/physics/physicsWorld.h"
 #include <string>
 
 class Scene
@@ -26,7 +27,10 @@ public:
     inline void setAmbientLight(Color color) { this->ambientLight = color; }
     inline Color getAmbientLight() { return ambientLight; };
 
+    inline PhysicsWorld *getPhysicsWorld() { return &physicsWorld; }
+
 protected:
     std::list<Actor *> actors;
     Color ambientLight = Color(0.4f, 0.4f, 0.44f);
+    PhysicsWorld physicsWorld;
 };

@@ -52,16 +52,19 @@ OBJ_FILES = ${OBJDIR}/red11.o \
 			${OBJDIR}/directx9data.o  \
 			${OBJDIR}/mesh.o ${OBJDIR}/meshObject.o ${OBJDIR}/entity.o ${OBJDIR}/light.o ${OBJDIR}/camera.o ${OBJDIR}/texture.o ${OBJDIR}/textureFile.o ${OBJDIR}/inputProvider.o \
 			${OBJDIR}/deform.o ${OBJDIR}/boneTransform.o ${OBJDIR}/animation.o ${OBJDIR}/animationTarget.o ${OBJDIR}/animator.o ${OBJDIR}/animationTrack.o \
+			${OBJDIR}/physicsWorld.o ${OBJDIR}/physicsBody.o ${OBJDIR}/physicsForm.o ${OBJDIR}/physicsUtils.o \
+			${OBJDIR}/collisionDispatcher.o ${OBJDIR}/collisionSolver.o \
+			${OBJDIR}/shape.o ${OBJDIR}/shapePlain.o ${OBJDIR}/shapeSphere.o \
 			${OBJDIR}/data3DFile.o \
 			${OBJDIR}/material.o ${OBJDIR}/materialSimple.o \
 			${OBJDIR}/actor.o \
 			${OBJDIR}/component.o ${OBJDIR}/componentMesh.o ${OBJDIR}/componentLight.o ${OBJDIR}/componentMeshGroup.o ${OBJDIR}/componentCamera.o \
 			${OBJDIR}/utils.o ${OBJDIR}/color.o ${OBJDIR}/meshBuilder.o ${OBJDIR}/meshCombiner.o ${OBJDIR}/destroyable.o ${OBJDIR}/stb_image.o \
-			${OBJDIR}/deltaCounter.o \
+			${OBJDIR}/deltaCounter.o ${OBJDIR}/jobQueue.o \
 			${OBJDIR}/loaderFBX.o ${OBJDIR}/FBXNode.o ${OBJDIR}/FBXAnimationStack.o ${OBJDIR}/FBXAnimationLayer.o ${OBJDIR}/FBXAnimationCurve.o ${OBJDIR}/FBXAnimationCurveNode.o \
 			${OBJDIR}/FBXDeform.o ${OBJDIR}/FBXGeometry.o ${OBJDIR}/FBXModel.o ${OBJDIR}/FBXAttribute.o
 
-EXAMPLES = 1-window${EXT} 2-textures${EXT} 3-animation${EXT} 4-bones${EXT}
+EXAMPLES = 1-window${EXT} 2-textures${EXT} 3-animation${EXT} 4-bones${EXT} 5-physics${EXT}
 
 all: engine examples
 
@@ -138,6 +141,33 @@ ${OBJDIR}/animator.o: ${SRCDIR}/data/animation/animator.cpp
 ${OBJDIR}/animationTrack.o: ${SRCDIR}/data/animation/animationTrack.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/animationTrack.o ${SRCDIR}/data/animation/animationTrack.cpp
 
+${OBJDIR}/physicsWorld.o: ${SRCDIR}/data/physics/physicsWorld.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/physicsWorld.o ${SRCDIR}/data/physics/physicsWorld.cpp
+
+${OBJDIR}/physicsBody.o: ${SRCDIR}/data/physics/physicsBody.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/physicsBody.o ${SRCDIR}/data/physics/physicsBody.cpp
+
+${OBJDIR}/physicsForm.o: ${SRCDIR}/data/physics/physicsForm.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/physicsForm.o ${SRCDIR}/data/physics/physicsForm.cpp
+
+${OBJDIR}/physicsUtils.o: ${SRCDIR}/data/physics/physicsUtils.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/physicsUtils.o ${SRCDIR}/data/physics/physicsUtils.cpp
+
+${OBJDIR}/collisionDispatcher.o: ${SRCDIR}/data/physics/collisionDispatcher.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/collisionDispatcher.o ${SRCDIR}/data/physics/collisionDispatcher.cpp
+
+${OBJDIR}/collisionSolver.o: ${SRCDIR}/data/physics/collisionSolver.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/collisionSolver.o ${SRCDIR}/data/physics/collisionSolver.cpp
+
+${OBJDIR}/shape.o: ${SRCDIR}/data/physics/shapes/shape.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/shape.o ${SRCDIR}/data/physics/shapes/shape.cpp
+
+${OBJDIR}/shapePlain.o: ${SRCDIR}/data/physics/shapes/shapePlain.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/shapePlain.o ${SRCDIR}/data/physics/shapes/shapePlain.cpp
+
+${OBJDIR}/shapeSphere.o: ${SRCDIR}/data/physics/shapes/shapeSphere.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/shapeSphere.o ${SRCDIR}/data/physics/shapes/shapeSphere.cpp
+
 ${OBJDIR}/data3DFile.o: ${SRCDIR}/data/data3DFile.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/data3DFile.o ${SRCDIR}/data/data3DFile.cpp
 
@@ -185,6 +215,9 @@ ${OBJDIR}/stb_image.o: ${SRCDIR}/utils/image/stb_image.cpp
 
 ${OBJDIR}/deltaCounter.o: ${SRCDIR}/utils/deltaCounter.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/deltaCounter.o ${SRCDIR}/utils/deltaCounter.cpp
+
+${OBJDIR}/jobQueue.o: ${SRCDIR}/utils/jobQueue.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/jobQueue.o ${SRCDIR}/utils/jobQueue.cpp
 
 ${OBJDIR}/loaderFBX.o: ${SRCDIR}/utils/FBX/loaderFBX.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/loaderFBX.o ${SRCDIR}/utils/FBX/loaderFBX.cpp
@@ -248,6 +281,14 @@ ${OBJDIR}/4-bones.o: ${EXMDIR}/4-bones.cpp
 4-bones${EXT}: ${OBJDIR}/4-bones.o
 	$(LD) ${EFLAGS} ${OBJDIR}/4-bones.o -o 4-bones${EXT}
 	${MOVE} 4-bones${EXT} ${BINDIR}/4-bones${EXT}
+
+${OBJDIR}/5-physics.o: ${EXMDIR}/5-physics.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/5-physics.o ${EXMDIR}/5-physics.cpp
+
+5-physics${EXT}: ${OBJDIR}/5-physics.o
+	$(LD) ${EFLAGS} ${OBJDIR}/5-physics.o -o 5-physics${EXT}
+	${MOVE} 5-physics${EXT} ${BINDIR}/5-physics${EXT}
+
 
 # llvm-objcopy
 clean:

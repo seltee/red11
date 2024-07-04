@@ -5,17 +5,15 @@
 
 void Scene::prepareNewActor(Actor *actor)
 {
-    // if (physicsWorld)
-    //     actor->setPhysicsWorld(physicsWorld);
-
     actors.push_back(actor);
+    actor->assignPhysicsWorld(&physicsWorld);
     actor->setScene(this);
     actor->onSpawned();
-    // actor->getPhysicsBody();
 }
 
 void Scene::process(float delta)
 {
+    physicsWorld.process(delta);
     for (auto actor = actors.begin(); actor != actors.end(); ++actor)
         (*actor)->onProcess(delta);
 }

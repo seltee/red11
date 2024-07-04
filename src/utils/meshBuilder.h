@@ -8,6 +8,5 @@ class MeshBuilder
 {
 public:
     EXPORT Mesh *createCube(float size);
-    EXPORT Mesh *createCubeColored(float size, Color color);
-    EXPORT Mesh *createCubeColored(float size, Color color[8]);
+    EXPORT Mesh *createSphere(float radius, unsigned int rings = 20, unsigned int segments = 16);
 };

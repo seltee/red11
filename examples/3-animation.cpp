@@ -72,7 +72,6 @@ APPMAIN
     auto cameraRoot = player->createComponent<Component>();
 
     auto cameraComponent = player->createComponent<ComponentCamera>();
-    cameraComponent->setupAsPerspective(renderer->getViewWidth(), renderer->getViewHeight());
     cameraComponent->setPosition(Vector3(0, 0.16f, 0.4f));
     cameraComponent->setParent(cameraRoot);
 
@@ -112,6 +111,11 @@ APPMAIN
     input->addInput(rotateCameraYList, &playerControl, [](InputType type, InputData *data, float value, void *userData)
                     { ((PlayerControl *)userData)->rotateY = -value; });
 
+    InputDescriptorList toggleFullscreen;
+    toggleFullscreen.addKeyboardInput(KeyboardCode::KeyF, 1.0f);
+    input->addInput(toggleFullscreen, window, [](InputType type, InputData *data, float value, void *userData)
+                    { if (value > 0.5f) ((Window *)userData)->setFullscreen(!((Window *)userData)->isFullscreen()); });
+
     InputDescriptorList quitButtonList;
     quitButtonList.addKeyboardInput(KeyboardCode::Escape, 1.0f);
     input->addInput(quitButtonList, window, [](InputType type, InputData *data, float value, void *userData)
@@ -126,6 +130,7 @@ APPMAIN
         window->setMousePosition(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2);
 
         renderer->prepareToRender();
+        cameraComponent->setupAsPerspective(renderer->getViewWidth(), renderer->getViewHeight());
         renderer->clearBuffer(Color(0.4, 0.5, 0.8));
 
         player->rotate(Quat(Vector3(0, playerControl.rotateX * 0.0016f, 0)));

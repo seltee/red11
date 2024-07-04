@@ -114,9 +114,7 @@ APPMAIN
     auto lightSunComponent = lightSun->createComponent<ComponentLight>();
     lightSunComponent->setupDirectional(glm::normalize(Vector3(-1.0f, -1.0f, -1.0)), Color(6.7f, 5.9f, 5.0f));
 
-    Camera *camera = new Camera();
-    camera->setupAsPerspective(renderer->getViewWidth(), renderer->getViewHeight());
-
+    Camera camera;
     Entity cameraTransform;
 
     CameraControl cameraControl;
@@ -149,12 +147,18 @@ APPMAIN
     input->addInput(rotateCameraYList, &cameraControl, [](InputType type, InputData *data, float value, void *userData)
                     { ((CameraControl *)userData)->rotateY = -value; });
 
+    InputDescriptorList toggleFullscreen;
+    toggleFullscreen.addKeyboardInput(KeyboardCode::KeyF, 1.0f);
+    input->addInput(toggleFullscreen, window, [](InputType type, InputData *data, float value, void *userData)
+                    { if (value > 0.5f) ((Window *)userData)->setFullscreen(!((Window *)userData)->isFullscreen()); });
+
     InputDescriptorList quitButtonList;
     quitButtonList.addKeyboardInput(KeyboardCode::Escape, 1.0f);
     input->addInput(quitButtonList, window, [](InputType type, InputData *data, float value, void *userData)
                     { ((Window *)userData)->close(); });
 
     DeltaCounter deltaCounter;
+    float cameraRX = 0, cameraRY = 0;
 
     while (!window->isCloseRequested())
     {
@@ -163,6 +167,7 @@ APPMAIN
         window->setMousePosition(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2);
 
         renderer->prepareToRender();
+        camera.setupAsPerspective(renderer->getViewWidth(), renderer->getViewHeight());
         renderer->clearBuffer(Color(0.4, 0.5, 0.8));
 
         cube->rotate(Vector3(0.0f, 0.5f * delta, 0.0f));
@@ -171,18 +176,18 @@ APPMAIN
 
         scene->process(delta);
 
-        cameraTransform.rotate(Quat(Vector3(0, cameraControl.rotateX * 0.0016f, 0)));
-        cameraControl.rotateX = 0.0f;
-        cameraTransform.rotate(Quat(Vector3(cameraControl.rotateY * 0.0016f, 0, 0)));
-        cameraControl.rotateY = 0.0f;
+        cameraRX += cameraControl.rotateY * 0.0015f;
+        cameraRY += cameraControl.rotateX * 0.0015f;
+        cameraRX = glm::clamp(cameraRX, -1.2f, 1.0f);
+        cameraTransform.setRotation(Vector3(cameraRX, cameraRY, 0));
 
         auto forward = cameraTransform.getRotation() * Vector3(0, 0, 0.2f);
         cameraTransform.translate(forward * delta * cameraControl.move);
         auto side = cameraTransform.getRotation() * Vector3(0.2f, 0, 0);
         cameraTransform.translate(side * delta * cameraControl.sideMove);
 
-        camera->updateViewMatrix(cameraTransform.getModelMatrix());
-        scene->render(renderer, camera);
+        camera.updateViewMatrix(cameraTransform.getModelMatrix());
+        scene->render(renderer, &camera);
 
         renderer->present();
     }

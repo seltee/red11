@@ -17,9 +17,19 @@ void Actor::setActorName(std::string &name)
 {
     this->name = name;
 }
+
 const std::string &Actor::getActorName()
 {
     return this->name;
+}
+
+void Actor::assignPhysicsWorld(PhysicsWorld *physicsWorld)
+{
+    this->physicsWorld = physicsWorld;
+    for (auto &it : components)
+    {
+        it->assignPhysicsWorld(physicsWorld);
+    }
 }
 
 void Actor::removeComponents()
@@ -49,6 +59,7 @@ void Actor::prepareNewComponent(Component *component)
 {
     this->components.push_back(component);
     component->prepare(this);
+    component->assignPhysicsWorld(physicsWorld);
     bPhysicsNeedsToBeRebuild = true;
 }
 

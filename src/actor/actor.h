@@ -13,6 +13,7 @@
 #include "data/mesh.h"
 #include "renderer/renderer.h"
 #include "data/entity.h"
+#include "data/physics/physicsWorld.h"
 #include <string>
 #include <list>
 
@@ -26,6 +27,8 @@ public:
 
     EXPORT void setActorName(std::string &name);
     EXPORT const std::string &getActorName();
+
+    EXPORT void assignPhysicsWorld(PhysicsWorld *physicsWorld);
 
     template <class T, typename std::enable_if<std::is_base_of<Component, T>::value>::type * = nullptr>
     EXPORT T *createComponent()
@@ -75,7 +78,9 @@ protected:
     std::list<Component *> components;
 
     bool bPhysicsNeedsToBeRebuild = false;
-    Scene *scene;
+    Scene *scene = nullptr;
 
-    Actor *parent;
+    Actor *parent = nullptr;
+
+    PhysicsWorld *physicsWorld = nullptr;
 };

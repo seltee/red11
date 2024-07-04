@@ -55,6 +55,21 @@ struct PolygonTriPoints
     unsigned int a, b, c;
 };
 
+struct RayCollisionPoint
+{
+    Vector3 point;
+    Vector3 normal;
+    float distance;
+};
+
+struct CollisionPoint
+{
+    Vector3 point;
+    Vector3 normal;
+    float depth;
+    bool hasCollision;
+};
+
 inline Vector3
 getNormalizedPerpendicular(Vector3 v)
 {

@@ -8,6 +8,7 @@
 
 MeshBuilder *Red11::meshBuilder = nullptr;
 InputProvider *Red11::globalInputProvider = nullptr;
+JobQueue *Red11::jobQueue = nullptr;
 
 Red11::Red11()
 {
@@ -53,4 +54,11 @@ InputProvider *Red11::getGlobalInputProvider()
     if (!globalInputProvider)
         globalInputProvider = new InputProvider();
     return globalInputProvider;
+}
+
+JobQueue *Red11::getJobQueue()
+{
+    if (!jobQueue)
+        jobQueue = new JobQueue();
+    return jobQueue;
 }

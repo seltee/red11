@@ -73,51 +73,39 @@ Mesh *MeshBuilder::createCube(float size)
     return new Mesh(VertexDataType::PositionUV, verticies, 24, polygons, 12);
 }
 
-Mesh *MeshBuilder::createCubeColored(float size, Color color[8])
+Mesh *MeshBuilder::createSphere(float radius, unsigned int rings, unsigned int segments)
 {
-    float halfSize = size / 2.0f;
+    std::vector<VertexDataUV> verticies;
+    std::vector<PolygonTriPoints> polygons;
 
-    VertexDataColored verticies[8];
-    verticies[0] = VertexDataColored(0, halfSize, halfSize, halfSize, 0, 0, 1.0f, color[0].getAsUInt());
-    verticies[1] = VertexDataColored(1, -halfSize, halfSize, halfSize, 0, 0, 1.0f, color[1].getAsUInt());
-    verticies[2] = VertexDataColored(2, -halfSize, -halfSize, halfSize, 0, 0, 1.0f, color[2].getAsUInt());
-    verticies[3] = VertexDataColored(3, halfSize, -halfSize, halfSize, 0, 0, 1.0f, color[3].getAsUInt());
-    verticies[4] = VertexDataColored(4, halfSize, halfSize, -halfSize, 0, 0, 1.0f, color[4].getAsUInt());
-    verticies[5] = VertexDataColored(5, -halfSize, halfSize, -halfSize, 0, 0, 1.0f, color[5].getAsUInt());
-    verticies[6] = VertexDataColored(6, -halfSize, -halfSize, -halfSize, 0, 0, 1.0f, color[6].getAsUInt());
-    verticies[7] = VertexDataColored(7, halfSize, -halfSize, -halfSize, 0, 0, 1.0f, color[7].getAsUInt());
-
-    PolygonTriPoints polygons[12];
-    for (int i = 0; i < 12; i++)
+    int index = 0;
+    for (unsigned int y = 0; y <= rings; ++y)
     {
-        polygons[i] = PolygonTriPoints({0, 0, 0});
+        for (unsigned int x = 0; x <= segments; ++x)
+        {
+            float xSegment = (float)x / (float)segments;
+            float ySegment = (float)y / (float)rings;
+            float xPos = radius * cos(xSegment * 2.0f * CONST_PI) * sin(ySegment * CONST_PI);
+            float yPos = radius * cos(ySegment * CONST_PI);
+            float zPos = radius * sin(xSegment * 2.0f * CONST_PI) * sin(ySegment * CONST_PI);
+
+            Vector3 normal = glm::normalize(Vector3(xPos, yPos, zPos));
+            verticies.push_back({index, xPos, yPos, zPos, xSegment, ySegment, normal.x, normal.y, normal.z});
+            index++;
+        }
     }
-    // top
-    polygons[0] = PolygonTriPoints({0, 2, 1});
-    polygons[1] = PolygonTriPoints({0, 3, 2});
-    // bottom
-    polygons[2] = PolygonTriPoints({4, 5, 6});
-    polygons[3] = PolygonTriPoints({4, 6, 7});
-    // right
-    polygons[4] = PolygonTriPoints({0, 4, 3});
-    polygons[5] = PolygonTriPoints({3, 4, 7});
-    // left
-    polygons[6] = PolygonTriPoints({1, 2, 5});
-    polygons[7] = PolygonTriPoints({2, 6, 5});
-    // foreward
-    polygons[8] = PolygonTriPoints({0, 1, 4});
-    polygons[9] = PolygonTriPoints({1, 5, 4});
-    // backward
-    polygons[10] = PolygonTriPoints({2, 3, 6});
-    polygons[11] = PolygonTriPoints({3, 7, 6});
 
-    return new Mesh(VertexDataType::PositionColor, verticies, 8, polygons, 12);
-}
+    for (unsigned int y = 0; y < rings; ++y)
+    {
+        for (unsigned int x = 0; x < segments; ++x)
+        {
+            unsigned int first = (y * (segments + 1)) + x;
+            unsigned int second = first + segments + 1;
 
-Mesh *MeshBuilder::createCubeColored(float size, Color color)
-{
-    Color vColor[8];
-    for (int i = 0; i < 8; i++)
-        vColor[i] = color;
-    return createCubeColored(size, vColor);
+            polygons.push_back({first, second, first + 1});
+            polygons.push_back({second, second + 1, first + 1});
+        }
+    }
+
+    return new Mesh(VertexDataType::PositionUV, &verticies.front(), verticies.size(), &polygons.front(), polygons.size());
 }
