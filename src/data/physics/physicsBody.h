@@ -16,6 +16,22 @@ enum class PhysicsMotionType
     Dynamic, // Responds to forces as a normal physics object
 };
 
+struct PhysicsBodyCacheTypeSphere
+{
+    float radius;
+};
+
+struct PhysicsBodyCacheTypePlain
+{
+    float distance;
+    Vector3 normal;
+};
+union PhysicsBodyCache
+{
+    PhysicsBodyCacheTypeSphere sphere;
+    PhysicsBodyCacheTypePlain plain;
+};
+
 class PhysicsBody
 {
 public:
@@ -29,6 +45,8 @@ public:
     EXPORT void translate(Vector3 v);
     EXPORT void addLinearVelocity(Vector3 velocity);
     EXPORT void addAngularVelocity(Vector3 velocity);
+
+    EXPORT void updateCache();
 
     inline Vector3 getPointVelocity(const Vector3 &localPoint) { return linearVelocity + glm::cross(angularVelocity, localPoint); }
     inline const Vector3 &getLinearVelocity() { return linearVelocity; }
@@ -49,6 +67,9 @@ public:
 
     inline PhysicsForm *getForm() { return form; }
 
+    PhysicsBodyCacheTypeSphere *getCacheSphere(int bodyNum) { return &cache[bodyNum].sphere; }
+    PhysicsBodyCacheTypePlain *getCachePlain(int bodyNum) { return &cache[bodyNum].plain; }
+
 protected:
     inline void checkLimits()
     {
@@ -61,6 +82,10 @@ protected:
         aabbEntity.setRotation(rotation);
         aabb = form->getAABB(aabbEntity.getModelMatrix());
     }
+
+    // Cached data used by collision dataction
+    PhysicsBodyCache *cache = nullptr;
+    int cacheBodies = 0;
 
     // Pointers
     PhysicsWorld *world;

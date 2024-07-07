@@ -14,6 +14,7 @@ LRESULT CALLBACK WindowProcedure(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 {
     WindowsWindow *window = (WindowsWindow *)GetWindowLongPtr(hWnd, GWLP_USERDATA);
     RECT rect;
+    InputData inputData;
 
     if (message == WM_CREATE)
     {
@@ -29,27 +30,60 @@ LRESULT CALLBACK WindowProcedure(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
         break;
 
     case WM_KEYDOWN:
-        InputData keyDownData;
-        keyDownData.keyboard.keyCode = (KeyboardCode)wParam;
-        keyDownData.keyboard.state = 1;
-        InputProvider::provideNewInput(InputType::Keyboard, keyDownData);
+        inputData.keyboard.keyCode = (KeyboardCode)wParam;
+        inputData.keyboard.state = 1;
+        InputProvider::provideNewInput(InputType::Keyboard, inputData);
         break;
 
     case WM_KEYUP:
-        InputData keyUpData;
-        keyUpData.keyboard.keyCode = (KeyboardCode)wParam;
-        keyUpData.keyboard.state = 0;
-        InputProvider::provideNewInput(InputType::Keyboard, keyUpData);
+        inputData.keyboard.keyCode = (KeyboardCode)wParam;
+        inputData.keyboard.state = 0;
+        InputProvider::provideNewInput(InputType::Keyboard, inputData);
         break;
 
     case WM_MOUSEMOVE:
-        InputData mouseData;
-        mouseData.mouse.type = InputMouseType::PositionX;
-        mouseData.mouse.value = (int)(lParam & 0xffff);
-        InputProvider::provideNewInput(InputType::Mouse, mouseData);
-        mouseData.mouse.type = InputMouseType::PositionY;
-        mouseData.mouse.value = (int)(lParam >> 16);
-        InputProvider::provideNewInput(InputType::Mouse, mouseData);
+        inputData.mouse.type = InputMouseType::PositionX;
+        inputData.mouse.value = (int)(lParam & 0xffff);
+        InputProvider::provideNewInput(InputType::Mouse, inputData);
+        inputData.mouse.type = InputMouseType::PositionY;
+        inputData.mouse.value = (int)(lParam >> 16);
+        InputProvider::provideNewInput(InputType::Mouse, inputData);
+        break;
+
+    case WM_LBUTTONDOWN:
+        inputData.mouse.type = InputMouseType::LeftButton;
+        inputData.mouse.value = 1.0f;
+        InputProvider::provideNewInput(InputType::Mouse, inputData);
+        break;
+
+    case WM_LBUTTONUP:
+        inputData.mouse.type = InputMouseType::LeftButton;
+        inputData.mouse.value = 0.0f;
+        InputProvider::provideNewInput(InputType::Mouse, inputData);
+        break;
+
+    case WM_RBUTTONDOWN:
+        inputData.mouse.type = InputMouseType::RightButton;
+        inputData.mouse.value = 1.0f;
+        InputProvider::provideNewInput(InputType::Mouse, inputData);
+        break;
+
+    case WM_RBUTTONUP:
+        inputData.mouse.type = InputMouseType::RightButton;
+        inputData.mouse.value = 0.0f;
+        InputProvider::provideNewInput(InputType::Mouse, inputData);
+        break;
+
+    case WM_MBUTTONDOWN:
+        inputData.mouse.type = InputMouseType::MiddleButton;
+        inputData.mouse.value = 1.0f;
+        InputProvider::provideNewInput(InputType::Mouse, inputData);
+        break;
+
+    case WM_MBUTTONUP:
+        inputData.mouse.type = InputMouseType::MiddleButton;
+        inputData.mouse.value = 0.0f;
+        InputProvider::provideNewInput(InputType::Mouse, inputData);
         break;
 
     case WM_WINDOWPOSCHANGED:

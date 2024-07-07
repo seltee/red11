@@ -22,6 +22,7 @@ void PhysicsBody::prepareForSimulation()
     this->position = entity->getPosition() * world->getSimScale();
     this->rotation = entity->getRotation();
     updateAABB();
+    updateCache();
 }
 
 void PhysicsBody::finishSimulation()
@@ -91,6 +92,7 @@ void PhysicsBody::applyStep(float delta)
             sleepAccumulator = 0.0f;
 
         updateAABB();
+        updateCache();
     }
 
     /*
@@ -126,4 +128,30 @@ void PhysicsBody::addAngularVelocity(Vector3 velocity)
     sleepAccumulator = 0.0f;
     angularVelocity += velocity;
     lock.unlock();
+}
+
+void PhysicsBody::updateCache()
+{
+    if (!cache)
+    {
+        cacheBodies = 1;
+        cache = new PhysicsBodyCache[1];
+        memset(cache, 0, sizeof(PhysicsBodyCache) * cacheBodies);
+    }
+
+    if (form->getType() == ShapeCollisionType::Sphere)
+    {
+        ShapeSphere *sphere = (ShapeSphere *)form->getSimpleShape();
+        cache[0].sphere.radius = sphere->getRadius();
+        return;
+    }
+
+    if (form->getType() == ShapeCollisionType::Plain)
+    {
+        ShapePlain *plain = (ShapePlain *)form->getSimpleShape();
+        Vector3 normal = rotation * plain->getNormal();
+        cache[0].plain.normal = normal;
+        cache[0].plain.distance = plain->getDistance() + glm::dot(position, normal);
+        return;
+    }
 }

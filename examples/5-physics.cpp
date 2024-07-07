@@ -13,6 +13,8 @@ struct CameraControl
     float sideMove;
     float rotateX;
     float rotateY;
+    bool shoot;
+    bool remove;
 };
 
 APPMAIN
@@ -26,9 +28,12 @@ APPMAIN
     auto concreteTexture = new TextureFile("Concrete", "./data/concrete_albedo.jpg");
     auto concreteMaterial = new MaterialSimple(concreteTexture);
 
+    auto redBallMaterial = new MaterialSimple(Color(0.8f, 0.1f, 0.1f), Color(0, 0, 0), 0.0f, 0.1f);
+
     // Meshes
     auto cubeMesh = Red11::getMeshBuilder()->createCube(0.1f);
     auto sphereMesh = Red11::getMeshBuilder()->createSphere(0.101f);
+    auto ballSphereMesh = Red11::getMeshBuilder()->createSphere(0.041f);
 
     auto scene = Red11::createScene();
     scene->setAmbientLight(Color(0.4f, 0.4f, 0.6f));
@@ -62,12 +67,43 @@ APPMAIN
     auto sphereForm = world->createPhysicsForm(0.9f, 0.4f);
     sphereForm->createSphere(Vector3(0), 0.1f, 20.0f);
 
-    // Floor
+    auto ballSphereFrom = world->createPhysicsForm(0.4f, 0.65f);
+    ballSphereFrom->createSphere(Vector3(0), 0.04f, 20.0f);
+
+    // Floor && walls
     auto floor = scene->createActor<Actor>("Floor");
     auto floorComponent = floor->createComponent<Component>();
     auto floorForm = world->createPhysicsForm(0.9f, 0.1f);
     floorForm->createPlain(Vector3(0, 1, 0), 0.0f);
     floorComponent->enablePhysics(PhysicsMotionType::Static, floorForm);
+
+    auto wallRightComponent = floor->createComponentMesh(cubeMesh);
+    wallRightComponent->setMaterial(concreteMaterial);
+    wallRightComponent->setRotation(Vector3(CONST_PI / 2.0f, 0.0f, 0.0f));
+    wallRightComponent->setPosition(Vector3(0, 0.5, -3.5));
+    wallRightComponent->setScale(Vector3(8.0f, 0.01f, 8.0f));
+    wallRightComponent->enablePhysics(PhysicsMotionType::Static, floorForm);
+
+    auto wallLeftComponent = floor->createComponentMesh(cubeMesh);
+    wallLeftComponent->setMaterial(concreteMaterial);
+    wallLeftComponent->setRotation(Vector3(-CONST_PI / 2.0f, 0.0f, 0.0f));
+    wallLeftComponent->setPosition(Vector3(0, 0.5, 3.5));
+    wallLeftComponent->setScale(Vector3(8.0f, 0.01f, 8.0f));
+    wallLeftComponent->enablePhysics(PhysicsMotionType::Static, floorForm);
+
+    auto wallForwardComponent = floor->createComponentMesh(cubeMesh);
+    wallForwardComponent->setMaterial(concreteMaterial);
+    wallForwardComponent->setRotation(Vector3(CONST_PI / 2.0f, CONST_PI / 2.0f, 0.0f));
+    wallForwardComponent->setPosition(Vector3(3.5, 0.5, 0));
+    wallForwardComponent->setScale(Vector3(8.0f, 0.01f, 8.0f));
+    wallForwardComponent->enablePhysics(PhysicsMotionType::Static, floorForm);
+
+    auto wallBackwardComponent = floor->createComponentMesh(cubeMesh);
+    wallBackwardComponent->setMaterial(concreteMaterial);
+    wallBackwardComponent->setRotation(Vector3(CONST_PI / 2.0f, -CONST_PI / 2.0f, 0.0f));
+    wallBackwardComponent->setPosition(Vector3(-3.5, 0.5, 0));
+    wallBackwardComponent->setScale(Vector3(8.0f, 0.01f, 8.0f));
+    wallBackwardComponent->enablePhysics(PhysicsMotionType::Static, floorForm);
 
     // Light
     auto lightSun = scene->createActor<Actor>("Light");
@@ -108,6 +144,24 @@ APPMAIN
     rotateCameraYList.addMouseInput(InputMouseType::MoveY, 1.0f);
     input->addInput(rotateCameraYList, &cameraControl, [](InputType type, InputData *data, float value, void *userData)
                     { ((CameraControl *)userData)->rotateY = glm::clamp(-value, -64.0f, 64.0f); });
+
+    InputDescriptorList shootBallList;
+    shootBallList.addMouseInput(InputMouseType::LeftButton, 1.0f);
+    shootBallList.addKeyboardInput(KeyboardCode::KeyQ, 1.0f);
+    input->addInput(shootBallList, &cameraControl, [](InputType type, InputData *data, float value, void *userData)
+                    {
+                        if (value > 0.5f){
+                            ((CameraControl *)userData)->shoot = true;
+                        } });
+
+    InputDescriptorList removeEntityList;
+    removeEntityList.addMouseInput(InputMouseType::RightButton, 1.0f);
+    removeEntityList.addKeyboardInput(KeyboardCode::KeyE, 1.0f);
+    input->addInput(removeEntityList, &cameraControl, [](InputType type, InputData *data, float value, void *userData)
+                    {
+                        if (value > 0.5f){
+                            ((CameraControl *)userData)->remove = true;
+                        } });
 
     InputDescriptorList toggleFullscreen;
     toggleFullscreen.addKeyboardInput(KeyboardCode::KeyF, 1.0f);
@@ -151,6 +205,21 @@ APPMAIN
         cameraTransform.translate(forward * delta * cameraControl.move);
         auto side = cameraTransform.getRotation() * Vector3(0.4f, 0, 0);
         cameraTransform.translate(side * delta * cameraControl.sideMove);
+
+        if (cameraControl.shoot)
+        {
+            cameraControl.shoot = false;
+            auto shootBall = scene->createActor<Actor>("Sphere");
+            shootBall->setPosition(cameraTransform.getPosition() - Vector3(0, 0.05f, 0) + camera.getForwardVector() * 0.2f);
+            auto sphereComponent = shootBall->createComponentMesh(ballSphereMesh);
+            sphereComponent->setMaterial(redBallMaterial);
+            sphereComponent->enablePhysics(PhysicsMotionType::Dynamic, ballSphereFrom);
+            sphereComponent->getPhysicsBody()->addLinearVelocity(camera.getForwardVector() * 0.6f);
+        }
+        if (cameraControl.remove)
+        {
+            cameraControl.remove = false;
+        }
 
         camera.updateViewMatrix(cameraTransform.getModelMatrix());
         scene->render(renderer, &camera);

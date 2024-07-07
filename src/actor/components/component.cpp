@@ -3,6 +3,7 @@
 
 #include "component.h"
 #include "actor/actor.h"
+#include <utils/glm/gtx/matrix_decompose.hpp>
 
 Component::Component()
 {
@@ -35,8 +36,13 @@ void Component::enablePhysics(PhysicsMotionType motionType, PhysicsForm *physics
 {
     if (!physicsBody && physicsWorld)
     {
-        Vector3 position = *getModelMatrix() * Vector4(0, 0, 0, 1.0f);
-        Quat rotation = glm::quat_cast(*getModelMatrix());
+        Vector3 scale;
+        Quat rotation;
+        Vector3 position;
+        Vector3 skew;
+        Vector4 perspective;
+
+        glm::decompose(*getModelMatrix(), scale, rotation, position, skew, perspective);
 
         physicsBody = physicsWorld->createPhysicsBody(motionType, physicsForm, this, position, rotation);
 

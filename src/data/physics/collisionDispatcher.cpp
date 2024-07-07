@@ -181,11 +181,12 @@ CollisionDispatcher::CollisionDispatcher()
 void CollisionDispatcher::collideSphereVsPlain(PhysicsBody *sphere, PhysicsBody *plain, CollisionCollector *collector)
 {
     Vector3 sphereCenter = sphere->getCenterOfMass();
-    ShapeSphere *sphereShape = (ShapeSphere *)sphere->getForm()->getSimpleShape();
-    ShapePlain *plainShape = (ShapePlain *)plain->getForm()->getSimpleShape();
-    float radius = sphereShape->getRadius();
+    PhysicsBodyCacheTypeSphere *sphereData = sphere->getCacheSphere(0);
+    PhysicsBodyCacheTypePlain *plainData = plain->getCachePlain(0);
+    Plain plainShape = Plain(plainData->normal, plainData->distance);
+    float radius = sphereData->radius;
 
-    Vector3 point = plainShape->getClosestPoint(sphereCenter);
+    Vector3 point = plainShape.getClosestPoint(sphereCenter);
     Vector3 difference = point - sphereCenter;
     float distance = glm::length(difference);
 
@@ -194,7 +195,6 @@ void CollisionDispatcher::collideSphereVsPlain(PhysicsBody *sphere, PhysicsBody 
         CollisionManifold manifold;
         Vector3 normal = difference / distance;
         manifold.addCollisionPoint(Vector3(sphereCenter + normal * radius), point, radius - distance, normal);
-
         collector->addBodyPair(sphere, plain, manifold);
     }
 }

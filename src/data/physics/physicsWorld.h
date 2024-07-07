@@ -18,7 +18,7 @@ class PhysicsWorld
 {
 public:
     EXPORT PhysicsWorld();
-    EXPORT void setup(Vector3 gravity = Vector3(0.0f, -96.0f, 0.0f), float simScale = 0.1f, float subStep = 0.008f);
+    EXPORT void setup(Vector3 gravity = Vector3(0.0f, -96.0f, 0.0f), float simScale = 0.1f, float subStep = 0.005f);
 
     EXPORT void process(float delta);
     EXPORT PhysicsForm *createPhysicsForm(float friction, float restitution, float linearDamping = 0.15f, float angularDamping = 0.05f, float gravityFactor = 1.0f);
