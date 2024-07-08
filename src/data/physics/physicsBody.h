@@ -16,26 +16,19 @@ enum class PhysicsMotionType
     Dynamic, // Responds to forces as a normal physics object
 };
 
-struct PhysicsBodyCacheTypeSphere
-{
-    float radius;
-};
-
-struct PhysicsBodyCacheTypePlain
-{
-    float distance;
-    Vector3 normal;
-};
-union PhysicsBodyCache
-{
-    PhysicsBodyCacheTypeSphere sphere;
-    PhysicsBodyCacheTypePlain plain;
-};
-
 class PhysicsBody
 {
 public:
-    EXPORT PhysicsBody(PhysicsMotionType motionType, PhysicsForm *form, PhysicsWorld *world, Entity *entity, Vector3 initialPosition, Quat initialRotation);
+    EXPORT PhysicsBody(
+        PhysicsMotionType motionType,
+        PhysicsForm *form,
+        PhysicsWorld *world,
+        Entity *entity,
+        void *userData,
+        Vector3 initialPosition,
+        Quat initialRotation);
+    EXPORT ~PhysicsBody();
+    EXPORT void destroy();
 
     EXPORT void prepareForSimulation();
     EXPORT void finishSimulation();
@@ -47,6 +40,11 @@ public:
     EXPORT void addAngularVelocity(Vector3 velocity);
 
     EXPORT void updateCache();
+
+    EXPORT int castRay(const Segment &ray, PhysicsBodyPoint *newPoints);
+
+    inline void setUserData(void *userData) { this->userData = userData; }
+    inline void *getUserData() { return userData; }
 
     inline Vector3 getPointVelocity(const Vector3 &localPoint) { return linearVelocity + glm::cross(angularVelocity, localPoint); }
     inline const Vector3 &getLinearVelocity() { return linearVelocity; }
@@ -91,6 +89,7 @@ protected:
     PhysicsWorld *world;
     Entity *entity;
     PhysicsForm *form;
+    void *userData = nullptr;
 
     // Main movement parameters
     Vector3 position = Vector3({0.0f, 0.0f, 0.0f});

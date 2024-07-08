@@ -18,6 +18,8 @@ public:
     EXPORT Matrix3 &getInertiaTensor() override final { return inertia; }
     EXPORT AABB getAABB(Matrix4 *model) override final;
 
+    EXPORT int castRay(const Segment &ray, PhysicsBodyPoint *newPoints, PhysicsBodyCache *cache) override final;
+
 protected:
     float radius;
     Vector3 center;

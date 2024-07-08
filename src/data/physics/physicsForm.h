@@ -7,7 +7,7 @@
 #include "shapes/shape.h"
 #include "shapes/shapePlain.h"
 #include "shapes/shapeSphere.h"
-
+#include "physicsUtils.h"
 #include <vector>
 
 class PhysicsForm
@@ -24,6 +24,8 @@ public:
     EXPORT void recalcParameters();
 
     EXPORT AABB getAABB(Matrix4 *model);
+
+    EXPORT int castRay(const Segment &ray, PhysicsBodyPoint *newPoints, PhysicsBodyCache *cache);
 
     inline Matrix3 &getInvertedInertia() { return invertedInteria; }
 

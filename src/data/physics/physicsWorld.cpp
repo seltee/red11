@@ -50,11 +50,70 @@ PhysicsForm *PhysicsWorld::createPhysicsForm(float friction, float restitution, 
     return form;
 }
 
-PhysicsBody *PhysicsWorld::createPhysicsBody(PhysicsMotionType motionType, PhysicsForm *form, Entity *entity, Vector3 initialPosition, Quat initialRotation)
+PhysicsBody *PhysicsWorld::createPhysicsBody(PhysicsMotionType motionType, PhysicsForm *form, Entity *entity, void *userData, Vector3 initialPosition, Quat initialRotation)
 {
-    PhysicsBody *newBody = new PhysicsBody(motionType, form, this, entity, initialPosition * simScale, initialRotation);
+    PhysicsBody *newBody = new PhysicsBody(motionType, form, this, entity, userData, initialPosition * simScale, initialRotation);
     bodies.push_back(newBody);
     return newBody;
+}
+
+void PhysicsWorld::removeBody(PhysicsBody *removeBody)
+{
+    auto body = bodies.begin();
+    while (body != bodies.end())
+        if (*body == removeBody)
+        {
+            bodies.erase(body);
+            break;
+        }
+        else
+            ++body;
+}
+
+std::vector<PhysicsBodyPoint> PhysicsWorld::castRayCollision(const Segment &ray)
+{
+    points.clear();
+    Segment rayLocal = Segment(ray.a * simScale, ray.b * simScale);
+
+    if (maxJobs > bodies.size())
+    {
+        _ray(bodies.begin(), bodies.end(), rayLocal, &points);
+    }
+    else
+    {
+        int bodiesPerThread = bodies.size() / maxJobs;
+        std::vector<PhysicsBodyPoint> *points = &this->points;
+        std::vector<PhysicsBody *>::iterator currentBody = bodies.begin();
+
+        for (int i = 0; i < maxJobs; i++)
+        {
+            auto end = (i == maxJobs - 1) ? bodies.end() : currentBody + bodiesPerThread;
+
+            jobQueue->queueJob([currentBody, end, &rayLocal, points]
+                               { _ray(currentBody, end, rayLocal, points); });
+
+            currentBody += bodiesPerThread;
+        }
+        while (jobQueue->isBusy())
+        {
+        };
+    }
+
+    if (points.size() > 1)
+        std::sort(points.begin(), points.end(), _compareBodyPoints);
+    return points;
+}
+
+std::vector<PhysicsBodyPoint> PhysicsWorld::castSphereCollision(const Vector3 &p, float radius)
+{
+    points.clear();
+    return points;
+}
+
+std::vector<PhysicsBodyPoint> PhysicsWorld::castPointCollision(const Vector3 &p)
+{
+    points.clear();
+    return points;
 }
 
 void PhysicsWorld::prepareBodies()
@@ -183,7 +242,7 @@ void PhysicsWorld::findCollisions()
             auto end = (i == maxJobs - 1) ? pairs.end() : currentPair + pairsPerThread;
 
             jobQueue->queueJob([currentPair, end, pCollisionDispatcher, pCollisionCollector]
-                           { _collide(currentPair, end, pCollisionDispatcher, pCollisionCollector); });
+                               { _collide(currentPair, end, pCollisionDispatcher, pCollisionCollector); });
 
             currentPair += pairsPerThread;
         }
@@ -213,7 +272,7 @@ void PhysicsWorld::solveCollisions()
                 auto end = (i == maxJobs - 1) ? collisionCollector.pairs.end() : currentCollisionPair + pairsPerThread;
 
                 jobQueue->queueJob([currentCollisionPair, end, simScale, subStep]
-                               { _solve(currentCollisionPair, end, simScale, subStep); });
+                                   { _solve(currentCollisionPair, end, simScale, subStep); });
 
                 currentCollisionPair += pairsPerThread;
             }

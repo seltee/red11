@@ -100,3 +100,16 @@ AABB PhysicsForm::getAABB(Matrix4 *model)
     Vector3 p = Vector3(*model * Vector4(0, 0, 0, 1.0f));
     return AABB(p, p);
 }
+
+int PhysicsForm::castRay(const Segment &ray, PhysicsBodyPoint *newPoints, PhysicsBodyCache *cache)
+{
+    if (shapes.size() == 0)
+    {
+        return 0;
+    }
+    if (shapes.size() == 1)
+    {
+        return shapes.at(0)->castRay(ray, newPoints, &cache[0]);
+    }
+    return 0;
+}

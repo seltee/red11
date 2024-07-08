@@ -27,11 +27,14 @@ AABB ShapeSphere::getAABB(Matrix4 *model)
     return AABB(absoluteCenter - radius, absoluteCenter + radius);
 }
 
-/*
-bool ShapeSphere::testRay(const Segment &line, std::vector<RayCollisionPoint> *points)
+int ShapeSphere::castRay(const Segment &ray, PhysicsBodyPoint *newPoints, PhysicsBodyCache *cache)
 {
-    Vector3 normal = glm::normalize(line.b - line.a);
-    Vector3 m = line.a - absoluteCenter;
+    float radius = cache->sphere.radius;
+    Vector3 &center = cache->sphere.center;
+
+    Vector3 bMinusA = ray.b - ray.a;
+    Vector3 normal = glm::normalize(bMinusA);
+    Vector3 m = ray.a - center;
     float b = glm::dot(m, normal);
     float c = glm::dot(m, m) - radius * radius;
 
@@ -48,46 +51,40 @@ bool ShapeSphere::testRay(const Segment &line, std::vector<RayCollisionPoint> *p
     float sqrtDiscr = sqrtf(discr);
     float t1 = -b - sqrtDiscr;
     float t2 = -b + sqrtDiscr;
-    float length = glm::length(line.b - line.a);
+    float length = glm::length(bMinusA);
 
     // If t is negative, ray started inside sphere
     if (t1 < 0.0f)
     {
         if (t2 <= length)
         {
-            Vector3 point = line.a + t2 * normal;
-            points->push_back({point, glm::normalize(absoluteCenter - point), t2});
+            Vector3 point = ray.a + t2 * normal;
+            newPoints[0] = PhysicsBodyPoint({nullptr, point, glm::normalize(center - point), t2});
+            return 1;
         }
     }
     else
     {
+        int out = 0;
         if (t1 <= length)
         {
-            Vector3 point = line.a + t1 * normal;
-            points->push_back({point, glm::normalize(absoluteCenter - point), t1});
+            Vector3 point = ray.a + t1 * normal;
+            newPoints[0] = PhysicsBodyPoint({nullptr, point, glm::normalize(center - point), t1});
+            out++;
         }
         if (t2 <= length)
         {
-            Vector3 point = line.a + t2 * normal;
-            points->push_back({point, glm::normalize(absoluteCenter - point), t2});
+            Vector3 point = ray.a + t2 * normal;
+            newPoints[out] = PhysicsBodyPoint({nullptr, point, glm::normalize(center - point), t2});
+            out++;
         }
+        return out;
     }
 
-    return true;
+    return 0;
 }
 
-void ShapeSphere::provideTransformation(Matrix4 *transformation)
-{
-    absoluteCenter = Vector3(*transformation * Vector4(0.0f, 0.0f, 0.0f, 1.0f));
-}
-
-*/
 /*
-AABB ShapeSphere::getAABB()
-{
-    return AABB(absoluteCenter - Vector3(radius, radius, radius), absoluteCenter + Vector3(radius, radius, radius));
-}
-
 void ShapeSphere::renderDebug(Matrix4 *projectionView, Matrix4 *model, float scale, float thickness)
 {
 

@@ -21,6 +21,8 @@ typedef glm::mat4x4 Matrix4;
 
 typedef glm::quat Quat;
 
+class Actor;
+
 struct PointWithDirection
 {
     Vector3 vPosition;
@@ -68,6 +70,14 @@ struct CollisionPoint
     Vector3 normal;
     float depth;
     bool hasCollision;
+};
+
+struct PhysicsBodyPoint
+{
+    void *userData;
+    Vector3 point;
+    Vector3 normal;
+    float distance;
 };
 
 inline Vector3

@@ -17,6 +17,8 @@ public:
     EXPORT Matrix3 &getInertiaTensor() override final { return inertia; }
     EXPORT AABB getAABB(Matrix4 *model) override final;
 
+    EXPORT int castRay(const Segment &ray, PhysicsBodyPoint *newPoints, PhysicsBodyCache *cache) override final;
+
     inline Vector3 getClosestPoint(const Vector3 &point)
     {
         float t = glm::dot(normal, point) - distance;

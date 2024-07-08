@@ -32,7 +32,7 @@ void Component::assignPhysicsWorld(PhysicsWorld *physicsWorld)
     this->physicsWorld = physicsWorld;
 }
 
-void Component::enablePhysics(PhysicsMotionType motionType, PhysicsForm *physicsForm)
+void Component::enablePhysics(PhysicsMotionType motionType, PhysicsForm *physicsForm, void *userData)
 {
     if (!physicsBody && physicsWorld)
     {
@@ -44,7 +44,7 @@ void Component::enablePhysics(PhysicsMotionType motionType, PhysicsForm *physics
 
         glm::decompose(*getModelMatrix(), scale, rotation, position, skew, perspective);
 
-        physicsBody = physicsWorld->createPhysicsBody(motionType, physicsForm, this, position, rotation);
+        physicsBody = physicsWorld->createPhysicsBody(motionType, physicsForm, this, userData, position, rotation);
 
         this->setTransformationParent(nullptr);
     }

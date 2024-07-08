@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2024 Dmitrii Shashkov
+// SPDX-License-Identifier: MIT
+
 #include "shapePlain.h"
 
 ShapePlain::ShapePlain(const Vector3 &normal, float distance)
@@ -28,24 +31,18 @@ AABB ShapePlain::getAABB(Matrix4 *model)
     return AABB(Vector3(-FLT_MAX, -FLT_MAX, -FLT_MAX), Vector3(FLT_MAX, FLT_MAX, FLT_MAX));
 }
 
-/*
-bool ShapePlain::testRay(const Segment &line, std::vector<RayCollisionPoint> *points)
+int ShapePlain::castRay(const Segment &ray, PhysicsBodyPoint *newPoints, PhysicsBodyCache *cache)
 {
+    float &distance = cache->plain.distance;
+    Vector3 &normal = cache->plain.normal;
     // Compute the t value for the directed line ab intersecting the plane
-    Vector3 ab = line.b - line.a;
-    float t = (distance - glm::dot(normal, line.a)) / glm::dot(normal, ab);
+    Vector3 ab = ray.b - ray.a;
+    float t = (distance - glm::dot(normal, ray.a)) / glm::dot(normal, ab);
     // If t in [0..1] compute and return intersection point
     if (t >= 0.0f && t <= 1.0f)
     {
-        points->push_back({line.a + t * ab, normal, t * glm::length(ab)});
-        return true;
+        newPoints[0] = PhysicsBodyPoint({nullptr, ray.a + t * ab, normal, t * glm::length(ab)});
+        return 1;
     }
-    // Else no intersection
-    return false;
+    return 0;
 }
-
-AABB ShapePlain::getAABB()
-{
-    return AABB(Vector3(-FLT_MAX, -FLT_MAX, -FLT_MAX), Vector3(FLT_MAX, FLT_MAX, FLT_MAX));
-}
-*/

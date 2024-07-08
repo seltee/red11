@@ -54,13 +54,13 @@ APPMAIN
     }
 
     // Sphere
-    auto sphere = scene->createActor<Actor>("Sphere");
-    sphere->setPosition(0.0f, 0.3f, -0.5f);
+    auto sphereContainer = scene->createActor<Actor>("Sphere");
 
-    auto sphereComponent = sphere->createComponentMesh(sphereMesh);
+    auto sphereComponent = sphereContainer->createComponentMesh(sphereMesh);
     sphereComponent->setMaterial(concreteMaterial);
+    sphereComponent->setPosition(0.0f, 0.3f, -0.025f);
 
-    auto sphereComponent2 = sphere->createComponentMesh(sphereMesh);
+    auto sphereComponent2 = sphereContainer->createComponentMesh(sphereMesh);
     sphereComponent2->setMaterial(concreteMaterial);
     sphereComponent2->setPosition(0.0f, 0.15f, -0.02f);
 
@@ -182,8 +182,15 @@ APPMAIN
         timer -= delta;
         if (timer < 0.0f)
         {
-            sphereComponent->enablePhysics(PhysicsMotionType::Dynamic, sphereForm);
-            sphereComponent2->enablePhysics(PhysicsMotionType::Dynamic, sphereForm);
+            sphereComponent->enablePhysics(PhysicsMotionType::Dynamic, sphereForm, sphereComponent);
+            sphereComponent2->enablePhysics(PhysicsMotionType::Dynamic, sphereForm, sphereComponent2);
+            for (int i = 0; i < 16; i++)
+            {
+                auto sphereComponentI = sphereContainer->createComponentMesh(sphereMesh);
+                sphereComponentI->setMaterial(concreteMaterial);
+                sphereComponentI->setPosition(randf(-3.0f, 3.0f), randf(1.5f, 3.0f), randf(-3.0f, 3.0f));
+                sphereComponentI->enablePhysics(PhysicsMotionType::Dynamic, sphereForm, sphereComponentI);
+            }
             timer = 100000.0f;
         }
 
@@ -209,16 +216,27 @@ APPMAIN
         if (cameraControl.shoot)
         {
             cameraControl.shoot = false;
-            auto shootBall = scene->createActor<Actor>("Sphere");
-            shootBall->setPosition(cameraTransform.getPosition() - Vector3(0, 0.05f, 0) + camera.getForwardVector() * 0.2f);
-            auto sphereComponent = shootBall->createComponentMesh(ballSphereMesh);
+            auto sphereComponent = sphereContainer->createComponentMesh(ballSphereMesh);
+            sphereComponent->setPosition(cameraTransform.getPosition() - Vector3(0, 0.05f, 0) + camera.getForwardVector() * 0.2f);
             sphereComponent->setMaterial(redBallMaterial);
-            sphereComponent->enablePhysics(PhysicsMotionType::Dynamic, ballSphereFrom);
+            sphereComponent->enablePhysics(PhysicsMotionType::Dynamic, ballSphereFrom, sphereComponent);
             sphereComponent->getPhysicsBody()->addLinearVelocity(camera.getForwardVector() * 0.6f);
         }
         if (cameraControl.remove)
         {
             cameraControl.remove = false;
+            std::vector<PhysicsBodyPoint> points = scene->castRayCollision(cameraTransform.getPosition(), cameraTransform.getPosition() + camera.getForwardVector() * 10.0f);
+            if (points.size() > 0)
+            {
+                for (auto &point : points)
+                {
+                    if (point.userData)
+                    {
+                        ((Component *)point.userData)->destroy();
+                        break;
+                    }
+                }
+            }
         }
 
         camera.updateViewMatrix(cameraTransform.getModelMatrix());

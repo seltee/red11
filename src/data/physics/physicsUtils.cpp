@@ -1,4 +1,8 @@
 #include "physicsUtils.h"
+#include "physicsBody.h"
+#include "collisionSolver.h"
+#include "collisionCollector.h"
+#include "collisionDispatcher.h"
 
 std::mutex lock;
 
@@ -82,5 +86,29 @@ void _solve(
     for (auto pair = pairStart; pair < pairEnd; pair++)
     {
         collisionSolver.solve(pair->a, pair->b, pair->manifold, subStep);
+    }
+}
+
+void _ray(
+    std::vector<PhysicsBody *>::iterator bodyStart,
+    std::vector<PhysicsBody *>::iterator bodyEnd,
+    const Segment &rayLocal,
+    std::vector<PhysicsBodyPoint> *points)
+{
+    PhysicsBodyPoint newPoints[8];
+
+    for (auto body = bodyStart; body < bodyEnd; body++)
+    {
+        if (!(*body)->getAABB().test(rayLocal))
+            continue;
+
+        int pointsCollected = (*body)->castRay(rayLocal, newPoints);
+        if (pointsCollected)
+        {
+            lock.lock();
+            for (int i = 0; i < pointsCollected; i++)
+                points->push_back(newPoints[i]);
+            lock.unlock();
+        }
     }
 }

@@ -4,17 +4,37 @@
 #include "physicsBody.h"
 #include "physicsWorld.h"
 
-PhysicsBody::PhysicsBody(PhysicsMotionType motionType, PhysicsForm *form, PhysicsWorld *world, Entity *entity, Vector3 initialPosition, Quat initialRotation)
+PhysicsBody::PhysicsBody(
+    PhysicsMotionType motionType,
+    PhysicsForm *form,
+    PhysicsWorld *world,
+    Entity *entity,
+    void *userData,
+    Vector3 initialPosition,
+    Quat initialRotation)
 {
     this->motionType = motionType;
     this->form = form;
     this->world = world;
     this->entity = entity;
+    this->userData = userData;
     this->position = initialPosition;
     this->rotation = initialRotation;
 
     entity->setPosition(this->position / world->getSimScale());
     entity->setRotation(this->rotation);
+    updateCache();
+}
+
+PhysicsBody::~PhysicsBody()
+{
+    if (world)
+        world->removeBody(this);
+}
+
+void PhysicsBody::destroy()
+{
+    delete this;
 }
 
 void PhysicsBody::prepareForSimulation()
@@ -142,6 +162,7 @@ void PhysicsBody::updateCache()
     if (form->getType() == ShapeCollisionType::Sphere)
     {
         ShapeSphere *sphere = (ShapeSphere *)form->getSimpleShape();
+        cache[0].sphere.center = position;
         cache[0].sphere.radius = sphere->getRadius();
         return;
     }
@@ -154,4 +175,16 @@ void PhysicsBody::updateCache()
         cache[0].plain.distance = plain->getDistance() + glm::dot(position, normal);
         return;
     }
+}
+
+int PhysicsBody::castRay(const Segment &ray, PhysicsBodyPoint *newPoints)
+{
+    if (cache)
+    {
+        int count = form->castRay(ray, newPoints, cache);
+        for (int i = 0; i < count; i++)
+            newPoints[i].userData = userData;
+        return count;
+    }
+    return 0;
 }

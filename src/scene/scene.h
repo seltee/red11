@@ -24,6 +24,27 @@ public:
     EXPORT void process(float delta);
     EXPORT void render(Renderer *renderer, Camera *camera);
 
+    inline std::vector<PhysicsBodyPoint> castRayCollision(const Segment &ray)
+    {
+        return physicsWorld.castRayCollision(ray);
+    }
+
+    inline std::vector<PhysicsBodyPoint> castRayCollision(const Vector3 &from, const Vector3 &to)
+    {
+        Segment ray = Segment(from, to);
+        return physicsWorld.castRayCollision(ray);
+    }
+
+    inline std::vector<PhysicsBodyPoint> castSphereCollision(const Vector3 &p, float radius)
+    {
+        return physicsWorld.castSphereCollision(p, radius);
+    }
+
+    inline std::vector<PhysicsBodyPoint> castPointCollision(const Vector3 &p)
+    {
+        return physicsWorld.castPointCollision(p);
+    }
+
     inline void setAmbientLight(Color color) { this->ambientLight = color; }
     inline Color getAmbientLight() { return ambientLight; };
 

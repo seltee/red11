@@ -3,18 +3,12 @@
 
 #pragma once
 #include "collisionManifold.h"
+#include "physicsUtils.h"
 #include <vector>
 #include <thread>
 #include <mutex>
 
 class PhysicsBody;
-
-struct CollisionPair
-{
-    PhysicsBody *a;
-    PhysicsBody *b;
-    CollisionManifold manifold;
-};
 
 class CollisionCollector
 {
