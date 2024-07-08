@@ -9,6 +9,7 @@
 MeshBuilder *Red11::meshBuilder = nullptr;
 InputProvider *Red11::globalInputProvider = nullptr;
 JobQueue *Red11::jobQueue = nullptr;
+DebugEntities *Red11::debugEntities = nullptr;
 
 Red11::Red11()
 {
@@ -16,7 +17,7 @@ Red11::Red11()
 
 Scene *Red11::createScene()
 {
-    return new Scene();
+    return new Scene(getDebugEntities());
 }
 
 Window *Red11::createWindow(const char *utf8Name, int width, int height, int flags)
@@ -61,4 +62,11 @@ JobQueue *Red11::getJobQueue()
     if (!jobQueue)
         jobQueue = new JobQueue();
     return jobQueue;
+}
+
+DebugEntities *Red11::getDebugEntities()
+{
+    if (!debugEntities)
+        debugEntities = new DebugEntities();
+    return debugEntities;
 }

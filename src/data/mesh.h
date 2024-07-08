@@ -135,6 +135,9 @@ public:
 
     inline Sphere &getBoundVolumeSphere() { return boundVolume; }
 
+    inline void setCastsShadow(bool bCastsShadow) { this->bCastsShadow = bCastsShadow; }
+    inline bool isCastsShadow() { return bCastsShadow; }
+
 protected:
     void rebuildTangents();
     void getTangentBitangent(VertexDataUV &v1, VertexDataUV &v2, VertexDataUV &v3, Vector3 *tangent, Vector3 *bitangent);
@@ -147,6 +150,7 @@ protected:
     Vector4 centroid;
 
     unsigned int index;
+    bool bCastsShadow = true;
 
     std::vector<Deform *> deforms;
     Sphere boundVolume;

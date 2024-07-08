@@ -59,10 +59,12 @@ APPMAIN
     auto sphereComponent = sphereContainer->createComponentMesh(sphereMesh);
     sphereComponent->setMaterial(concreteMaterial);
     sphereComponent->setPosition(0.0f, 0.3f, -0.025f);
+    sphereComponent->setRenderDebugPhysicsBody(true);
 
     auto sphereComponent2 = sphereContainer->createComponentMesh(sphereMesh);
     sphereComponent2->setMaterial(concreteMaterial);
     sphereComponent2->setPosition(0.0f, 0.15f, -0.02f);
+    sphereComponent2->setRenderDebugPhysicsBody(true);
 
     auto sphereForm = world->createPhysicsForm(0.9f, 0.4f);
     sphereForm->createSphere(Vector3(0), 0.1f, 20.0f);
@@ -76,6 +78,7 @@ APPMAIN
     auto floorForm = world->createPhysicsForm(0.9f, 0.1f);
     floorForm->createPlain(Vector3(0, 1, 0), 0.0f);
     floorComponent->enablePhysics(PhysicsMotionType::Static, floorForm);
+    floorComponent->setRenderDebugPhysicsBody(true);
 
     auto wallRightComponent = floor->createComponentMesh(cubeMesh);
     wallRightComponent->setMaterial(concreteMaterial);
@@ -83,6 +86,7 @@ APPMAIN
     wallRightComponent->setPosition(Vector3(0, 0.5, -3.5));
     wallRightComponent->setScale(Vector3(8.0f, 0.01f, 8.0f));
     wallRightComponent->enablePhysics(PhysicsMotionType::Static, floorForm);
+    wallRightComponent->setRenderDebugPhysicsBody(true);
 
     auto wallLeftComponent = floor->createComponentMesh(cubeMesh);
     wallLeftComponent->setMaterial(concreteMaterial);
@@ -90,6 +94,7 @@ APPMAIN
     wallLeftComponent->setPosition(Vector3(0, 0.5, 3.5));
     wallLeftComponent->setScale(Vector3(8.0f, 0.01f, 8.0f));
     wallLeftComponent->enablePhysics(PhysicsMotionType::Static, floorForm);
+    wallLeftComponent->setRenderDebugPhysicsBody(true);
 
     auto wallForwardComponent = floor->createComponentMesh(cubeMesh);
     wallForwardComponent->setMaterial(concreteMaterial);
@@ -97,6 +102,7 @@ APPMAIN
     wallForwardComponent->setPosition(Vector3(3.5, 0.5, 0));
     wallForwardComponent->setScale(Vector3(8.0f, 0.01f, 8.0f));
     wallForwardComponent->enablePhysics(PhysicsMotionType::Static, floorForm);
+    wallForwardComponent->setRenderDebugPhysicsBody(true);
 
     auto wallBackwardComponent = floor->createComponentMesh(cubeMesh);
     wallBackwardComponent->setMaterial(concreteMaterial);
@@ -104,6 +110,7 @@ APPMAIN
     wallBackwardComponent->setPosition(Vector3(-3.5, 0.5, 0));
     wallBackwardComponent->setScale(Vector3(8.0f, 0.01f, 8.0f));
     wallBackwardComponent->enablePhysics(PhysicsMotionType::Static, floorForm);
+    wallBackwardComponent->setRenderDebugPhysicsBody(true);
 
     // Light
     auto lightSun = scene->createActor<Actor>("Light");
@@ -225,7 +232,7 @@ APPMAIN
         if (cameraControl.remove)
         {
             cameraControl.remove = false;
-            std::vector<PhysicsBodyPoint> points = scene->castRayCollision(cameraTransform.getPosition(), cameraTransform.getPosition() + camera.getForwardVector() * 10.0f);
+            std::vector<PhysicsBodyPoint> points = scene->castRayCollision(cameraTransform.getPosition(), cameraTransform.getPosition() + camera.getForwardVector() * 10.0f, true);
             if (points.size() > 0)
             {
                 for (auto &point : points)

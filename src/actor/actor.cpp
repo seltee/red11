@@ -110,6 +110,8 @@ void Actor::onRenderQueue(Renderer *renderer)
         for (auto &component : components)
         {
             component->onRenderQueue(renderer);
+            if (component->hasDebugInfoToRender())
+                component->onRenderDebug(renderer);
         }
     }
 }

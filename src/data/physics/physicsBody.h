@@ -65,6 +65,8 @@ public:
 
     inline PhysicsForm *getForm() { return form; }
 
+    inline PhysicsWorld *getPhysicsWorld() { return world; }
+
     PhysicsBodyCacheTypeSphere *getCacheSphere(int bodyNum) { return &cache[bodyNum].sphere; }
     PhysicsBodyCacheTypePlain *getCachePlain(int bodyNum) { return &cache[bodyNum].plain; }
 

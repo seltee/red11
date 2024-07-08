@@ -55,9 +55,9 @@ OBJ_FILES = ${OBJDIR}/red11.o \
 			${OBJDIR}/physicsWorld.o ${OBJDIR}/physicsBody.o ${OBJDIR}/physicsForm.o ${OBJDIR}/physicsUtils.o \
 			${OBJDIR}/collisionDispatcher.o ${OBJDIR}/collisionSolver.o \
 			${OBJDIR}/shape.o ${OBJDIR}/shapePlain.o ${OBJDIR}/shapeSphere.o \
-			${OBJDIR}/data3DFile.o \
+			${OBJDIR}/data3DFile.o ${OBJDIR}/debugEntities.o \
 			${OBJDIR}/material.o ${OBJDIR}/materialSimple.o \
-			${OBJDIR}/actor.o \
+			${OBJDIR}/actor.o ${OBJDIR}/actorTemporary.o \
 			${OBJDIR}/component.o ${OBJDIR}/componentMesh.o ${OBJDIR}/componentLight.o ${OBJDIR}/componentMeshGroup.o ${OBJDIR}/componentCamera.o \
 			${OBJDIR}/utils.o ${OBJDIR}/color.o ${OBJDIR}/meshBuilder.o ${OBJDIR}/meshCombiner.o ${OBJDIR}/destroyable.o ${OBJDIR}/stb_image.o \
 			${OBJDIR}/deltaCounter.o ${OBJDIR}/jobQueue.o \
@@ -171,6 +171,9 @@ ${OBJDIR}/shapeSphere.o: ${SRCDIR}/data/physics/shapes/shapeSphere.cpp
 ${OBJDIR}/data3DFile.o: ${SRCDIR}/data/data3DFile.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/data3DFile.o ${SRCDIR}/data/data3DFile.cpp
 
+${OBJDIR}/debugEntities.o: ${SRCDIR}/data/debugEntities.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/debugEntities.o ${SRCDIR}/data/debugEntities.cpp
+
 ${OBJDIR}/material.o: ${SRCDIR}/data/material/material.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/material.o ${SRCDIR}/data/material/material.cpp
 
@@ -179,6 +182,9 @@ ${OBJDIR}/materialSimple.o: ${SRCDIR}/data/material/materialSimple.cpp
 
 ${OBJDIR}/actor.o: ${SRCDIR}/actor/actor.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/actor.o ${SRCDIR}/actor/actor.cpp
+
+${OBJDIR}/actorTemporary.o: ${SRCDIR}/actor/actorTemporary.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/actorTemporary.o ${SRCDIR}/actor/actorTemporary.cpp
 
 ${OBJDIR}/component.o: ${SRCDIR}/actor/components/component.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/component.o ${SRCDIR}/actor/components/component.cpp

@@ -101,6 +101,8 @@ std::vector<PhysicsBodyPoint> PhysicsWorld::castRayCollision(const Segment &ray)
 
     if (points.size() > 1)
         std::sort(points.begin(), points.end(), _compareBodyPoints);
+    for (auto &point : points)
+        point.point /= simScale;
     return points;
 }
 

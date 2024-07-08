@@ -70,6 +70,7 @@ void DirectX9Renderer::renderQueue(Camera *camera)
 void DirectX9Renderer::clearQueue()
 {
     data.clearQueue();
+    lastMatrixStore = 0;
 }
 
 void DirectX9Renderer::renderMesh(Camera *camera, Vector3 *cameraPosition, Mesh *mesh, Matrix4 *model)
@@ -311,7 +312,7 @@ void DirectX9Renderer::renderQueueLightDepthBuffer(Vector3 &cameraPosition, Came
     d3ddev->BeginScene();
     for (int i = 0; i < data.queueCurrentMesh; i++)
     {
-        if (data.isMeshVisibleToCamera(&data.queueMeshes[i], camera))
+        if (data.queueMeshes[i].mesh->isCastsShadow() && data.isMeshVisibleToCamera(&data.queueMeshes[i], camera))
             renderMeshShadowDepthData(camera, cameraPosition, &data.queueMeshes[i]);
     }
     d3ddev->EndScene();

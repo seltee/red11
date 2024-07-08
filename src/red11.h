@@ -20,6 +20,7 @@
 #include "data/textureFile.h"
 #include "data/inputProvider.h"
 #include "data/data3DFile.h"
+#include "data/debugEntities.h"
 
 #ifdef WINDOWS_ONLY
 #include <shellscalingapi.h>
@@ -54,8 +55,11 @@ public:
 
     EXPORT static JobQueue *getJobQueue();
 
+    EXPORT static DebugEntities *getDebugEntities();
+
 protected:
     static MeshBuilder *meshBuilder;
     static InputProvider *globalInputProvider;
     static JobQueue *jobQueue;
+    static DebugEntities *debugEntities;
 };

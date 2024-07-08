@@ -25,13 +25,19 @@ public:
 
     EXPORT virtual void onCreated();
     EXPORT virtual void onRenderQueue(Renderer *renderer);
+    EXPORT virtual void onRenderDebug(Renderer *renderer);
     EXPORT virtual void onProcess(float delta);
 
     EXPORT void setParent(Component *parent);
+
+    inline void setRenderDebugPhysicsBody(bool bRenderDebugPhysicsBody) { this->bRenderDebugPhysicsBody = bRenderDebugPhysicsBody; }
+    inline bool getRenderDebugPhysicsBody() { return bRenderDebugPhysicsBody; }
+    inline bool hasDebugInfoToRender() { return bRenderDebugPhysicsBody; }
 
 protected:
     Actor *owner = nullptr;
     Component *parent = nullptr;
     PhysicsWorld *physicsWorld = nullptr;
     PhysicsBody *physicsBody = nullptr;
+    bool bRenderDebugPhysicsBody = false;
 };
