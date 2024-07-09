@@ -14,7 +14,6 @@ public:
     EXPORT ShapePlain(const Vector3 &normal, const Vector3 &point);
     EXPORT ShapeCollisionType getType() override final;
 
-    EXPORT Matrix3 &getInertiaTensor() override final { return inertia; }
     EXPORT AABB getAABB(Matrix4 *model) override final;
 
     EXPORT int castRay(const Segment &ray, PhysicsBodyPoint *newPoints, PhysicsBodyCache *cache) override final;
@@ -31,5 +30,4 @@ public:
 protected:
     Vector3 normal;
     float distance;
-    Matrix3 inertia;
 };

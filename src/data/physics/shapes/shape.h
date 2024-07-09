@@ -29,16 +29,17 @@ protected:
 public:
     virtual ~Shape();
     EXPORT virtual ShapeCollisionType getType() = 0;
-    EXPORT virtual Matrix3 &getInertiaTensor() = 0;
     EXPORT virtual AABB getAABB(Matrix4 *model) = 0;
     EXPORT virtual int castRay(const Segment &ray, PhysicsBodyPoint *newPoints, PhysicsBodyCache *cache) = 0;
-    EXPORT inline void setMass(float mass) { this->mass = mass; }
-    EXPORT inline float getMass() { return mass; }
-    EXPORT static std::string getTypeName(ShapeCollisionType type);
+    inline void setMass(float mass) { this->mass = mass; }
+    inline float getMass() { return mass; }
+    inline void setDebugName(std::string str) { name = str; }
+    inline Matrix3 &getInertiaTensor() { return inertia; }
 
-    EXPORT inline void setDebugName(std::string str) { name = str; }
+    EXPORT static std::string getTypeName(ShapeCollisionType type);
 
 protected:
     float mass;
     std::string name;
+    Matrix3 inertia;
 };

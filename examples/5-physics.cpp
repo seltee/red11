@@ -30,8 +30,14 @@ APPMAIN
 
     auto redBallMaterial = new MaterialSimple(Color(0.8f, 0.1f, 0.1f), Color(0, 0, 0), 0.0f, 0.1f);
 
+    auto crateTexture = new TextureFile("Crate", "./data/crate.jpg");
+    auto crateMaterial = new MaterialSimple(crateTexture);
+    crateMaterial->setRoughness(0.7f);
+    crateMaterial->setMetallic(0.2f);
+
     // Meshes
     auto cubeMesh = Red11::getMeshBuilder()->createCube(0.1f);
+    auto cubeMeshBig = Red11::getMeshBuilder()->createCube(0.25f);
     auto sphereMesh = Red11::getMeshBuilder()->createSphere(0.101f);
     auto ballSphereMesh = Red11::getMeshBuilder()->createSphere(0.041f);
 
@@ -70,7 +76,20 @@ APPMAIN
     sphereForm->createSphere(Vector3(0), 0.1f, 20.0f);
 
     auto ballSphereFrom = world->createPhysicsForm(0.4f, 0.65f);
-    ballSphereFrom->createSphere(Vector3(0), 0.04f, 20.0f);
+    ballSphereFrom->createSphere(Vector3(0), 0.04f, 25.0f);
+
+    // Boxes
+    auto boxFrom = world->createPhysicsForm(0.9f, 0.15f);
+    boxFrom->createOBB(Vector3(0), 0.25f, 16.0f);
+
+    for (int i = 0; i < 16; i++)
+    {
+        auto boxComponent = sphereContainer->createComponentMesh(cubeMeshBig);
+        boxComponent->setMaterial(crateMaterial);
+        boxComponent->setPosition(randf(-3.0f, 3.0f), 0.8f, randf(-3.0f, 3.0f));
+        boxComponent->enablePhysics(PhysicsMotionType::Dynamic, boxFrom, boxComponent);
+        boxComponent->setRenderDebugPhysicsBody(true);
+    }
 
     // Floor && walls
     auto floor = scene->createActor<Actor>("Floor");
@@ -227,7 +246,7 @@ APPMAIN
             sphereComponent->setPosition(cameraTransform.getPosition() - Vector3(0, 0.05f, 0) + camera.getForwardVector() * 0.2f);
             sphereComponent->setMaterial(redBallMaterial);
             sphereComponent->enablePhysics(PhysicsMotionType::Dynamic, ballSphereFrom, sphereComponent);
-            sphereComponent->getPhysicsBody()->addLinearVelocity(camera.getForwardVector() * 0.6f);
+            sphereComponent->getPhysicsBody()->addLinearVelocity(camera.getForwardVector() * 2.0f);
         }
         if (cameraControl.remove)
         {

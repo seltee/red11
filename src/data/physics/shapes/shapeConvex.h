@@ -8,18 +8,21 @@
 
 class PhysicsWorld;
 
-class ShapeSphere : public Shape
+class ShapeConvex : public Shape
 {
 public:
-    EXPORT ShapeSphere(const Vector3 &center, float radius, float density = 22.0f);
-    inline float getRadius() { return radius; }
+    EXPORT ShapeConvex(const Vector3 &center, float simScale, Vector3 *verticies, int amount, float density);
 
-    EXPORT ShapeCollisionType getType() override final;
+    EXPORT ShapeCollisionType getType() override;
     EXPORT AABB getAABB(Matrix4 *model) override final;
 
     EXPORT int castRay(const Segment &ray, PhysicsBodyPoint *newPoints, PhysicsBodyCache *cache) override final;
 
+    inline Vector3 *getVerticies() { return verticies; }
+    inline int getVertexAmount() { return amount; }
+
 protected:
-    float radius;
     Vector3 center;
+    Vector3 *verticies;
+    int amount;
 };

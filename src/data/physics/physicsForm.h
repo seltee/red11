@@ -7,6 +7,8 @@
 #include "shapes/shape.h"
 #include "shapes/shapePlain.h"
 #include "shapes/shapeSphere.h"
+#include "shapes/shapeOBB.h"
+#include "shapes/shapeConvex.h"
 #include "physicsUtils.h"
 #include <vector>
 
@@ -19,7 +21,9 @@ public:
 
     EXPORT ShapePlain *createPlain(Vector3 normal, float distance);
     EXPORT ShapePlain *createPlain(Vector3 normal, Vector3 point);
-    EXPORT ShapeSphere *createSphere(Vector3 position, float radius, float density = 22.0f);
+    EXPORT ShapeSphere *createSphere(Vector3 center, float radius, float density = 22.0f);
+    EXPORT ShapeOBB *createOBB(Vector3 center, float width, float height, float depth, float density = 22.0f);
+    EXPORT ShapeOBB *createOBB(Vector3 center, float size, float density = 22.0f);
 
     EXPORT void recalcParameters();
 

@@ -54,13 +54,13 @@ OBJ_FILES = ${OBJDIR}/red11.o \
 			${OBJDIR}/deform.o ${OBJDIR}/boneTransform.o ${OBJDIR}/animation.o ${OBJDIR}/animationTarget.o ${OBJDIR}/animator.o ${OBJDIR}/animationTrack.o \
 			${OBJDIR}/physicsWorld.o ${OBJDIR}/physicsBody.o ${OBJDIR}/physicsForm.o ${OBJDIR}/physicsUtils.o \
 			${OBJDIR}/collisionDispatcher.o ${OBJDIR}/collisionSolver.o \
-			${OBJDIR}/shape.o ${OBJDIR}/shapePlain.o ${OBJDIR}/shapeSphere.o \
+			${OBJDIR}/shape.o ${OBJDIR}/shapePlain.o ${OBJDIR}/shapeSphere.o ${OBJDIR}/shapeOBB.o \
 			${OBJDIR}/data3DFile.o ${OBJDIR}/debugEntities.o \
 			${OBJDIR}/material.o ${OBJDIR}/materialSimple.o \
 			${OBJDIR}/actor.o ${OBJDIR}/actorTemporary.o \
 			${OBJDIR}/component.o ${OBJDIR}/componentMesh.o ${OBJDIR}/componentLight.o ${OBJDIR}/componentMeshGroup.o ${OBJDIR}/componentCamera.o \
 			${OBJDIR}/utils.o ${OBJDIR}/color.o ${OBJDIR}/meshBuilder.o ${OBJDIR}/meshCombiner.o ${OBJDIR}/destroyable.o ${OBJDIR}/stb_image.o \
-			${OBJDIR}/deltaCounter.o ${OBJDIR}/jobQueue.o \
+			${OBJDIR}/deltaCounter.o ${OBJDIR}/jobQueue.o ${OBJDIR}/hullCliping.o \
 			${OBJDIR}/loaderFBX.o ${OBJDIR}/FBXNode.o ${OBJDIR}/FBXAnimationStack.o ${OBJDIR}/FBXAnimationLayer.o ${OBJDIR}/FBXAnimationCurve.o ${OBJDIR}/FBXAnimationCurveNode.o \
 			${OBJDIR}/FBXDeform.o ${OBJDIR}/FBXGeometry.o ${OBJDIR}/FBXModel.o ${OBJDIR}/FBXAttribute.o
 
@@ -168,6 +168,9 @@ ${OBJDIR}/shapePlain.o: ${SRCDIR}/data/physics/shapes/shapePlain.cpp
 ${OBJDIR}/shapeSphere.o: ${SRCDIR}/data/physics/shapes/shapeSphere.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/shapeSphere.o ${SRCDIR}/data/physics/shapes/shapeSphere.cpp
 
+${OBJDIR}/shapeOBB.o: ${SRCDIR}/data/physics/shapes/shapeOBB.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/shapeOBB.o ${SRCDIR}/data/physics/shapes/shapeOBB.cpp
+
 ${OBJDIR}/data3DFile.o: ${SRCDIR}/data/data3DFile.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/data3DFile.o ${SRCDIR}/data/data3DFile.cpp
 
@@ -224,6 +227,9 @@ ${OBJDIR}/deltaCounter.o: ${SRCDIR}/utils/deltaCounter.cpp
 
 ${OBJDIR}/jobQueue.o: ${SRCDIR}/utils/jobQueue.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/jobQueue.o ${SRCDIR}/utils/jobQueue.cpp
+
+${OBJDIR}/hullCliping.o: ${SRCDIR}/utils/hullCliping.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/hullCliping.o ${SRCDIR}/utils/hullCliping.cpp
 
 ${OBJDIR}/loaderFBX.o: ${SRCDIR}/utils/FBX/loaderFBX.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/loaderFBX.o ${SRCDIR}/utils/FBX/loaderFBX.cpp

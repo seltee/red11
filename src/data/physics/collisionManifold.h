@@ -28,7 +28,7 @@ public:
     // Amount of points of collision
     int collisionAmount = 0;
 
-    inline bool addCollisionPoint(Vector3 onA, Vector3 onB, float depth, Vector3 normal)
+    inline bool addCollisionPoint(const Vector3 &onA, const Vector3 &onB, float depth, const Vector3 &normal)
     {
         if (collisionAmount < MAX_POINTS)
         {

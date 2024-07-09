@@ -34,10 +34,29 @@ struct PhysicsBodyCacheTypePlain
     float distance;
     Vector3 normal;
 };
+
+struct PhysicsBodyCacheTypeOBB
+{
+    Vector3 center;
+    Vector3 axisX, axisY, axisZ;
+    Vector3 points[8];
+    Vector3 normals[6];
+    Matrix4 transformation;
+};
+
+struct PhysicsBodyCacheTypeConvex
+{
+    Vector3 center;
+    Vector3 *points;
+    int amount;
+};
+
 union PhysicsBodyCache
 {
     PhysicsBodyCacheTypeSphere sphere;
     PhysicsBodyCacheTypePlain plain;
+    PhysicsBodyCacheTypeOBB OBB;
+    PhysicsBodyCacheTypeConvex convex;
 };
 
 inline bool _compareBodyPoints(PhysicsBodyPoint a, PhysicsBodyPoint b)

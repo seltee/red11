@@ -12,6 +12,8 @@
 #include "math/hullCliping.h"
 */
 #include <vector>
+#include "utils/algorithms.h"
+#include "utils/hullCliping.h"
 
 CollisionDispatcher::CollisionDispatcher()
 {
@@ -50,6 +52,7 @@ CollisionDispatcher::CollisionDispatcher()
         CollisionDispatcher::collideSphereVsGeometry(sphere, geometry, collector);
     };
 
+    */
     collectCollisions[(int)ShapeCollisionType::Sphere][(int)ShapeCollisionType::Convex] = [](PhysicsBody *sphere, PhysicsBody *convex, CollisionCollector *collector)
     {
         CollisionDispatcher::collideSphereVsConvex(sphere, convex, collector);
@@ -82,7 +85,8 @@ CollisionDispatcher::CollisionDispatcher()
 
     collectCollisions[(int)ShapeCollisionType::OBB][(int)ShapeCollisionType::OBB] = [](PhysicsBody *OBB_A, PhysicsBody *OBB_B, CollisionCollector *collector)
     {
-        CollisionDispatcher::collideConvexVsConvex(OBB_A, OBB_B, collector);
+        // cache of OBB compatible with cache of convex
+        CollisionDispatcher::collideOBBVsOBB(OBB_A, OBB_B, collector);
     };
 
     collectCollisions[(int)ShapeCollisionType::Convex][(int)ShapeCollisionType::Convex] = [](PhysicsBody *convexA, PhysicsBody *convexB, CollisionCollector *collector)
@@ -100,82 +104,83 @@ CollisionDispatcher::CollisionDispatcher()
         CollisionDispatcher::collideConvexVsPlain(convex, plain, collector);
     };
 
-    collectCollisions[(int)ShapeCollisionType::Convex][(int)ShapeCollisionType::Geometry] = [](PhysicsBody *convex, PhysicsBody *geometry, CollisionCollector *collector)
-    {
-        CollisionDispatcher::collideConvexVsGeometry(convex, geometry, collector);
-    };
+    /*
+        collectCollisions[(int)ShapeCollisionType::Convex][(int)ShapeCollisionType::Geometry] = [](PhysicsBody *convex, PhysicsBody *geometry, CollisionCollector *collector)
+        {
+            CollisionDispatcher::collideConvexVsGeometry(convex, geometry, collector);
+        };
 
-    collectCollisions[(int)ShapeCollisionType::Geometry][(int)ShapeCollisionType::Convex] = [](PhysicsBody *geometry, PhysicsBody *convex, CollisionCollector *collector)
-    {
-        CollisionDispatcher::collideConvexVsGeometry(convex, geometry, collector);
-    };
+        collectCollisions[(int)ShapeCollisionType::Geometry][(int)ShapeCollisionType::Convex] = [](PhysicsBody *geometry, PhysicsBody *convex, CollisionCollector *collector)
+        {
+            CollisionDispatcher::collideConvexVsGeometry(convex, geometry, collector);
+        };
 
-    collectCollisions[(int)ShapeCollisionType::OBB][(int)ShapeCollisionType::Geometry] = [](PhysicsBody *OBB, PhysicsBody *geometry, CollisionCollector *collector)
-    {
-        CollisionDispatcher::collideConvexVsGeometry(OBB, geometry, collector);
-    };
+        collectCollisions[(int)ShapeCollisionType::OBB][(int)ShapeCollisionType::Geometry] = [](PhysicsBody *OBB, PhysicsBody *geometry, CollisionCollector *collector)
+        {
+            CollisionDispatcher::collideConvexVsGeometry(OBB, geometry, collector);
+        };
 
-    collectCollisions[(int)ShapeCollisionType::Geometry][(int)ShapeCollisionType::OBB] = [](PhysicsBody *geometry, PhysicsBody *OBB, CollisionCollector *collector)
-    {
-        CollisionDispatcher::collideConvexVsGeometry(OBB, geometry, collector);
-    };
+        collectCollisions[(int)ShapeCollisionType::Geometry][(int)ShapeCollisionType::OBB] = [](PhysicsBody *geometry, PhysicsBody *OBB, CollisionCollector *collector)
+        {
+            CollisionDispatcher::collideConvexVsGeometry(OBB, geometry, collector);
+        };
 
-    collectCollisions[(int)ShapeCollisionType::Capsule][(int)ShapeCollisionType::Plain] = [](PhysicsBody *capsule, PhysicsBody *plain, CollisionCollector *collector)
-    {
-        CollisionDispatcher::collideCapsuleVsPlain(capsule, plain, collector);
-    };
+        collectCollisions[(int)ShapeCollisionType::Capsule][(int)ShapeCollisionType::Plain] = [](PhysicsBody *capsule, PhysicsBody *plain, CollisionCollector *collector)
+        {
+            CollisionDispatcher::collideCapsuleVsPlain(capsule, plain, collector);
+        };
 
-    collectCollisions[(int)ShapeCollisionType::Plain][(int)ShapeCollisionType::Capsule] = [](PhysicsBody *capsule, PhysicsBody *plain, CollisionCollector *collector)
-    {
-        CollisionDispatcher::collideCapsuleVsPlain(capsule, plain, collector);
-    };
+        collectCollisions[(int)ShapeCollisionType::Plain][(int)ShapeCollisionType::Capsule] = [](PhysicsBody *capsule, PhysicsBody *plain, CollisionCollector *collector)
+        {
+            CollisionDispatcher::collideCapsuleVsPlain(capsule, plain, collector);
+        };
 
-    collectCollisions[(int)ShapeCollisionType::Capsule][(int)ShapeCollisionType::Capsule] = [](PhysicsBody *capsuleA, PhysicsBody *capsuleB, CollisionCollector *collector)
-    {
-        CollisionDispatcher::collideCapsuleVsCapsule(capsuleA, capsuleB, collector);
-    };
+        collectCollisions[(int)ShapeCollisionType::Capsule][(int)ShapeCollisionType::Capsule] = [](PhysicsBody *capsuleA, PhysicsBody *capsuleB, CollisionCollector *collector)
+        {
+            CollisionDispatcher::collideCapsuleVsCapsule(capsuleA, capsuleB, collector);
+        };
 
-    collectCollisions[(int)ShapeCollisionType::Capsule][(int)ShapeCollisionType::Sphere] = [](PhysicsBody *capsule, PhysicsBody *sphere, CollisionCollector *collector)
-    {
-        CollisionDispatcher::collideCapsuleVsSphere(capsule, sphere, collector);
-    };
+        collectCollisions[(int)ShapeCollisionType::Capsule][(int)ShapeCollisionType::Sphere] = [](PhysicsBody *capsule, PhysicsBody *sphere, CollisionCollector *collector)
+        {
+            CollisionDispatcher::collideCapsuleVsSphere(capsule, sphere, collector);
+        };
 
-    collectCollisions[(int)ShapeCollisionType::Sphere][(int)ShapeCollisionType::Capsule] = [](PhysicsBody *sphere, PhysicsBody *capsule, CollisionCollector *collector)
-    {
-        CollisionDispatcher::collideCapsuleVsSphere(capsule, sphere, collector);
-    };
+        collectCollisions[(int)ShapeCollisionType::Sphere][(int)ShapeCollisionType::Capsule] = [](PhysicsBody *sphere, PhysicsBody *capsule, CollisionCollector *collector)
+        {
+            CollisionDispatcher::collideCapsuleVsSphere(capsule, sphere, collector);
+        };
 
-    collectCollisions[(int)ShapeCollisionType::Capsule][(int)ShapeCollisionType::OBB] = [](PhysicsBody *capsule, PhysicsBody *OBB, CollisionCollector *collector)
-    {
-        CollisionDispatcher::collideCapsuleVsConvex(capsule, OBB, collector);
-    };
+        collectCollisions[(int)ShapeCollisionType::Capsule][(int)ShapeCollisionType::OBB] = [](PhysicsBody *capsule, PhysicsBody *OBB, CollisionCollector *collector)
+        {
+            CollisionDispatcher::collideCapsuleVsConvex(capsule, OBB, collector);
+        };
 
-    collectCollisions[(int)ShapeCollisionType::OBB][(int)ShapeCollisionType::Capsule] = [](PhysicsBody *OBB, PhysicsBody *capsule, CollisionCollector *collector)
-    {
-        CollisionDispatcher::collideCapsuleVsConvex(capsule, OBB, collector);
-    };
+        collectCollisions[(int)ShapeCollisionType::OBB][(int)ShapeCollisionType::Capsule] = [](PhysicsBody *OBB, PhysicsBody *capsule, CollisionCollector *collector)
+        {
+            CollisionDispatcher::collideCapsuleVsConvex(capsule, OBB, collector);
+        };
 
-    collectCollisions[(int)ShapeCollisionType::Capsule][(int)ShapeCollisionType::Convex] = [](PhysicsBody *capsule, PhysicsBody *convex, CollisionCollector *collector)
-    {
-        CollisionDispatcher::collideCapsuleVsConvex(capsule, convex, collector);
-    };
+        collectCollisions[(int)ShapeCollisionType::Capsule][(int)ShapeCollisionType::Convex] = [](PhysicsBody *capsule, PhysicsBody *convex, CollisionCollector *collector)
+        {
+            CollisionDispatcher::collideCapsuleVsConvex(capsule, convex, collector);
+        };
 
-    collectCollisions[(int)ShapeCollisionType::Convex][(int)ShapeCollisionType::Capsule] = [](PhysicsBody *convex, PhysicsBody *capsule, CollisionCollector *collector)
-    {
-        CollisionDispatcher::collideCapsuleVsConvex(capsule, convex, collector);
-    };
+        collectCollisions[(int)ShapeCollisionType::Convex][(int)ShapeCollisionType::Capsule] = [](PhysicsBody *convex, PhysicsBody *capsule, CollisionCollector *collector)
+        {
+            CollisionDispatcher::collideCapsuleVsConvex(capsule, convex, collector);
+        };
 
-    collectCollisions[(int)ShapeCollisionType::Capsule][(int)ShapeCollisionType::Geometry] = [](PhysicsBody *capsule, PhysicsBody *geometry, CollisionCollector *collector)
-    {
-        CollisionDispatcher::collideCapsuleVsGeometry(capsule, geometry, collector);
-    };
+        collectCollisions[(int)ShapeCollisionType::Capsule][(int)ShapeCollisionType::Geometry] = [](PhysicsBody *capsule, PhysicsBody *geometry, CollisionCollector *collector)
+        {
+            CollisionDispatcher::collideCapsuleVsGeometry(capsule, geometry, collector);
+        };
 
-    collectCollisions[(int)ShapeCollisionType::Geometry][(int)ShapeCollisionType::Capsule] = [](PhysicsBody *geometry, PhysicsBody *capsule, CollisionCollector *collector)
-    {
-        CollisionDispatcher::collideCapsuleVsGeometry(capsule, geometry, collector);
-    };
+        collectCollisions[(int)ShapeCollisionType::Geometry][(int)ShapeCollisionType::Capsule] = [](PhysicsBody *geometry, PhysicsBody *capsule, CollisionCollector *collector)
+        {
+            CollisionDispatcher::collideCapsuleVsGeometry(capsule, geometry, collector);
+        };
 
-    */
+        */
 }
 
 void CollisionDispatcher::collideSphereVsPlain(PhysicsBody *sphere, PhysicsBody *plain, CollisionCollector *collector)
@@ -219,9 +224,188 @@ void CollisionDispatcher::collideSphereVsSphere(PhysicsBody *sphereA, PhysicsBod
         CollisionManifold manifold;
         Vector3 normal = difference / distance;
         manifold.addCollisionPoint(Vector3(sphereAPosition + normal * shapeARadius), Vector3(sphereBPosition - normal * shapeBRadius), radiusSumm - distance, normal);
-
         collector->addBodyPair(sphereA, sphereB, manifold);
     }
+}
+
+void CollisionDispatcher::collideOBBVsPlain(PhysicsBody *OBB, PhysicsBody *plain, CollisionCollector *collector)
+{
+    ShapeOBB *OBBShape = (ShapeOBB *)OBB->getForm()->getSimpleShape();
+    PhysicsBodyCacheTypeOBB *OBBData = OBB->getCacheOBB(0);
+    PhysicsBodyCacheTypePlain *plainData = plain->getCachePlain(0);
+
+    Vector3 &axisX = OBBData->axisX;
+    Vector3 &axisY = OBBData->axisY;
+    Vector3 &axisZ = OBBData->axisZ;
+
+    Vector3 plainNormal = plainData->normal;
+
+    float halfWidth = OBBShape->getHalfWidth();
+    float halfHeight = OBBShape->getHalfHeight();
+    float halfDepth = OBBShape->getHalfDepth();
+    float r = halfWidth * abs(glm::dot(plainNormal, axisX)) +
+              halfHeight * abs(glm::dot(plainNormal, axisY)) +
+              halfDepth * abs(glm::dot(plainNormal, axisZ));
+
+    Vector3 OBBCenter = OBBData->center;
+
+    // Compute distance of box center from plane
+    float s = glm::dot(plainNormal, OBBCenter) - plainData->distance;
+
+    // Intersection occurs when distance s falls within [-r,+r] interval
+    if (abs(s) <= r)
+    {
+        Plain plainShape = Plain(plainData->normal, plainData->distance);
+        Vector3 closestToCenter = plainShape.getClosestPoint(OBBCenter);
+        Vector3 sideNormal = glm::normalize(OBBCenter - closestToCenter);
+
+        float n = 0.0f;
+        Vector3 c = Vector3(0.0f);
+        float depth = 0.0f;
+        for (int i = 0; i < 8; i++)
+        {
+            Vector3 &p = OBBData->points[i];
+            Vector3 closest = plainShape.getClosestPoint(p);
+            Vector3 difference = p - closest;
+
+            if (glm::dot(sideNormal, difference) < 0.0f)
+            {
+                c += p;
+                n += 1.0f;
+                depth = fmaxf(glm::length(difference), depth);
+            }
+        }
+        if (n > 0.0f)
+        {
+            c /= n;
+
+            CollisionManifold manifold;
+            manifold.addCollisionPoint(c, plainShape.getClosestPoint(c), depth, -sideNormal);
+            collector->addBodyPair(OBB, plain, manifold);
+        }
+    }
+}
+
+void CollisionDispatcher::collideOBBVsSphere(PhysicsBody *OBB, PhysicsBody *sphere, CollisionCollector *collector)
+{
+    ShapeOBB *OBBShape = (ShapeOBB *)OBB->getForm()->getSimpleShape();
+    PhysicsBodyCacheTypeOBB *OBBData = OBB->getCacheOBB(0);
+    PhysicsBodyCacheTypeSphere *sphereData = sphere->getCacheSphere(0);
+
+    Vector3 &sphereCenter = sphereData->center;
+    float sphereRadius = sphereData->radius;
+
+    Vector3 closestPoint = OBBShape->getClosestPoint(OBBData->transformation, sphereCenter);
+    Vector3 difference = sphereCenter - closestPoint;
+
+    float distance = glm::length(difference);
+    if (distance < sphereRadius)
+    {
+        CollisionManifold manifold;
+        Vector3 normal = difference / distance;
+        manifold.addCollisionPoint(sphereCenter + normal * sphereRadius, closestPoint, sphereRadius - distance, normal);
+        collector->addBodyPair(OBB, sphere, manifold);
+    }
+}
+
+void CollisionDispatcher::collideOBBVsOBB(PhysicsBody *OBB_A, PhysicsBody *OBB_B, CollisionCollector *collector)
+{
+    ShapeOBB *OBBShapeA = (ShapeOBB *)OBB_A->getForm()->getSimpleShape();
+    ShapeOBB *OBBShapeB = (ShapeOBB *)OBB_B->getForm()->getSimpleShape();
+    PhysicsBodyCacheTypeOBB *OBBDataA = OBB_A->getCacheOBB(0);
+    PhysicsBodyCacheTypeOBB *OBBDataB = OBB_B->getCacheOBB(0);
+
+    FaceQuery faceQueryA = queryFaceDirection(OBBShapeA->getPolygons(), 6, OBBDataA->points, OBBDataA->normals, OBBDataB->points, 8);
+    if (faceQueryA.separation > 0.0f)
+        return;
+
+    FaceQuery faceQueryB = queryFaceDirection(OBBShapeB->getPolygons(), 6, OBBDataB->points, OBBDataB->normals, OBBDataA->points, 8);
+    if (faceQueryB.separation > 0.0f)
+        return;
+
+    EdgeQuery edgeQuery = queryEdgeDirection(
+        OBBDataA->center,
+        OBBShapeA->getEdges(),
+        OBBShapeA->getEdgesAmount(),
+        OBBDataA->points,
+        OBBDataA->normals,
+        OBBShapeB->getEdges(),
+        OBBShapeB->getEdgesAmount(),
+        OBBDataB->points,
+        OBBDataB->normals);
+
+    if (edgeQuery.separation > 0.0f)
+        return;
+
+    bool bIsFaceContactA = faceQueryA.separation > edgeQuery.separation;
+    bool bIsFaceContactB = faceQueryB.separation > edgeQuery.separation;
+
+    CollisionManifold manifold;
+    if (bIsFaceContactA && bIsFaceContactB)
+    {
+        if (faceQueryA.separation > faceQueryB.separation)
+        {
+            HullCliping::clipHullAgainstHull(-faceQueryA.axis,
+                                             OBBShapeA->getPolygons(),
+                                             6,
+                                             OBBDataA->points,
+                                             8,
+                                             OBBDataA->normals,
+                                             OBBShapeB->getPolygons(),
+                                             6,
+                                             OBBDataB->points,
+                                             8,
+                                             OBBDataB->normals,
+                                             &manifold);
+        }
+        else
+        {
+            HullCliping::clipHullAgainstHull(faceQueryB.axis,
+                                             OBBShapeA->getPolygons(),
+                                             6,
+                                             OBBDataA->points,
+                                             8,
+                                             OBBDataA->normals,
+                                             OBBShapeB->getPolygons(),
+                                             6,
+                                             OBBDataB->points,
+                                             8,
+                                             OBBDataB->normals,
+                                             &manifold);
+        }
+    }
+    else
+    {
+        HullCliping::clipHullAgainstHull(-edgeQuery.axis,
+                                         OBBShapeA->getPolygons(),
+                                         6,
+                                         OBBDataA->points,
+                                         8,
+                                         OBBDataA->normals,
+                                         OBBShapeB->getPolygons(),
+                                         6,
+                                         OBBDataB->points,
+                                         8,
+                                         OBBDataB->normals,
+                                         &manifold);
+    }
+
+    if (manifold.collisionAmount > 0)
+    {
+        collector->addBodyPair(OBB_A, OBB_B, manifold);
+    }
+}
+
+void CollisionDispatcher::collideSphereVsConvex(PhysicsBody *sphere, PhysicsBody *convex, CollisionCollector *collector)
+{
+}
+
+void CollisionDispatcher::collideConvexVsConvex(PhysicsBody *convexA, PhysicsBody *convexB, CollisionCollector *collector)
+{
+}
+
+void CollisionDispatcher::collideConvexVsPlain(PhysicsBody *convex, PhysicsBody *plain, CollisionCollector *collector)
+{
 }
 
 /*

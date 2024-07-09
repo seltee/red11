@@ -73,6 +73,9 @@ void PhysicsBody::processStep(float delta, Vector3 &gravity)
 
 void PhysicsBody::applyStep(float delta)
 {
+    if (motionType == PhysicsMotionType::Static)
+        return;
+
     if (glm::length2(translationAccumulator) > 0.0000000001f)
     {
         // if (!constraints.empty())
@@ -164,6 +167,59 @@ void PhysicsBody::updateCache()
         ShapeSphere *sphere = (ShapeSphere *)form->getSimpleShape();
         cache[0].sphere.center = position;
         cache[0].sphere.radius = sphere->getRadius();
+        return;
+    }
+
+    if (form->getType() == ShapeCollisionType::Convex)
+    {
+        ShapeConvex *convex = (ShapeConvex *)form->getSimpleShape();
+        Matrix4 m = glm::toMat4(rotation);
+        Matrix4 transformation = glm::translate(Matrix4(1.0f), position) * m;
+        if (!cache[0].convex.points)
+        {
+            cache[0].convex.points = new Vector3[convex->getVertexAmount()];
+            cache[0].convex.amount = convex->getVertexAmount();
+        }
+        int count = cache[0].convex.amount;
+        Vector3 *verticies = convex->getVerticies();
+
+        for (int i = 0; i < count; i++)
+            cache[0].convex.points[i] = Vector3(transformation * Vector4(verticies[i], 1.0f));
+    }
+
+    if (form->getType() == ShapeCollisionType::OBB)
+    {
+        ShapeOBB *OBBShape = (ShapeOBB *)form->getSimpleShape();
+        Matrix4 m = glm::toMat4(rotation);
+        Matrix4 transformation = glm::translate(Matrix4(1.0f), position) * m;
+
+        float halfWidth = OBBShape->getHalfWidth();
+        float halfHeight = OBBShape->getHalfHeight();
+        float halfDepth = OBBShape->getHalfDepth();
+
+        cache[0].OBB.center = position;
+
+        cache[0].OBB.points[0] = Vector3(transformation * Vector4(halfWidth, halfHeight, halfDepth, 1.0f));
+        cache[0].OBB.points[1] = Vector3(transformation * Vector4(halfWidth, halfHeight, -halfDepth, 1.0f));
+        cache[0].OBB.points[2] = Vector3(transformation * Vector4(-halfWidth, halfHeight, halfDepth, 1.0f));
+        cache[0].OBB.points[3] = Vector3(transformation * Vector4(-halfWidth, halfHeight, -halfDepth, 1.0f));
+        cache[0].OBB.points[4] = Vector3(transformation * Vector4(halfWidth, -halfHeight, halfDepth, 1.0f));
+        cache[0].OBB.points[5] = Vector3(transformation * Vector4(halfWidth, -halfHeight, -halfDepth, 1.0f));
+        cache[0].OBB.points[6] = Vector3(transformation * Vector4(-halfWidth, -halfHeight, halfDepth, 1.0f));
+        cache[0].OBB.points[7] = Vector3(transformation * Vector4(-halfWidth, -halfHeight, -halfDepth, 1.0f));
+
+        cache[0].OBB.normals[0] = rotateNormal(glm::vec4(0.0f, 1.0f, 0.0f, 0.0f), rotation);
+        cache[0].OBB.normals[1] = rotateNormal(glm::vec4(0.0f, -1.0f, 0.0f, 0.0f), rotation);
+        cache[0].OBB.normals[2] = rotateNormal(glm::vec4(1.0f, 0.0f, 0.0f, 0.0f), rotation);
+        cache[0].OBB.normals[3] = rotateNormal(glm::vec4(-1.0f, 0.0f, 0.0f, 0.0f), rotation);
+        cache[0].OBB.normals[4] = rotateNormal(glm::vec4(0.0f, 0.0f, 1.0f, 0.0f), rotation);
+        cache[0].OBB.normals[5] = rotateNormal(glm::vec4(0.0f, 0.0f, -1.0f, 0.0f), rotation);
+
+        cache[0].OBB.axisX = Vector3(m * Vector4(1.0f, 0.0f, 0.0f, 1.0f));
+        cache[0].OBB.axisY = Vector3(m * Vector4(0.0f, 1.0f, 0.0f, 1.0f));
+        cache[0].OBB.axisZ = Vector3(m * Vector4(0.0f, 0.0f, 1.0f, 1.0f));
+
+        cache[0].OBB.transformation = transformation;
         return;
     }
 

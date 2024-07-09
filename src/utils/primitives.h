@@ -39,17 +39,17 @@ struct Triangle
 
 struct HullPolygon
 {
+    int index;
     unsigned short int points[7];
     unsigned short int pointsAmount;
     Vector3 normal;
-    Vector3 absoluteNormal;
 };
 
 struct HullEdge
 {
     int a;
     int b;
-    HullPolygon *polygon;
+    int polygon;
 };
 
 struct PolygonTriPoints
@@ -80,17 +80,17 @@ struct PhysicsBodyPoint
     float distance;
 };
 
-inline Vector3
-getNormalizedPerpendicular(Vector3 v)
+struct FaceQuery
 {
-    if (abs(v.x) > abs(v.y))
-    {
-        float len = sqrtf(v.x * v.x + v.z * v.z);
-        return Vector3(v.z, 0.0f, -v.x) / len;
-    }
-    else
-    {
-        float len = sqrtf(v.y * v.y + v.z * v.z);
-        return Vector3(0.0f, v.z, -v.y) / len;
-    }
-}
+    float separation;
+    HullPolygon *polygon;
+    Vector3 axis;
+};
+
+struct EdgeQuery
+{
+    float separation;
+    HullEdge *edgeA;
+    HullEdge *edgeB;
+    Vector3 axis;
+};

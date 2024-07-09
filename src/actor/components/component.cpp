@@ -119,6 +119,88 @@ void Component::onRenderDebug(Renderer *renderer)
             renderer->queueMesh(debugEntities->debugCubeMesh, debugEntities->matPhysics, m2);
             return;
         }
+
+        if (form->getType() == ShapeCollisionType::OBB)
+        {
+
+            // As Convex
+            /*
+                        ShapeOBB *obb = (ShapeOBB *)form->getSimpleShape();
+                        auto data = physicsBody->getCacheOBB(0);
+                        Matrix4 m;
+
+                        for (int i = 0; i < 6; i++)
+                        {
+                            Vector3 cen = Vector3(0.0f);
+                            for (int p = 0; p < 4; p++)
+                            {
+                                Vector3 p1 = data->points[obb->getPolygons()[i].points[p]];
+                                Vector3 p2 = data->points[obb->getPolygons()[i].points[(p + 1) % 4]];
+                                m = debugEntities->makeDebugCubeIntoLineMatrix(p1 / simScale, p2 / simScale);
+                                renderer->queueMesh(debugEntities->debugCubeMesh, debugEntities->matPhysics, m);
+
+                                cen += data->points[obb->getPolygons()[i].points[p]];
+                            }
+                            cen /= 4.0f;
+
+                            Vector3 normal = getPolygonNormal(
+                                data->points[obb->getPolygons()[i].points[0]],
+                                data->points[obb->getPolygons()[i].points[1]],
+                                data->points[obb->getPolygons()[i].points[2]]);
+
+                            m = debugEntities->makeDebugCubeIntoLineMatrix(cen / simScale, (cen + normal * 0.01f) / simScale);
+                            renderer->queueMesh(debugEntities->debugCubeMesh, debugEntities->matPhysics, m);
+                        }
+            */
+            /*
+                        for (int i = 0; i < 6; i++)
+                        {
+                            Vector3 cen = Vector3(0.0f);
+                            for (int p = 0; p < 4; p++)
+                            {
+                                Vector3 p1 = data->points[obb->getPolygons()[i].points[p]];
+                                Vector3 p2 = data->points[obb->getPolygons()[i].points[(p + 1) % 4]];
+                                m = debugEntities->makeDebugCubeIntoLineMatrix(p1 / simScale, p2 / simScale);
+                                renderer->queueMesh(debugEntities->debugCubeMesh, debugEntities->matPhysics, m);
+
+                                cen += data->points[obb->getPolygons()[i].points[p]];
+                            }
+                            cen /= 4.0f;
+
+                            m = debugEntities->makeDebugCubeIntoLineMatrix(cen / simScale, (cen + data->normals[i] * 0.01f) / simScale);
+                            renderer->queueMesh(debugEntities->debugCubeMesh, debugEntities->matPhysics, m);
+                        }
+                        */
+
+            auto data = physicsBody->getCacheOBB(0);
+            Matrix4 m;
+            m = debugEntities->makeDebugCubeIntoLineMatrix(data->points[0] / simScale, data->points[1] / simScale);
+            renderer->queueMesh(debugEntities->debugCubeMesh, debugEntities->matPhysics, m);
+            m = debugEntities->makeDebugCubeIntoLineMatrix(data->points[1] / simScale, data->points[3] / simScale);
+            renderer->queueMesh(debugEntities->debugCubeMesh, debugEntities->matPhysics, m);
+            m = debugEntities->makeDebugCubeIntoLineMatrix(data->points[0] / simScale, data->points[2] / simScale);
+            renderer->queueMesh(debugEntities->debugCubeMesh, debugEntities->matPhysics, m);
+            m = debugEntities->makeDebugCubeIntoLineMatrix(data->points[2] / simScale, data->points[3] / simScale);
+            renderer->queueMesh(debugEntities->debugCubeMesh, debugEntities->matPhysics, m);
+            m = debugEntities->makeDebugCubeIntoLineMatrix(data->points[4] / simScale, data->points[5] / simScale);
+            renderer->queueMesh(debugEntities->debugCubeMesh, debugEntities->matPhysics, m);
+            m = debugEntities->makeDebugCubeIntoLineMatrix(data->points[5] / simScale, data->points[7] / simScale);
+            renderer->queueMesh(debugEntities->debugCubeMesh, debugEntities->matPhysics, m);
+            m = debugEntities->makeDebugCubeIntoLineMatrix(data->points[4] / simScale, data->points[6] / simScale);
+            renderer->queueMesh(debugEntities->debugCubeMesh, debugEntities->matPhysics, m);
+            m = debugEntities->makeDebugCubeIntoLineMatrix(data->points[6] / simScale, data->points[7] / simScale);
+            renderer->queueMesh(debugEntities->debugCubeMesh, debugEntities->matPhysics, m);
+            m = debugEntities->makeDebugCubeIntoLineMatrix(data->points[0] / simScale, data->points[4] / simScale);
+            renderer->queueMesh(debugEntities->debugCubeMesh, debugEntities->matPhysics, m);
+            m = debugEntities->makeDebugCubeIntoLineMatrix(data->points[1] / simScale, data->points[5] / simScale);
+            renderer->queueMesh(debugEntities->debugCubeMesh, debugEntities->matPhysics, m);
+            m = debugEntities->makeDebugCubeIntoLineMatrix(data->points[2] / simScale, data->points[6] / simScale);
+            renderer->queueMesh(debugEntities->debugCubeMesh, debugEntities->matPhysics, m);
+            m = debugEntities->makeDebugCubeIntoLineMatrix(data->points[3] / simScale, data->points[7] / simScale);
+            renderer->queueMesh(debugEntities->debugCubeMesh, debugEntities->matPhysics, m);
+
+            return;
+        }
     }
 }
 

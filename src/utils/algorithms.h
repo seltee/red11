@@ -4,6 +4,21 @@
 #pragma once
 #include "primitives.h"
 #include <math.h>
+#include <vector>
+
+inline Vector3 getNormalizedPerpendicular(Vector3 v)
+{
+    if (abs(v.x) > abs(v.y))
+    {
+        float len = sqrtf(v.x * v.x + v.z * v.z);
+        return Vector3(v.z, 0.0f, -v.x) / len;
+    }
+    else
+    {
+        float len = sqrtf(v.y * v.y + v.z * v.z);
+        return Vector3(0.0f, v.z, -v.y) / len;
+    }
+}
 
 inline bool pointInTriangle(Vector3 triV1, Vector3 triV2, Vector3 triV3, Vector3 point)
 {
@@ -285,4 +300,223 @@ inline bool isAlmostZero(Vector3 v)
     if (abs(v.x) > 1e-6 || abs(v.y) > 1e-6 || abs(v.z) > 1e-6)
         return false;
     return true;
+}
+
+inline float getTetrahedronVolume(const Vector3 &a, const Vector3 &b, const Vector3 &c, const Vector3 &d)
+{
+    return glm::dot(a - d, glm::cross(b - d, c - d)) / 6.0f;
+}
+
+// Function to calculate the volume of a convex hull
+inline float getConvexHullVolume(Vector3 *vertices, int amount)
+{
+    float volume = 0.0f;
+    Vector3 origin(0.0f); // Reference point (could be any point, here we use the origin)
+
+    for (int i = 0; i < amount; i++)
+        volume += getTetrahedronVolume(origin, vertices[0], vertices[i], vertices[i + 1]);
+
+    return fabsf(volume);
+}
+
+inline glm::mat3 getTetrahedronInertia(const Vector3 &a, const Vector3 &b, const Vector3 &c, const Vector3 &d, float density)
+{
+    // Compute the volume of the tetrahedron
+    float volume = getTetrahedronVolume(a, b, c, d);
+
+    // Compute the mass of the tetrahedron
+    float mass = volume * density;
+
+    // Compute the inertia tensor of the tetrahedron
+    glm::mat3 inertia(0.0f);
+    glm::vec3 points[] = {a, b, c, d};
+
+    for (int i = 0; i < 4; ++i)
+    {
+        for (int j = 0; j < 4; ++j)
+        {
+            if (i == j)
+                continue;
+            glm::vec3 r = points[i] - points[j];
+            inertia += mass / 10.0f * (glm::dot(r, r) * glm::mat3(1.0f) - glm::outerProduct(r, r));
+        }
+    }
+
+    return inertia;
+}
+
+// Function to calculate the inertia tensor of a convex hull
+inline Matrix3 getConvexHullInertia(Vector3 *vertices, int amount, float density)
+{
+    Matrix3 inertia(0.0f);
+    Vector3 origin(0.0f); // Reference point (could be any point, here we use the origin)
+
+    for (int i = 0; i < amount; i++)
+        inertia += getTetrahedronInertia(origin, vertices[0], vertices[i], vertices[i + 1], density);
+
+    return inertia;
+}
+
+inline Vector3 rotateNormal(const Vector3 &normal, const Quat &rotationQuat)
+{
+    // Rotate the vector using quaternion algebra
+    Quat vecQuat(0.0f, normal);
+    Quat resQuat = rotationQuat * vecQuat * glm::conjugate(rotationQuat);
+    return glm::normalize(glm::vec3(resQuat.x, resQuat.y, resQuat.z));
+}
+
+inline Vector3 findFurthestPoint(Vector3 *verticies, int amountOfVertices, const Vector3 &direction)
+{
+    int outVertex;
+    float maxDistance = -FLT_MAX;
+
+    for (int i = 0; i < amountOfVertices; i++)
+    {
+        float distance = glm::dot(verticies[i], direction);
+        if (distance > maxDistance)
+        {
+            maxDistance = distance;
+            outVertex = i;
+        }
+    }
+
+    return verticies[outVertex];
+}
+
+inline int rebuildEdges(HullPolygon *polygons, int polyAmount, HullEdge **edges)
+{
+    std::vector<HullEdge> vEdges;
+
+    for (int i = 0; i < polyAmount; i++)
+    {
+        HullPolygon *poly = &polygons[i];
+        for (int edgeIndex = 0; edgeIndex < poly->pointsAmount; edgeIndex++)
+        {
+            int nextIndex = (edgeIndex + 1) % poly->pointsAmount;
+            HullEdge edge = HullEdge({poly->points[edgeIndex], poly->points[nextIndex], i});
+
+            bool found = false;
+            for (auto edgeIt = vEdges.begin(); edgeIt != vEdges.end(); edgeIt++)
+            {
+                if ((edgeIt->a == edge.a && edgeIt->b == edge.b) || (edgeIt->a == edge.b && edgeIt->b == edge.a))
+                {
+                    if (edgeIt->polygon == -1)
+                        edgeIt->polygon = i;
+                    found = true;
+                }
+            }
+            if (!found)
+            {
+                vEdges.push_back(edge);
+                vEdges.push_back(HullEdge({edge.b, edge.a, -1}));
+            }
+        }
+    }
+
+    *edges = new HullEdge[vEdges.size()];
+    for (int i = 0; i < vEdges.size(); i++)
+    {
+        printf("%i %i %i %i\n", i, vEdges[i].a, vEdges[i].b, vEdges[i].polygon);
+        (*edges)[i] = vEdges[i];
+    }
+
+    return vEdges.size();
+}
+
+// Convex face query
+inline FaceQuery queryFaceDirection(
+    HullPolygon *poligonsA,
+    int polygonAmountA,
+    Vector3 *verticiesA,
+    Vector3 *normalsA,
+    Vector3 *verticiesB,
+    int amountOfVerticiesB)
+{
+    float maxDistance = -FLT_MAX;
+    HullPolygon *outPolygon = nullptr;
+    Vector3 outNormal(0.0f);
+
+    for (int i = 0; i < polygonAmountA; i++)
+    {
+        HullPolygon *polygonIt = &poligonsA[i];
+
+        Vector3 plainPointA = verticiesA[polygonIt->points[0]];
+        Vector3 plainNormalA = normalsA[i];
+
+        Vector3 vertexFar = findFurthestPoint(verticiesB, amountOfVerticiesB, -plainNormalA);
+
+        float distance = glm::dot(plainNormalA, vertexFar - plainPointA);
+
+        if (distance > maxDistance)
+        {
+            outPolygon = polygonIt;
+            outNormal = plainNormalA;
+            maxDistance = distance;
+        }
+    }
+
+    return FaceQuery({maxDistance, outPolygon, outNormal});
+}
+
+// Convex Edge Query
+inline EdgeQuery queryEdgeDirection(
+    Vector3 &hullCenter,
+    HullEdge *edgesA,
+    int edgesAmountA,
+    Vector3 *verticiesA,
+    Vector3 *polygonNormalsA,
+    HullEdge *edgesB,
+    int edgesAmountB,
+    Vector3 *verticiesB,
+    Vector3 *polygonNormalsB)
+{
+    HullEdge *maxIndexA = nullptr;
+    HullEdge *maxIndexB = nullptr;
+
+    float maxSeparation = -FLT_MAX;
+    Vector3 axis(0.0f);
+
+    for (int a = 0; a < edgesAmountA; a += 2)
+    {
+        HullEdge edge = edgesA[a];
+        HullEdge twin = edgesA[a + 1];
+
+        Vector3 P1 = verticiesA[edge.a];
+        Vector3 Q1 = verticiesA[twin.a];
+        Vector3 E1 = Q1 - P1;
+
+        Vector3 U1 = polygonNormalsA[edge.polygon];
+        Vector3 V1 = polygonNormalsA[twin.polygon];
+
+        for (int b = 0; b < edgesAmountB; b += 2)
+        {
+            HullEdge edgeForeign = edgesB[b];
+            HullEdge twinForeign = edgesB[b + 1];
+
+            Vector3 P2 = verticiesB[edgeForeign.a];
+            Vector3 Q2 = verticiesB[twinForeign.a];
+            Vector3 E2 = Q2 - P2;
+
+            Vector3 U2 = polygonNormalsB[edgeForeign.polygon];
+            Vector3 V2 = polygonNormalsB[twinForeign.polygon];
+
+            if (isMinkowskiFace(U1, V1, -E1, -U2, -V2, -E2))
+            {
+                Vector3 newAxis;
+                float separation = project(P1, E1, P2, E2, hullCenter, newAxis);
+                if (separation > maxSeparation)
+                {
+                    maxIndexA = &edgesA[a];
+                    maxIndexB = &edgesB[b];
+                    maxSeparation = separation;
+                    axis = newAxis;
+                }
+            }
+        }
+    }
+
+    return EdgeQuery({maxSeparation,
+                      maxIndexA,
+                      maxIndexB,
+                      axis});
 }

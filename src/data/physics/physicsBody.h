@@ -69,6 +69,8 @@ public:
 
     PhysicsBodyCacheTypeSphere *getCacheSphere(int bodyNum) { return &cache[bodyNum].sphere; }
     PhysicsBodyCacheTypePlain *getCachePlain(int bodyNum) { return &cache[bodyNum].plain; }
+    PhysicsBodyCacheTypeOBB *getCacheOBB(int bodyNum) { return &cache[bodyNum].OBB; }
+    PhysicsBodyCacheTypeConvex *getCacheConvex(int bodyNum) { return &cache[bodyNum].convex; }
 
 protected:
     inline void checkLimits()

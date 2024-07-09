@@ -42,13 +42,27 @@ ShapePlain *PhysicsForm::createPlain(Vector3 normal, Vector3 point)
     return newPlain;
 }
 
-ShapeSphere *PhysicsForm::createSphere(Vector3 position, float radius, float density)
+ShapeSphere *PhysicsForm::createSphere(Vector3 center, float radius, float density)
 {
-    ShapeSphere *newPlain = new ShapeSphere(position * simScale, radius * simScale, density);
-    shapes.push_back(newPlain);
+    ShapeSphere *newSphere = new ShapeSphere(center * simScale, radius * simScale, density);
+    shapes.push_back(newSphere);
     isDataDirty = true;
     recalcParameters();
-    return newPlain;
+    return newSphere;
+}
+
+ShapeOBB *PhysicsForm::createOBB(Vector3 center, float width, float height, float depth, float density)
+{
+    ShapeOBB *newOBB = new ShapeOBB(center * simScale, width * simScale, height * simScale, depth * simScale, density);
+    shapes.push_back(newOBB);
+    isDataDirty = true;
+    recalcParameters();
+    return newOBB;
+}
+
+ShapeOBB *PhysicsForm::createOBB(Vector3 center, float size, float density)
+{
+    return createOBB(center, size, size, size, density);
 }
 
 void PhysicsForm::recalcParameters()

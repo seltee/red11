@@ -16,11 +16,15 @@
 #include <string>
 #include <list>
 
+#define DEFAULT_GRAVITY Vector3(0.0f, -96.0f, 0.0f)
+#define DEFAULT_SIM_SCALE 0.5f
+#define DEFAULT_SUB_STEP 0.008f
+
 class PhysicsWorld
 {
 public:
     EXPORT PhysicsWorld();
-    EXPORT void setup(Vector3 gravity = Vector3(0.0f, -96.0f, 0.0f), float simScale = 0.1f, float subStep = 0.005f);
+    EXPORT void setup(Vector3 gravity = DEFAULT_GRAVITY, float simScale = DEFAULT_SIM_SCALE, float subStep = DEFAULT_SUB_STEP);
 
     EXPORT void process(float delta);
     EXPORT PhysicsForm *createPhysicsForm(float friction, float restitution, float linearDamping = 0.15f, float angularDamping = 0.05f, float gravityFactor = 1.0f);
@@ -71,13 +75,13 @@ protected:
     JobQueue *jobQueue = nullptr;
 
     // Gravity that affects objects
-    Vector3 gravity = Vector3(0.0f, -20.0f, 0.0f);
+    Vector3 gravity = DEFAULT_GRAVITY;
 
     // Difference between the sizes of simulation and objects in game to reduce the effect of floating poing inaccuracy
-    float simScale = 0.1f;
+    float simScale = DEFAULT_SIM_SCALE;
 
     // Fixed step that simulation is using
-    float subStep = 0.008f;
+    float subStep = DEFAULT_SUB_STEP;
 
     // Maximum jobs to add to queue
     int maxJobs = 1;
