@@ -23,6 +23,8 @@ PhysicsBody::PhysicsBody(
 
     entity->setPosition(this->position / world->getSimScale());
     entity->setRotation(this->rotation);
+
+    sleepCheck = world->getSimScale() * 0.006f;
     updateCache();
 }
 
@@ -53,8 +55,18 @@ void PhysicsBody::finishSimulation()
 
 void PhysicsBody::processStep(float delta, Vector3 &gravity)
 {
-    if (bIsSleeping && !bIsEnabled)
+    if (!bIsEnabled)
         return;
+
+    if (bIsSleeping && motionType == PhysicsMotionType::Dynamic)
+    {
+        if (glm::length(translationAccumulator) > sleepCheck ||
+            glm::length(linearVelocity) > sleepCheck ||
+            glm::length(angularVelocity) > sleepCheck)
+            setAwake();
+        else
+            return;
+    }
 
     if (motionType == PhysicsMotionType::Static)
         return setAsleep();
@@ -104,11 +116,10 @@ void PhysicsBody::applyStep(float delta)
             rotation = glm::normalize(glm::angleAxis(len, angularVelocityDelta / len) * rotation);
         }
 
-        float checkFactor = delta * world->getSimScale() * 0.1f;
-        if (glm::length2(linearVelocity) < checkFactor && glm::length2(angularVelocity) < checkFactor)
+        if (glm::length2(linearVelocity) < sleepCheck && glm::length2(angularVelocity) < sleepCheck)
         {
             sleepAccumulator += delta;
-            if (sleepAccumulator > 0.8f)
+            if (sleepAccumulator > 0.2f)
                 setAsleep();
         }
         else
@@ -130,16 +141,12 @@ void PhysicsBody::translate(Vector3 v)
 {
     lock.lock();
     translationAccumulator += v;
-    bIsSleeping = false;
-    sleepAccumulator = 0.0f;
     lock.unlock();
 }
 
 void PhysicsBody::addLinearVelocity(Vector3 velocity)
 {
     lock.lock();
-    bIsSleeping = false;
-    sleepAccumulator = 0.0f;
     linearVelocity += velocity;
     lock.unlock();
 }
@@ -147,8 +154,6 @@ void PhysicsBody::addLinearVelocity(Vector3 velocity)
 void PhysicsBody::addAngularVelocity(Vector3 velocity)
 {
     lock.lock();
-    bIsSleeping = false;
-    sleepAccumulator = 0.0f;
     angularVelocity += velocity;
     lock.unlock();
 }
@@ -167,6 +172,19 @@ void PhysicsBody::updateCache()
         ShapeSphere *sphere = (ShapeSphere *)form->getSimpleShape();
         cache[0].sphere.center = position;
         cache[0].sphere.radius = sphere->getRadius();
+        return;
+    }
+
+    if (form->getType() == ShapeCollisionType::Capsule)
+    {
+        ShapeCapsule *capsule = (ShapeCapsule *)form->getSimpleShape();
+
+        Matrix4 m = glm::toMat4(rotation);
+        Matrix4 transformation = glm::translate(Matrix4(1.0f), position) * m;
+
+        cache[0].capsule.a = Vector3(transformation * Vector4(capsule->getA(), 1.0f));
+        cache[0].capsule.b = Vector3(transformation * Vector4(capsule->getB(), 1.0f));
+        cache[0].capsule.radius = capsule->getRadius();
         return;
     }
 

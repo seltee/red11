@@ -120,6 +120,78 @@ void Component::onRenderDebug(Renderer *renderer)
             return;
         }
 
+        if (form->getType() == ShapeCollisionType::Capsule)
+        {
+            Matrix4 m1;
+            auto data = physicsBody->getCacheCapsule(0);
+            float radius = data->radius / simScale;
+            Vector3 pa = data->a / simScale;
+            Vector3 pb = data->b / simScale;
+
+            Vector3 up = glm::length(pb - pa) == 0.0f ? Vector3(0.0f, 1.0f, 0.0f) : glm::normalize(pb - pa);
+            Vector3 right = (up == Vector3(0.0f, 1.0f, 0.0f) || up == Vector3(0.0f, -1.0f, 0.0f)) ? Vector3(1.0f, 0.0f, 0.0f) : glm::normalize(glm::cross(up, Vector3(0.0f, 1.0f, 0.0f)));
+            Vector3 forward = glm::normalize(glm::cross(right, up));
+
+            Matrix4 transform = Matrix4(1.0f);
+            transform[0] = Vector4(right, 0.0f);
+            transform[1] = Vector4(up, 0.0f);
+            transform[2] = Vector4(forward, 0.0f);
+
+            for (int i = 0; i < 16; ++i)
+            {
+                float thetaFrom = CONST_PI2 * static_cast<float>(i) / 16.0f;
+                float cosThetaFrom = cos(thetaFrom);
+                float sinThetaFrom = sin(thetaFrom);
+                float thetaTo = CONST_PI2 * static_cast<float>(i + 1) / 16.0f;
+                float cosThetaTo = cos(thetaTo);
+                float sinThetaTo = sin(thetaTo);
+
+                Vector3 offsetFrom = radius * (cosThetaFrom * right + sinThetaFrom * forward);
+                Vector3 offsetTo = radius * (cosThetaTo * right + sinThetaTo * forward);
+
+                m1 = debugEntities->makeDebugCubeIntoLineMatrix(pa + offsetFrom, pa + offsetTo);
+                renderer->queueMesh(debugEntities->debugCubeMesh, debugEntities->matPhysics, m1);
+                m1 = debugEntities->makeDebugCubeIntoLineMatrix(pb + offsetFrom, pb + offsetTo);
+                renderer->queueMesh(debugEntities->debugCubeMesh, debugEntities->matPhysics, m1);
+
+                if ((i % 4) == 0)
+                {
+                    m1 = debugEntities->makeDebugCubeIntoLineMatrix(pa + offsetFrom, pb + offsetFrom);
+                    renderer->queueMesh(debugEntities->debugCubeMesh, debugEntities->matPhysics, m1);
+                }
+            }
+
+            auto generateHemisphere = [&](const Vector3 &center, const Vector3 &direction)
+            {
+                Vector3 localUp = direction;
+                Vector3 localRight = (direction == Vector3(0.0f, 1.0f, 0.0f) || direction == Vector3(0.0f, -1.0f, 0.0f)) ? Vector3(1.0f, 0.0f, 0.0f) : glm::normalize(glm::cross(localUp, Vector3(0.0f, 1.0f, 0.0f)));
+                Vector3 localForward = glm::normalize(glm::cross(localRight, localUp));
+
+                for (int j = 0; j <= 16; j++)
+                {
+                    float thetaFrom = CONST_PI * 0.5f - CONST_PI * static_cast<float>(j) / 16.0f;
+                    float cosThetaFrom = cos(thetaFrom);
+                    float sinThetaFrom = sin(thetaFrom);
+                    float thetaTo = CONST_PI * 0.5f - CONST_PI * static_cast<float>(j + 1) / 16.0f;
+                    float cosThetaTo = cos(thetaTo);
+                    float sinThetaTo = sin(thetaTo);
+
+                    Vector3 localPosFromA = radius * (sinThetaFrom * localRight + cosThetaFrom * localUp);
+                    Vector3 localPosToA = radius * (sinThetaTo * localRight + cosThetaTo * localUp);
+                    Vector3 localPosFromB = radius * (sinThetaFrom * localForward + cosThetaFrom * localUp);
+                    Vector3 localPosToB = radius * (sinThetaTo * localForward + cosThetaTo * localUp);
+
+                    m1 = debugEntities->makeDebugCubeIntoLineMatrix(center + localPosFromA, center + localPosToA);
+                    renderer->queueMesh(debugEntities->debugCubeMesh, debugEntities->matPhysics, m1);
+                    m1 = debugEntities->makeDebugCubeIntoLineMatrix(center + localPosFromB, center + localPosToB);
+                    renderer->queueMesh(debugEntities->debugCubeMesh, debugEntities->matPhysics, m1);
+                }
+            };
+
+            generateHemisphere(pb, up);
+            generateHemisphere(pa, -up);
+        }
+
         if (form->getType() == ShapeCollisionType::OBB)
         {
 

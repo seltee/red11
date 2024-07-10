@@ -44,6 +44,13 @@ struct PhysicsBodyCacheTypeOBB
     Matrix4 transformation;
 };
 
+struct PhysicsBodyCacheTypeCapsule
+{
+    Vector3 a;
+    Vector3 b;
+    float radius;
+};
+
 struct PhysicsBodyCacheTypeConvex
 {
     Vector3 center;
@@ -56,6 +63,7 @@ union PhysicsBodyCache
     PhysicsBodyCacheTypeSphere sphere;
     PhysicsBodyCacheTypePlain plain;
     PhysicsBodyCacheTypeOBB OBB;
+    PhysicsBodyCacheTypeCapsule capsule;
     PhysicsBodyCacheTypeConvex convex;
 };
 

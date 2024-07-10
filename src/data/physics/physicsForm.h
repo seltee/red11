@@ -9,6 +9,7 @@
 #include "shapes/shapeSphere.h"
 #include "shapes/shapeOBB.h"
 #include "shapes/shapeConvex.h"
+#include "shapes/shapeCapsule.h"
 #include "physicsUtils.h"
 #include <vector>
 
@@ -24,6 +25,7 @@ public:
     EXPORT ShapeSphere *createSphere(Vector3 center, float radius, float density = 22.0f);
     EXPORT ShapeOBB *createOBB(Vector3 center, float width, float height, float depth, float density = 22.0f);
     EXPORT ShapeOBB *createOBB(Vector3 center, float size, float density = 22.0f);
+    EXPORT ShapeCapsule *createCapsule(Vector3 a, Vector3 b, float radius, float density = 22.0f);
 
     EXPORT void recalcParameters();
 

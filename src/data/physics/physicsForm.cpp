@@ -65,6 +65,15 @@ ShapeOBB *PhysicsForm::createOBB(Vector3 center, float size, float density)
     return createOBB(center, size, size, size, density);
 }
 
+ShapeCapsule *PhysicsForm::createCapsule(Vector3 a, Vector3 b, float radius, float density)
+{
+    ShapeCapsule *newOBB = new ShapeCapsule(a * simScale, b * simScale, radius * simScale, density);
+    shapes.push_back(newOBB);
+    isDataDirty = true;
+    recalcParameters();
+    return newOBB;
+}
+
 void PhysicsForm::recalcParameters()
 {
     if (isDataDirty)

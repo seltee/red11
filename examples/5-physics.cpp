@@ -28,7 +28,8 @@ APPMAIN
     auto concreteTexture = new TextureFile("Concrete", "./data/concrete_albedo.jpg");
     auto concreteMaterial = new MaterialSimple(concreteTexture);
 
-    auto redBallMaterial = new MaterialSimple(Color(0.8f, 0.1f, 0.1f), Color(0, 0, 0), 0.0f, 0.1f);
+    auto redBallMaterial = new MaterialSimple(Color(0.8f, 0.1f, 0.1f), Color(0, 0, 0), 0.0f, 0.2f);
+    auto capsuleMaterial = new MaterialSimple(Color(0.91f, 0.604f, 0.067f), Color(0, 0, 0), 0.0f, 0.4f);
 
     auto crateTexture = new TextureFile("Crate", "./data/crate.jpg");
     auto crateMaterial = new MaterialSimple(crateTexture);
@@ -40,6 +41,7 @@ APPMAIN
     auto cubeMeshBig = Red11::getMeshBuilder()->createCube(0.25f);
     auto sphereMesh = Red11::getMeshBuilder()->createSphere(0.101f);
     auto ballSphereMesh = Red11::getMeshBuilder()->createSphere(0.041f);
+    auto capsuleMesh = Red11::getMeshBuilder()->createCapsule(Vector3(0, -0.2f, 0), Vector3(0, 0.2f, 0), 0.09f, 16);
 
     auto scene = Red11::createScene();
     scene->setAmbientLight(Color(0.4f, 0.4f, 0.6f));
@@ -89,6 +91,19 @@ APPMAIN
         boxComponent->setPosition(randf(-3.0f, 3.0f), 0.8f, randf(-3.0f, 3.0f));
         boxComponent->enablePhysics(PhysicsMotionType::Dynamic, boxFrom, boxComponent);
         boxComponent->setRenderDebugPhysicsBody(true);
+    }
+
+    // Capsules
+    auto capsuleFrom = world->createPhysicsForm(0.9f, 0.15f);
+    capsuleFrom->createCapsule(Vector3(0, -0.2f, 0), Vector3(0, 0.2f, 0), 0.09f, 20.0f);
+
+    for (int i = 0; i < 8; i++)
+    {
+        auto capsuleComponent = sphereContainer->createComponentMesh(capsuleMesh);
+        capsuleComponent->setMaterial(capsuleMaterial);
+        capsuleComponent->setPosition(randf(-3.0f, 3.0f), 1.0f, randf(-3.0f, 3.0f));
+        capsuleComponent->enablePhysics(PhysicsMotionType::Dynamic, capsuleFrom, capsuleComponent);
+        capsuleComponent->setRenderDebugPhysicsBody(true);
     }
 
     // Floor && walls
@@ -234,9 +249,9 @@ APPMAIN
         cameraRX = glm::clamp(cameraRX, -1.2f, 1.0f);
         cameraTransform.setRotation(Vector3(cameraRX, cameraRY, 0));
 
-        auto forward = cameraTransform.getRotation() * Vector3(0, 0, 0.4f);
+        auto forward = cameraTransform.getRotation() * Vector3(0, 0, 0.8f);
         cameraTransform.translate(forward * delta * cameraControl.move);
-        auto side = cameraTransform.getRotation() * Vector3(0.4f, 0, 0);
+        auto side = cameraTransform.getRotation() * Vector3(0.8f, 0, 0);
         cameraTransform.translate(side * delta * cameraControl.sideMove);
 
         if (cameraControl.shoot)
@@ -246,7 +261,7 @@ APPMAIN
             sphereComponent->setPosition(cameraTransform.getPosition() - Vector3(0, 0.05f, 0) + camera.getForwardVector() * 0.2f);
             sphereComponent->setMaterial(redBallMaterial);
             sphereComponent->enablePhysics(PhysicsMotionType::Dynamic, ballSphereFrom, sphereComponent);
-            sphereComponent->getPhysicsBody()->addLinearVelocity(camera.getForwardVector() * 2.0f);
+            sphereComponent->getPhysicsBody()->addLinearVelocity(camera.getForwardVector() * 3.0f);
         }
         if (cameraControl.remove)
         {

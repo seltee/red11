@@ -9,4 +9,5 @@ class MeshBuilder
 public:
     EXPORT Mesh *createCube(float size);
     EXPORT Mesh *createSphere(float radius, unsigned int rings = 20, unsigned int segments = 16);
+    EXPORT Mesh *createCapsule(Vector3 pa, Vector3 pb, float radius, unsigned int segments = 8);
 };

@@ -56,7 +56,19 @@ public:
     inline void setEnabled(bool bState) { this->bIsEnabled = bState; }
     inline PhysicsMotionType getMotionType() { return motionType; }
 
-    inline void setAsleep() { bIsSleeping = true; }
+    inline void setAsleep()
+    {
+        bIsSleeping = true;
+        linearVelocity = Vector3(0.0f);
+        angularVelocity = Vector3(0.0f);
+        translationAccumulator = Vector3(0.0f);
+    }
+
+    inline void setAwake()
+    {
+        bIsSleeping = false;
+        sleepAccumulator = 0.0f;
+    }
 
     inline ShapeCollisionType getType() { return form->getType(); }
     inline AABB &getAABB() { return aabb; }
@@ -71,6 +83,7 @@ public:
     PhysicsBodyCacheTypePlain *getCachePlain(int bodyNum) { return &cache[bodyNum].plain; }
     PhysicsBodyCacheTypeOBB *getCacheOBB(int bodyNum) { return &cache[bodyNum].OBB; }
     PhysicsBodyCacheTypeConvex *getCacheConvex(int bodyNum) { return &cache[bodyNum].convex; }
+    PhysicsBodyCacheTypeCapsule *getCacheCapsule(int bodyNum) { return &cache[bodyNum].capsule; }
 
 protected:
     inline void checkLimits()
@@ -117,6 +130,9 @@ protected:
 
     // Motion type
     PhysicsMotionType motionType = PhysicsMotionType::Static;
+
+    // If velocity or translation is lower than this then entity falls asleep
+    float sleepCheck;
 
     // Flags
     bool bIsSleeping = false;

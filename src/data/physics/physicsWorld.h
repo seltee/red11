@@ -17,8 +17,8 @@
 #include <list>
 
 #define DEFAULT_GRAVITY Vector3(0.0f, -96.0f, 0.0f)
-#define DEFAULT_SIM_SCALE 0.5f
-#define DEFAULT_SUB_STEP 0.008f
+#define DEFAULT_SIM_SCALE 1.0f
+#define DEFAULT_SUB_STEP 0.006f
 
 class PhysicsWorld
 {

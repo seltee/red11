@@ -328,8 +328,8 @@ inline glm::mat3 getTetrahedronInertia(const Vector3 &a, const Vector3 &b, const
     float mass = volume * density;
 
     // Compute the inertia tensor of the tetrahedron
-    glm::mat3 inertia(0.0f);
-    glm::vec3 points[] = {a, b, c, d};
+    Matrix3 inertia(0.0f);
+    Vector3 points[] = {a, b, c, d};
 
     for (int i = 0; i < 4; ++i)
     {
@@ -337,8 +337,8 @@ inline glm::mat3 getTetrahedronInertia(const Vector3 &a, const Vector3 &b, const
         {
             if (i == j)
                 continue;
-            glm::vec3 r = points[i] - points[j];
-            inertia += mass / 10.0f * (glm::dot(r, r) * glm::mat3(1.0f) - glm::outerProduct(r, r));
+            Vector3 r = points[i] - points[j];
+            inertia += mass / 10.0f * (glm::dot(r, r) * Matrix3(1.0f) - glm::outerProduct(r, r));
         }
     }
 
@@ -362,7 +362,7 @@ inline Vector3 rotateNormal(const Vector3 &normal, const Quat &rotationQuat)
     // Rotate the vector using quaternion algebra
     Quat vecQuat(0.0f, normal);
     Quat resQuat = rotationQuat * vecQuat * glm::conjugate(rotationQuat);
-    return glm::normalize(glm::vec3(resQuat.x, resQuat.y, resQuat.z));
+    return glm::normalize(Vector3(resQuat.x, resQuat.y, resQuat.z));
 }
 
 inline Vector3 findFurthestPoint(Vector3 *verticies, int amountOfVertices, const Vector3 &direction)
@@ -415,10 +415,7 @@ inline int rebuildEdges(HullPolygon *polygons, int polyAmount, HullEdge **edges)
 
     *edges = new HullEdge[vEdges.size()];
     for (int i = 0; i < vEdges.size(); i++)
-    {
-        printf("%i %i %i %i\n", i, vEdges[i].a, vEdges[i].b, vEdges[i].polygon);
         (*edges)[i] = vEdges[i];
-    }
 
     return vEdges.size();
 }

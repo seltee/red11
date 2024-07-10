@@ -19,11 +19,14 @@ void CollisionSolver::solve(PhysicsBody *a, PhysicsBody *b, CollisionManifold &m
     PhysicsForm *formA = a->getForm();
     PhysicsForm *formB = b->getForm();
 
-    Vector3 translate = (normal * depth) * 0.6f;
+    float totalInverseMass = formA->getInvertedMass() + formB->getInvertedMass();
+    Vector3 translateA = normal * depth * (formA->getInvertedMass() / totalInverseMass) * 0.25f;
+    Vector3 translateB = normal * depth * (formB->getInvertedMass() / totalInverseMass) * 0.25f;
+
     if (a->getMotionType() != PhysicsMotionType::Static)
-        a->translate((b->getMotionType() != PhysicsMotionType::Static) ? -translate / 2.0f : -translate);
+        a->translate((b->getMotionType() != PhysicsMotionType::Static) ? -translateA : -(translateA + translateB));
     if (b->getMotionType() != PhysicsMotionType::Static)
-        b->translate((a->getMotionType() != PhysicsMotionType::Static) ? translate / 2.0f : translate);
+        b->translate((a->getMotionType() != PhysicsMotionType::Static) ? translateB : translateA + translateB);
 
     Vector3 pointA = manifold.pointsOnA[0];
     Vector3 pointB = manifold.pointsOnB[0];

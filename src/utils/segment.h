@@ -8,13 +8,8 @@
 class Segment
 {
 public:
-    Segment() {}
-    Segment(Vector3 &a, Vector3 &b)
-    {
-        this->a = a;
-        this->b = b;
-    }
-    Segment(Vector3 a, Vector3 b)
+    inline Segment() {}
+    inline Segment(Vector3 a, Vector3 b)
     {
         this->a = a;
         this->b = b;

@@ -9,7 +9,7 @@
 EXPORT PhysicsWorld::PhysicsWorld()
 {
     jobQueue = Red11::getJobQueue();
-    maxJobs = min(jobQueue->getMaxJobs() * 2, 32);
+    maxJobs = min(jobQueue->getMaxJobs() * 4, 32);
 }
 
 void PhysicsWorld::setup(Vector3 gravity, float simScale, float subStep)
@@ -75,7 +75,7 @@ std::vector<PhysicsBodyPoint> PhysicsWorld::castRayCollision(const Segment &ray)
     points.clear();
     Segment rayLocal = Segment(ray.a * simScale, ray.b * simScale);
 
-    if (maxJobs > bodies.size())
+    if (maxJobs > bodies.size() || maxJobs <= 4)
     {
         _ray(bodies.begin(), bodies.end(), rayLocal, &points);
     }
@@ -120,7 +120,7 @@ std::vector<PhysicsBodyPoint> PhysicsWorld::castPointCollision(const Vector3 &p)
 
 void PhysicsWorld::prepareBodies()
 {
-    if (maxJobs > bodies.size())
+    if (maxJobs > bodies.size() || maxJobs <= 4)
     {
         _prepareBody(bodies.begin(), bodies.end());
     }
@@ -146,7 +146,7 @@ void PhysicsWorld::prepareBodies()
 
 void PhysicsWorld::finishBodies()
 {
-    if (maxJobs > bodies.size())
+    if (maxJobs > bodies.size() || maxJobs <= 4)
     {
         _finishBody(bodies.begin(), bodies.end());
     }
@@ -173,7 +173,7 @@ void PhysicsWorld::applyForces()
 {
     float subStep = this->subStep;
     Vector3 localGravity = gravity * simScale;
-    if (maxJobs > bodies.size())
+    if (maxJobs > bodies.size() || maxJobs <= 4)
     {
         _processBody(bodies.begin(), bodies.end(), subStep, localGravity);
     }
@@ -198,7 +198,7 @@ void PhysicsWorld::applyForces()
 void PhysicsWorld::findCollisionPairs()
 {
     pairs.clear();
-    if (maxJobs > bodies.size())
+    if (maxJobs > bodies.size() || maxJobs <= 4)
     {
         _collectPairs(bodies.begin(), bodies.end(), &bodies, &pairs);
     }
@@ -228,7 +228,7 @@ void PhysicsWorld::findCollisions()
 {
     // find exact collisions
     collisionCollector.clear();
-    if (maxJobs > pairs.size())
+    if (maxJobs > pairs.size() || maxJobs <= 4)
     {
         _collide(pairs.begin(), pairs.end(), &collisionDispatcher, &collisionCollector);
     }
@@ -256,7 +256,7 @@ void PhysicsWorld::findCollisions()
 
 void PhysicsWorld::solveCollisions()
 {
-    if (maxJobs > collisionCollector.pairs.size())
+    if (maxJobs > collisionCollector.pairs.size() || maxJobs <= 4)
     {
         _solve(collisionCollector.pairs.begin(), collisionCollector.pairs.end(), simScale, subStep);
     }
@@ -288,7 +288,7 @@ void PhysicsWorld::solveCollisions()
 void PhysicsWorld::applyStep()
 {
     float subStep = this->subStep;
-    if (maxJobs > bodies.size())
+    if (maxJobs > bodies.size() || maxJobs <= 4)
     {
         _applyStepBody(bodies.begin(), bodies.end(), subStep);
     }

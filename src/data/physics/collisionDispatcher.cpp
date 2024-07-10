@@ -125,62 +125,75 @@ CollisionDispatcher::CollisionDispatcher()
             CollisionDispatcher::collideConvexVsGeometry(OBB, geometry, collector);
         };
 
-        collectCollisions[(int)ShapeCollisionType::Capsule][(int)ShapeCollisionType::Plain] = [](PhysicsBody *capsule, PhysicsBody *plain, CollisionCollector *collector)
-        {
-            CollisionDispatcher::collideCapsuleVsPlain(capsule, plain, collector);
-        };
-
-        collectCollisions[(int)ShapeCollisionType::Plain][(int)ShapeCollisionType::Capsule] = [](PhysicsBody *capsule, PhysicsBody *plain, CollisionCollector *collector)
-        {
-            CollisionDispatcher::collideCapsuleVsPlain(capsule, plain, collector);
-        };
-
-        collectCollisions[(int)ShapeCollisionType::Capsule][(int)ShapeCollisionType::Capsule] = [](PhysicsBody *capsuleA, PhysicsBody *capsuleB, CollisionCollector *collector)
-        {
-            CollisionDispatcher::collideCapsuleVsCapsule(capsuleA, capsuleB, collector);
-        };
-
-        collectCollisions[(int)ShapeCollisionType::Capsule][(int)ShapeCollisionType::Sphere] = [](PhysicsBody *capsule, PhysicsBody *sphere, CollisionCollector *collector)
-        {
-            CollisionDispatcher::collideCapsuleVsSphere(capsule, sphere, collector);
-        };
-
-        collectCollisions[(int)ShapeCollisionType::Sphere][(int)ShapeCollisionType::Capsule] = [](PhysicsBody *sphere, PhysicsBody *capsule, CollisionCollector *collector)
-        {
-            CollisionDispatcher::collideCapsuleVsSphere(capsule, sphere, collector);
-        };
-
-        collectCollisions[(int)ShapeCollisionType::Capsule][(int)ShapeCollisionType::OBB] = [](PhysicsBody *capsule, PhysicsBody *OBB, CollisionCollector *collector)
-        {
-            CollisionDispatcher::collideCapsuleVsConvex(capsule, OBB, collector);
-        };
-
-        collectCollisions[(int)ShapeCollisionType::OBB][(int)ShapeCollisionType::Capsule] = [](PhysicsBody *OBB, PhysicsBody *capsule, CollisionCollector *collector)
-        {
-            CollisionDispatcher::collideCapsuleVsConvex(capsule, OBB, collector);
-        };
-
-        collectCollisions[(int)ShapeCollisionType::Capsule][(int)ShapeCollisionType::Convex] = [](PhysicsBody *capsule, PhysicsBody *convex, CollisionCollector *collector)
-        {
-            CollisionDispatcher::collideCapsuleVsConvex(capsule, convex, collector);
-        };
-
-        collectCollisions[(int)ShapeCollisionType::Convex][(int)ShapeCollisionType::Capsule] = [](PhysicsBody *convex, PhysicsBody *capsule, CollisionCollector *collector)
-        {
-            CollisionDispatcher::collideCapsuleVsConvex(capsule, convex, collector);
-        };
-
-        collectCollisions[(int)ShapeCollisionType::Capsule][(int)ShapeCollisionType::Geometry] = [](PhysicsBody *capsule, PhysicsBody *geometry, CollisionCollector *collector)
-        {
-            CollisionDispatcher::collideCapsuleVsGeometry(capsule, geometry, collector);
-        };
-
-        collectCollisions[(int)ShapeCollisionType::Geometry][(int)ShapeCollisionType::Capsule] = [](PhysicsBody *geometry, PhysicsBody *capsule, CollisionCollector *collector)
-        {
-            CollisionDispatcher::collideCapsuleVsGeometry(capsule, geometry, collector);
-        };
-
         */
+
+    collectCollisions[(int)ShapeCollisionType::Capsule][(int)ShapeCollisionType::Plain] = [](PhysicsBody *capsule, PhysicsBody *plain, CollisionCollector *collector)
+    {
+        CollisionDispatcher::collideCapsuleVsPlain(capsule, plain, collector);
+    };
+
+    collectCollisions[(int)ShapeCollisionType::Plain][(int)ShapeCollisionType::Capsule] = [](PhysicsBody *plain, PhysicsBody *capsule, CollisionCollector *collector)
+    {
+        CollisionDispatcher::collideCapsuleVsPlain(capsule, plain, collector);
+    };
+
+    collectCollisions[(int)ShapeCollisionType::Capsule][(int)ShapeCollisionType::Capsule] = [](PhysicsBody *capsuleA, PhysicsBody *capsuleB, CollisionCollector *collector)
+    {
+        CollisionDispatcher::collideCapsuleVsCapsule(capsuleA, capsuleB, collector);
+    };
+
+    collectCollisions[(int)ShapeCollisionType::Capsule][(int)ShapeCollisionType::Sphere] = [](PhysicsBody *capsule, PhysicsBody *sphere, CollisionCollector *collector)
+    {
+        CollisionDispatcher::collideCapsuleVsSphere(capsule, sphere, collector);
+    };
+
+    collectCollisions[(int)ShapeCollisionType::Sphere][(int)ShapeCollisionType::Capsule] = [](PhysicsBody *sphere, PhysicsBody *capsule, CollisionCollector *collector)
+    {
+        CollisionDispatcher::collideCapsuleVsSphere(capsule, sphere, collector);
+    };
+
+    collectCollisions[(int)ShapeCollisionType::OBB][(int)ShapeCollisionType::Capsule] = [](PhysicsBody *OBB, PhysicsBody *capsule, CollisionCollector *collector)
+    {
+        CollisionDispatcher::collideCapsuleVsOBB(capsule, OBB, collector);
+    };
+
+    collectCollisions[(int)ShapeCollisionType::Capsule][(int)ShapeCollisionType::OBB] = [](PhysicsBody *capsule, PhysicsBody *OBB, CollisionCollector *collector)
+    {
+        CollisionDispatcher::collideCapsuleVsOBB(capsule, OBB, collector);
+    };
+
+    /*
+    collectCollisions[(int)ShapeCollisionType::Capsule][(int)ShapeCollisionType::OBB] = [](PhysicsBody *capsule, PhysicsBody *OBB, CollisionCollector *collector)
+    {
+        CollisionDispatcher::collideCapsuleVsConvex(capsule, OBB, collector);
+    };
+
+    collectCollisions[(int)ShapeCollisionType::OBB][(int)ShapeCollisionType::Capsule] = [](PhysicsBody *OBB, PhysicsBody *capsule, CollisionCollector *collector)
+    {
+        CollisionDispatcher::collideCapsuleVsConvex(capsule, OBB, collector);
+    };
+
+    collectCollisions[(int)ShapeCollisionType::Capsule][(int)ShapeCollisionType::Convex] = [](PhysicsBody *capsule, PhysicsBody *convex, CollisionCollector *collector)
+    {
+        CollisionDispatcher::collideCapsuleVsConvex(capsule, convex, collector);
+    };
+
+    collectCollisions[(int)ShapeCollisionType::Convex][(int)ShapeCollisionType::Capsule] = [](PhysicsBody *convex, PhysicsBody *capsule, CollisionCollector *collector)
+    {
+        CollisionDispatcher::collideCapsuleVsConvex(capsule, convex, collector);
+    };
+
+    collectCollisions[(int)ShapeCollisionType::Capsule][(int)ShapeCollisionType::Geometry] = [](PhysicsBody *capsule, PhysicsBody *geometry, CollisionCollector *collector)
+    {
+        CollisionDispatcher::collideCapsuleVsGeometry(capsule, geometry, collector);
+    };
+
+    collectCollisions[(int)ShapeCollisionType::Geometry][(int)ShapeCollisionType::Capsule] = [](PhysicsBody *geometry, PhysicsBody *capsule, CollisionCollector *collector)
+    {
+        CollisionDispatcher::collideCapsuleVsGeometry(capsule, geometry, collector);
+    };
+
+    */
 }
 
 void CollisionDispatcher::collideSphereVsPlain(PhysicsBody *sphere, PhysicsBody *plain, CollisionCollector *collector)
@@ -408,6 +421,150 @@ void CollisionDispatcher::collideConvexVsPlain(PhysicsBody *convex, PhysicsBody 
 {
 }
 
+void CollisionDispatcher::collideCapsuleVsPlain(PhysicsBody *capsule, PhysicsBody *plain, CollisionCollector *collector)
+{
+    PhysicsBodyCacheTypeCapsule *capsuleData = capsule->getCacheCapsule(0);
+    PhysicsBodyCacheTypePlain *plainData = plain->getCachePlain(0);
+
+    float radius = capsuleData->radius;
+    Vector3 &pointA = capsuleData->a;
+    Vector3 &pointB = capsuleData->b;
+
+    Plain plainShape = Plain(plainData->normal, plainData->distance);
+
+    Vector3 closestA = plainShape.getClosestPoint(pointA);
+    Vector3 closestB = plainShape.getClosestPoint(pointB);
+
+    float distA = glm::length(pointA - closestA);
+    float distB = glm::length(pointB - closestB);
+
+    Vector3 point, segmentPoint;
+    float distance;
+    if (fabsf(distA - distB) < 0.0001f)
+    {
+        point = (closestA + closestB) * 0.5f;
+        segmentPoint = (pointA + pointB) * 0.5f;
+        distance = distA;
+    }
+    else
+    {
+        if (distA < distB)
+        {
+            point = closestA;
+            segmentPoint = pointA;
+            distance = distA;
+        }
+        else
+        {
+            point = closestB;
+            segmentPoint = pointB;
+            distance = distB;
+        }
+    }
+
+    if (distance < radius)
+    {
+        CollisionManifold manifold;
+        Vector3 normal = glm::normalize(segmentPoint - point);
+        manifold.addCollisionPoint(point, segmentPoint - normal * radius, radius - distance, normal);
+        collector->addBodyPair(plain, capsule, manifold);
+    }
+}
+
+void CollisionDispatcher::collideCapsuleVsCapsule(PhysicsBody *capsuleA, PhysicsBody *capsuleB, CollisionCollector *collector)
+{
+
+    PhysicsBodyCacheTypeCapsule *capsuleDataA = capsuleA->getCacheCapsule(0);
+    PhysicsBodyCacheTypeCapsule *capsuleDataB = capsuleB->getCacheCapsule(0);
+
+    Segment segmentA = Segment(capsuleDataA->a, capsuleDataA->b);
+    Segment segmentB = Segment(capsuleDataB->a, capsuleDataB->b);
+
+    float s, t;
+    Vector3 onA, onB;
+    getClosestPointSegmentSegment(segmentA.a, segmentA.b, segmentB.a, segmentB.b, s, t, onA, onB);
+    float distance = glm::length(onA - onB);
+
+    float rSumm = capsuleDataA->radius + capsuleDataB->radius;
+    if (distance < rSumm)
+    {
+        CollisionManifold manifold;
+        Vector3 normal = glm::normalize(onB - onA);
+        manifold.addCollisionPoint(onA + normal * capsuleDataA->radius, onB - normal * capsuleDataB->radius, rSumm - distance, normal);
+        collector->addBodyPair(capsuleA, capsuleB, manifold);
+    }
+}
+
+void CollisionDispatcher::collideCapsuleVsSphere(PhysicsBody *capsule, PhysicsBody *sphere, CollisionCollector *collector)
+{
+    PhysicsBodyCacheTypeCapsule *capsuleData = capsule->getCacheCapsule(0);
+    PhysicsBodyCacheTypeSphere *sphereData = sphere->getCacheSphere(0);
+
+    Segment segment = Segment(capsuleData->a, capsuleData->b);
+    Vector3 sphereCenter = sphereData->center;
+
+    Vector3 closest = segment.getClosestPoint(sphereCenter);
+    Vector3 difference = sphereCenter - closest;
+    float distance = glm::length(difference);
+    float rSumm = sphereData->radius + capsuleData->radius;
+    if (distance < rSumm)
+    {
+        CollisionManifold manifold;
+        Vector3 normal = difference / distance;
+        manifold.addCollisionPoint(closest + normal * capsuleData->radius, sphereCenter - normal * sphereData->radius, rSumm - distance, normal);
+        collector->addBodyPair(capsule, sphere, manifold);
+    }
+}
+
+void CollisionDispatcher::collideCapsuleVsOBB(PhysicsBody *capsule, PhysicsBody *OBB, CollisionCollector *collector)
+{
+    ShapeOBB *OBBShape = (ShapeOBB *)OBB->getForm()->getSimpleShape();
+    PhysicsBodyCacheTypeCapsule *capsuleData = capsule->getCacheCapsule(0);
+    PhysicsBodyCacheTypeOBB *OBBData = OBB->getCacheOBB(0);
+
+    float radius = capsuleData->radius;
+
+    Vector3 verticiesCapsule[2] = {capsuleData->a, capsuleData->b};
+    FaceQuery faceQuery = queryFaceDirection(OBBShape->getPolygons(), 6, OBBData->points, OBBData->normals, verticiesCapsule, 2);
+    if (faceQuery.separation > radius)
+        return;
+
+    CollisionManifold manifold;
+    Segment segment = Segment(capsuleData->a, capsuleData->b);
+
+    if (faceQuery.separation > 0.0f)
+    {
+        // Outside
+        Vector3 poly[16];
+        int amount = faceQuery.polygon->pointsAmount;
+        for (int i = 0; i < amount; i++)
+        {
+            poly[i] = OBBData->points[faceQuery.polygon->points[i]];
+        }
+
+        Vector3 onPoly, onSegment;
+
+        float distance = segment.getClosestPointToPoly(poly, amount, onPoly, onSegment);
+        Vector3 difference = onSegment - onPoly;
+
+        if (distance < radius && distance > 0.0f)
+        {
+            Vector3 normal = difference / distance;
+            manifold.addCollisionPoint(onPoly, onSegment + normal * radius, radius - distance, normal);
+            collector->addBodyPair(OBB, capsule, manifold);
+        }
+    }
+    else
+    {
+        // Inside
+        Vector3 normal = faceQuery.axis;
+        Vector3 closest = segment.getClosestPoint(OBBData->center);
+        Vector3 point = closest + normal * radius;
+        manifold.addCollisionPoint(point, point, -faceQuery.separation, normal);
+        collector->addBodyPair(OBB, capsule, manifold);
+    }
+}
+
 /*
 
 void CollisionDispatcher::collideSphereVsConvex(PhysicsBody *sphere, PhysicsBody *convex, CollisionCollector *collector)
@@ -449,107 +606,6 @@ void CollisionDispatcher::collideSphereVsGeometry(PhysicsBody *sphere, PhysicsBo
         manifold.addCollisionPoint(collisionPoint, closest, sphereShape->getRadius() - distance, normal);
 
         collector->addBodyPair(sphere, geometry, manifold);
-    }
-}
-
-void CollisionDispatcher::collideOBBVsPlain(PhysicsBody *OBB, PhysicsBody *plain, CollisionCollector *collector)
-{
-    ShapeBox *OBBShape = (ShapeBox *)OBB->getShape();
-    ShapePlain *plainShape = (ShapePlain *)plain->getShape();
-
-    Matrix4 m = glm::toMat4(OBB->getOrientation());
-    Vector4 axisX4 = m * Vector4(1.0f, 0.0f, 0.0f, 1.0f);
-    Vector4 axisY4 = m * Vector4(0.0f, 1.0f, 0.0f, 1.0f);
-    Vector4 axisZ4 = m * Vector4(0.0f, 0.0f, 1.0f, 1.0f);
-
-    Vector3 axisX = Vector3(axisX4.x, axisX4.y, axisX4.z);
-    Vector3 axisY = Vector3(axisY4.x, axisY4.y, axisY4.z);
-    Vector3 axisZ = Vector3(axisZ4.x, axisZ4.y, axisZ4.z);
-
-    Vector3 plainNormal = plainShape->normal;
-
-    Vector3 size = OBBShape->getSize() * 0.5f;
-    float r = size.x * abs(glm::dot(plainNormal, axisX)) +
-              size.y * abs(glm::dot(plainNormal, axisY)) +
-              size.z * abs(glm::dot(plainNormal, axisZ));
-
-    Vector3 OBBCenter = OBB->getCenterOfMass();
-
-    // Compute distance of box center from plane
-    float s = glm::dot(plainNormal, OBBCenter) - plainShape->distance;
-
-    // Intersection occurs when distance s falls within [-r,+r] interval
-    if (abs(s) <= r)
-    {
-        Vector3 closestToCenter = plainShape->getClosestPoint(OBBCenter);
-        Vector3 sideNormal = glm::normalize(OBBCenter - closestToCenter);
-
-        Matrix4 transformation;
-        transformation = glm::translate(Matrix4(1.0f), Vector3(OBBCenter.x, OBBCenter.y, OBBCenter.z));
-        transformation *= m;
-
-        Vector4 points[8];
-        points[0] = transformation * Vector4(size.x, size.y, size.z, 1.0f);
-        points[1] = transformation * Vector4(size.x, size.y, -size.z, 1.0f);
-        points[2] = transformation * Vector4(-size.x, size.y, size.z, 1.0f);
-        points[3] = transformation * Vector4(-size.x, size.y, -size.z, 1.0f);
-        points[4] = transformation * Vector4(size.x, -size.y, size.z, 1.0f);
-        points[5] = transformation * Vector4(size.x, -size.y, -size.z, 1.0f);
-        points[6] = transformation * Vector4(-size.x, -size.y, size.z, 1.0f);
-        points[7] = transformation * Vector4(-size.x, -size.y, -size.z, 1.0f);
-
-        float n = 0.0f;
-        Vector3 c = Vector3(0.0f);
-        float depth = 0.0f;
-        for (int i = 0; i < 8; i++)
-        {
-            Vector3 p = Vector3(points[i].x, points[i].y, points[i].z);
-            Vector3 closest = plainShape->getClosestPoint(p);
-            Vector3 difference = p - closest;
-
-            if (glm::dot(sideNormal, difference) < 0.0f)
-            {
-                c += p;
-                n += 1.0f;
-                depth = fmaxf(glm::length(difference), depth);
-            }
-        }
-        if (n > 0.0f)
-        {
-            c /= n;
-
-            CollisionManifold manifold;
-            manifold.addCollisionPoint(c, plainShape->getClosestPoint(c), depth, -sideNormal);
-            collector->addBodyPair(OBB, plain, manifold);
-        }
-    }
-}
-
-void CollisionDispatcher::collideOBBVsSphere(PhysicsBody *OBB, PhysicsBody *sphere, CollisionCollector *collector)
-{
-    ShapeBox *OBBShape = (ShapeBox *)OBB->getShape();
-    ShapeSphere *sphereShape = (ShapeSphere *)sphere->getShape();
-
-    Matrix4 m = glm::toMat4(OBB->getOrientation());
-
-    Vector3 OBBCenter = OBB->getCenterOfMass();
-    Vector3 sphereCenter = sphere->getCenterOfMass();
-    float sphereRadius = sphereShape->getRadius();
-
-    Matrix4 transformation;
-    transformation = glm::translate(Matrix4(1.0f), Vector3(OBBCenter.x, OBBCenter.y, OBBCenter.z));
-    transformation *= m;
-
-    Vector3 closestPoint = OBBShape->getClosestPoint(transformation, sphereCenter);
-    Vector3 difference = sphereCenter - closestPoint;
-
-    float distance = glm::length(difference);
-    if (distance < sphereRadius)
-    {
-        CollisionManifold manifold;
-        Vector3 normal = difference / distance;
-        manifold.addCollisionPoint(sphereCenter + normal * sphereRadius, closestPoint, sphereRadius - distance, normal);
-        collector->addBodyPair(OBB, sphere, manifold);
     }
 }
 

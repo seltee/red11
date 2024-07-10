@@ -603,7 +603,7 @@ void DirectX9Renderer::renderShadowBuffers(Vector3 &cameraPosition, Vector3 &cam
 
 void DirectX9Renderer::renderShadowBuffersDirectional(Vector3 &cameraPosition, Vector3 &cameraFrowardVector, Light *light)
 {
-    Vector3 forward = glm::vec3(0.0f, 0.0f, -1.0f);
+    Vector3 forward = Vector3(0.0f, 0.0f, -1.0f);
     IDirect3DSurface9 *originalRenderTarget = NULL;
     IDirect3DSurface9 *originalDepthStencil = NULL;
     Camera camera;

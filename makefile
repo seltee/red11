@@ -54,7 +54,7 @@ OBJ_FILES = ${OBJDIR}/red11.o \
 			${OBJDIR}/deform.o ${OBJDIR}/boneTransform.o ${OBJDIR}/animation.o ${OBJDIR}/animationTarget.o ${OBJDIR}/animator.o ${OBJDIR}/animationTrack.o \
 			${OBJDIR}/physicsWorld.o ${OBJDIR}/physicsBody.o ${OBJDIR}/physicsForm.o ${OBJDIR}/physicsUtils.o \
 			${OBJDIR}/collisionDispatcher.o ${OBJDIR}/collisionSolver.o \
-			${OBJDIR}/shape.o ${OBJDIR}/shapePlain.o ${OBJDIR}/shapeSphere.o ${OBJDIR}/shapeOBB.o \
+			${OBJDIR}/shape.o ${OBJDIR}/shapePlain.o ${OBJDIR}/shapeSphere.o ${OBJDIR}/shapeOBB.o ${OBJDIR}/shapeCapsule.o \
 			${OBJDIR}/data3DFile.o ${OBJDIR}/debugEntities.o \
 			${OBJDIR}/material.o ${OBJDIR}/materialSimple.o \
 			${OBJDIR}/actor.o ${OBJDIR}/actorTemporary.o \
@@ -170,6 +170,9 @@ ${OBJDIR}/shapeSphere.o: ${SRCDIR}/data/physics/shapes/shapeSphere.cpp
 
 ${OBJDIR}/shapeOBB.o: ${SRCDIR}/data/physics/shapes/shapeOBB.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/shapeOBB.o ${SRCDIR}/data/physics/shapes/shapeOBB.cpp
+
+${OBJDIR}/shapeCapsule.o: ${SRCDIR}/data/physics/shapes/shapeCapsule.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/shapeCapsule.o ${SRCDIR}/data/physics/shapes/shapeCapsule.cpp
 
 ${OBJDIR}/data3DFile.o: ${SRCDIR}/data/data3DFile.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/data3DFile.o ${SRCDIR}/data/data3DFile.cpp
