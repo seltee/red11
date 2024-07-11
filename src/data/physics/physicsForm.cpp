@@ -74,6 +74,15 @@ ShapeCapsule *PhysicsForm::createCapsule(Vector3 a, Vector3 b, float radius, flo
     return newOBB;
 }
 
+ShapeConvex *PhysicsForm::createConvex(Vector3 *verticies, int verticiesAmount, HullPolygon *polygons, int polygonsAmount, float density)
+{
+    ShapeConvex *newConvex = new ShapeConvex(simScale, verticies, verticiesAmount, polygons, polygonsAmount, density);
+    shapes.push_back(newConvex);
+    isDataDirty = true;
+    recalcParameters();
+    return newConvex;
+}
+
 void PhysicsForm::recalcParameters()
 {
     if (isDataDirty)

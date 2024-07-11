@@ -304,22 +304,27 @@ inline bool isAlmostZero(Vector3 v)
 
 inline float getTetrahedronVolume(const Vector3 &a, const Vector3 &b, const Vector3 &c, const Vector3 &d)
 {
-    return glm::dot(a - d, glm::cross(b - d, c - d)) / 6.0f;
+    return fabsf(glm::dot(a - d, glm::cross(b - d, c - d)) / 6.0f);
 }
 
 // Function to calculate the volume of a convex hull
 inline float getConvexHullVolume(Vector3 *vertices, int amount)
 {
+    if (amount < 4)
+        return 0.01f; // Need at least 4 points to form a tetrahedron
+
     float volume = 0.0f;
     Vector3 origin(0.0f); // Reference point (could be any point, here we use the origin)
 
-    for (int i = 0; i < amount; i++)
+    for (int i = 0; i < amount - 1; i++)
+    {
         volume += getTetrahedronVolume(origin, vertices[0], vertices[i], vertices[i + 1]);
+    }
 
-    return fabsf(volume);
+    return volume;
 }
 
-inline glm::mat3 getTetrahedronInertia(const Vector3 &a, const Vector3 &b, const Vector3 &c, const Vector3 &d, float density)
+inline Matrix3 getTetrahedronInertia(const Vector3 &a, const Vector3 &b, const Vector3 &c, const Vector3 &d, float density)
 {
     // Compute the volume of the tetrahedron
     float volume = getTetrahedronVolume(a, b, c, d);
@@ -329,18 +334,40 @@ inline glm::mat3 getTetrahedronInertia(const Vector3 &a, const Vector3 &b, const
 
     // Compute the inertia tensor of the tetrahedron
     Matrix3 inertia(0.0f);
-    Vector3 points[] = {a, b, c, d};
 
-    for (int i = 0; i < 4; ++i)
+    // Centroid of the tetrahedron
+    Vector3 centroid = (a + b + c + d) / 4.0f;
+
+    // Compute relative positions of vertices to the centroid
+    Vector3 ra = a - centroid;
+    Vector3 rb = b - centroid;
+    Vector3 rc = c - centroid;
+    Vector3 rd = d - centroid;
+
+    // Helper function to compute the inertia tensor for a single point mass
+    auto pointMassInertia = [](const Vector3 &r, float mass)
     {
-        for (int j = 0; j < 4; ++j)
-        {
-            if (i == j)
-                continue;
-            Vector3 r = points[i] - points[j];
-            inertia += mass / 10.0f * (glm::dot(r, r) * Matrix3(1.0f) - glm::outerProduct(r, r));
-        }
-    }
+        Matrix3 inertia(0.0f);
+        float x2 = r.x * r.x;
+        float y2 = r.y * r.y;
+        float z2 = r.z * r.z;
+        inertia[0][0] = mass * (y2 + z2);
+        inertia[1][1] = mass * (x2 + z2);
+        inertia[2][2] = mass * (x2 + y2);
+        // inertia[0][1] = inertia[1][0] = -mass * r.x * r.y;
+        // inertia[0][2] = inertia[2][0] = -mass * r.x * r.z;
+        // inertia[1][2] = inertia[2][1] = -mass * r.y * r.z;
+        // inertia[0][1] = inertia[1][0] = 0.0f;
+        // inertia[0][2] = inertia[2][0] = 0.0f;
+        // inertia[1][2] = inertia[2][1] = 0.0f;
+        return inertia;
+    };
+
+    // Sum the inertia tensors of the vertices relative to the centroid
+    inertia += pointMassInertia(ra, mass / 4.0f);
+    inertia += pointMassInertia(rb, mass / 4.0f);
+    inertia += pointMassInertia(rc, mass / 4.0f);
+    inertia += pointMassInertia(rd, mass / 4.0f);
 
     return inertia;
 }
@@ -351,7 +378,7 @@ inline Matrix3 getConvexHullInertia(Vector3 *vertices, int amount, float density
     Matrix3 inertia(0.0f);
     Vector3 origin(0.0f); // Reference point (could be any point, here we use the origin)
 
-    for (int i = 0; i < amount; i++)
+    for (int i = 1; i < amount - 1; i++)
         inertia += getTetrahedronInertia(origin, vertices[0], vertices[i], vertices[i + 1], density);
 
     return inertia;
@@ -381,6 +408,34 @@ inline Vector3 findFurthestPoint(Vector3 *verticies, int amountOfVertices, const
     }
 
     return verticies[outVertex];
+}
+
+inline Vector3 getClosestPointToHull(const Vector3 &point, Vector3 *verticies, HullPolygon *poligons, int polygonsAmount)
+{
+    float minDistance = FLT_MAX;
+    Vector3 closestPoint(0);
+
+    for (int i = 0; i < polygonsAmount; i++)
+    {
+        HullPolygon &poly = poligons[i];
+        Vector3 polyPoints[8];
+
+        if (poly.pointsAmount < 3)
+            continue;
+
+        for (int p = 0; p < poly.pointsAmount; p++)
+            polyPoints[p] = verticies[poly.points[p]];
+
+        Vector3 closestCurrent = getClosestPointOnPolygon(polyPoints, poly.pointsAmount, point);
+        float distance = glm::length(point - closestCurrent);
+        if (distance < minDistance)
+        {
+            minDistance = distance;
+            closestPoint = closestCurrent;
+        }
+    }
+
+    return closestPoint;
 }
 
 inline int rebuildEdges(HullPolygon *polygons, int polyAmount, HullEdge **edges)

@@ -80,16 +80,42 @@ APPMAIN
     auto ballSphereFrom = world->createPhysicsForm(0.4f, 0.65f);
     ballSphereFrom->createSphere(Vector3(0), 0.04f, 25.0f);
 
-    // Boxes
-    auto boxFrom = world->createPhysicsForm(0.9f, 0.15f);
-    boxFrom->createOBB(Vector3(0), 0.25f, 16.0f);
+    // Boxes box & convex physics shapes
+    auto boxForm = world->createPhysicsForm(0.9f, 0.15f);
+    ShapeOBB *obb = boxForm->createOBB(Vector3(0), 0.25f, 16.0f);
 
-    for (int i = 0; i < 16; i++)
+    float halfWidth = obb->getHalfWidth();
+    float halfHeight = obb->getHalfHeight();
+    float halfDepth = obb->getHalfDepth();
+
+    Vector3 points[8];
+    points[0] = Vector3(halfWidth, halfHeight, halfDepth);
+    points[1] = Vector3(halfWidth, halfHeight, -halfDepth);
+    points[2] = Vector3(-halfWidth, halfHeight, halfDepth);
+    points[3] = Vector3(-halfWidth, halfHeight, -halfDepth);
+    points[4] = Vector3(halfWidth, -halfHeight, halfDepth);
+    points[5] = Vector3(halfWidth, -halfHeight, -halfDepth);
+    points[6] = Vector3(-halfWidth, -halfHeight, halfDepth);
+    points[7] = Vector3(-halfWidth, -halfHeight, -halfDepth);
+
+    auto boxFormConvex = world->createPhysicsForm(0.9f, 0.15f);
+    boxFormConvex->createConvex(points, 8, obb->getPolygons(), 6);
+
+    for (int i = 0; i < 3; i++)
+    {
+        auto boxComponent = sphereContainer->createComponentMesh(cubeMeshBig);
+        boxComponent->setMaterial(capsuleMaterial);
+        boxComponent->setPosition(randf(-3.0f, 3.0f), 0.8f, randf(-3.0f, 3.0f));
+        boxComponent->enablePhysics(PhysicsMotionType::Dynamic, boxFormConvex, boxComponent);
+        boxComponent->setRenderDebugPhysicsBody(true);
+    }
+
+    for (int i = 0; i < 8; i++)
     {
         auto boxComponent = sphereContainer->createComponentMesh(cubeMeshBig);
         boxComponent->setMaterial(crateMaterial);
         boxComponent->setPosition(randf(-3.0f, 3.0f), 0.8f, randf(-3.0f, 3.0f));
-        boxComponent->enablePhysics(PhysicsMotionType::Dynamic, boxFrom, boxComponent);
+        boxComponent->enablePhysics(PhysicsMotionType::Dynamic, boxForm, boxComponent);
         boxComponent->setRenderDebugPhysicsBody(true);
     }
 
@@ -102,7 +128,7 @@ APPMAIN
         auto capsuleComponent = sphereContainer->createComponentMesh(capsuleMesh);
         capsuleComponent->setMaterial(capsuleMaterial);
         capsuleComponent->setPosition(randf(-3.0f, 3.0f), 1.0f, randf(-3.0f, 3.0f));
-        capsuleComponent->enablePhysics(PhysicsMotionType::Dynamic, capsuleFrom, capsuleComponent);
+        capsuleComponent->enablePhysics(PhysicsMotionType::Dynamic, capsuleFrom);
         capsuleComponent->setRenderDebugPhysicsBody(true);
     }
 

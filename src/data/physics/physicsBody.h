@@ -86,10 +86,10 @@ public:
     PhysicsBodyCacheTypeCapsule *getCacheCapsule(int bodyNum) { return &cache[bodyNum].capsule; }
 
 protected:
-    inline void checkLimits()
+    inline void checkLimits(float limit)
     {
-        if (glm::length(linearVelocity) > 60.0f)
-            linearVelocity = glm::normalize(linearVelocity) * 60.0f;
+        if (glm::length(linearVelocity) > limit)
+            linearVelocity = glm::normalize(linearVelocity) * limit;
     }
     inline void updateAABB()
     {

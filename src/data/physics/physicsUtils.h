@@ -54,8 +54,8 @@ struct PhysicsBodyCacheTypeCapsule
 struct PhysicsBodyCacheTypeConvex
 {
     Vector3 center;
-    Vector3 *points;
-    int amount;
+    Vector3 *verticies;
+    Vector3 *normals;
 };
 
 union PhysicsBodyCache

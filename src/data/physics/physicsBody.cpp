@@ -101,7 +101,7 @@ void PhysicsBody::applyStep(float delta)
 
     if (!bIsSleeping && bIsEnabled)
     {
-        checkLimits();
+        checkLimits(120.0f * world->getSimScale());
 
         // if (!constraints.empty())
         //     for (auto constraint = constraints.begin(); constraint != constraints.end(); constraint++)
@@ -193,16 +193,24 @@ void PhysicsBody::updateCache()
         ShapeConvex *convex = (ShapeConvex *)form->getSimpleShape();
         Matrix4 m = glm::toMat4(rotation);
         Matrix4 transformation = glm::translate(Matrix4(1.0f), position) * m;
-        if (!cache[0].convex.points)
-        {
-            cache[0].convex.points = new Vector3[convex->getVertexAmount()];
-            cache[0].convex.amount = convex->getVertexAmount();
-        }
-        int count = cache[0].convex.amount;
         Vector3 *verticies = convex->getVerticies();
+        HullPolygon *polygons = convex->getPolygons();
+        int verticiesAmount = convex->getVerticiesAmount();
+        int polygonsAmount = convex->getPolygonsAmount();
 
-        for (int i = 0; i < count; i++)
-            cache[0].convex.points[i] = Vector3(transformation * Vector4(verticies[i], 1.0f));
+        if (!cache[0].convex.verticies)
+        {
+            cache[0].convex.verticies = new Vector3[verticiesAmount];
+            cache[0].convex.normals = new Vector3[polygonsAmount];
+        }
+
+        cache[0].convex.center = position;
+        for (int i = 0; i < verticiesAmount; i++)
+            cache[0].convex.verticies[i] = Vector3(transformation * Vector4(verticies[i], 1.0f));
+        for (int p = 0; p < polygonsAmount; p++)
+            cache[0].convex.normals[p] = rotateNormal(polygons[p].normal, rotation);
+
+        return;
     }
 
     if (form->getType() == ShapeCollisionType::OBB)

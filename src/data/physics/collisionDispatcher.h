@@ -22,6 +22,7 @@ public:
 
     static void collideSphereVsConvex(PhysicsBody *sphere, PhysicsBody *convex, CollisionCollector *collector);
     static void collideConvexVsConvex(PhysicsBody *convexA, PhysicsBody *convexB, CollisionCollector *collector);
+    static void collideConvexVsOBB(PhysicsBody *convex, PhysicsBody *OBB, CollisionCollector *collector);
     static void collideConvexVsPlain(PhysicsBody *convex, PhysicsBody *plain, CollisionCollector *collector);
 
     // static void collideSphereVsGeometry(PhysicsBody *sphere, PhysicsBody *geometry, CollisionCollector *collector);
@@ -31,8 +32,8 @@ public:
     static void collideCapsuleVsCapsule(PhysicsBody *capsuleA, PhysicsBody *capsuleB, CollisionCollector *collector);
     static void collideCapsuleVsSphere(PhysicsBody *capsule, PhysicsBody *sphere, CollisionCollector *collector);
     static void collideCapsuleVsOBB(PhysicsBody *capsule, PhysicsBody *OBB, CollisionCollector *collector);
-
-    // static void collideCapsuleVsConvex(PhysicsBody *capsule, PhysicsBody *convex, CollisionCollector *collector);
+    static void collideCapsuleVsConvex(PhysicsBody *capsule, PhysicsBody *convex, CollisionCollector *collector);
+    
     // static void collideCapsuleVsGeometry(PhysicsBody *capsule, PhysicsBody *geometry, CollisionCollector *collector);
 
 protected:

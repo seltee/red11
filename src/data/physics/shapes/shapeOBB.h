@@ -38,7 +38,12 @@ protected:
     float width, height, depth;
     float halfWidth, halfHeight, halfDepth;
     Vector3 center;
-    static HullPolygon hullPolygons[6];
-    static HullEdge *hullEdges;
-    static int hullEdgesAmount;
+
+    HullPolygon *hullPolygons;
+    HullEdge *hullEdges;
+    int hullEdgesAmount;
+
+    static HullPolygon hullPolygonsStatic[6];
+    static HullEdge *hullEdgesStatic;
+    static int hullEdgesAmountStatic;
 };

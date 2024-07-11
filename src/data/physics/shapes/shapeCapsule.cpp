@@ -86,5 +86,58 @@ AABB ShapeCapsule::getAABB(Matrix4 *model)
 
 int ShapeCapsule::castRay(const Segment &ray, PhysicsBodyPoint *newPoints, PhysicsBodyCache *cache)
 {
+    float s, t;
+    Vector3 pOnLine, pOnCapsule;
+    getClosestPointSegmentSegment(ray.a, ray.b, cache->capsule.a, cache->capsule.b, s, t, pOnLine, pOnCapsule);
+    float radius = cache->capsule.radius;
+
+    Vector3 normal = glm::normalize(ray.b - ray.a);
+    Vector3 m = ray.a - pOnCapsule;
+    float b = glm::dot(m, normal);
+    float c = glm::dot(m, m) - radius * radius;
+
+    // Exit if r’s origin outside s (c > 0) and r pointing away from s (b > 0)
+    if (c > 0.0f && b > 0.0f)
+        return 0;
+    float discr = b * b - c;
+
+    // A negative discriminant corresponds to ray missing sphere
+    if (discr < 0.0f)
+        return 0;
+
+    // Ray now found to intersect sphere, compute both points of intersection
+    float sqrtDiscr = sqrtf(discr);
+    float t1 = -b - sqrtDiscr;
+    float t2 = -b + sqrtDiscr;
+    float length = glm::length(ray.b - ray.a);
+
+    // If t is negative, ray started inside sphere
+    if (t1 < 0.0f)
+    {
+        if (t2 <= length)
+        {
+            Vector3 point = ray.a + t2 * normal;
+            newPoints[0] = PhysicsBodyPoint({nullptr, point, glm::normalize(ray.a - point), t2});
+            return 1;
+        }
+    }
+    else
+    {
+        int out = 0;
+        if (t1 <= length)
+        {
+            Vector3 point = ray.a + t1 * normal;
+            newPoints[0] = PhysicsBodyPoint({nullptr, point, glm::normalize(ray.a - point), t1});
+            out++;
+        }
+        if (t2 <= length)
+        {
+            Vector3 point = ray.a + t2 * normal;
+            newPoints[out] = PhysicsBodyPoint({nullptr, point, glm::normalize(ray.a - point), t2});
+            out++;
+        }
+        return out;
+    }
+
     return 0;
 }

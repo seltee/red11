@@ -3,9 +3,9 @@
 
 #include "shapeOBB.h"
 
-HullPolygon ShapeOBB::hullPolygons[6];
-HullEdge *ShapeOBB::hullEdges = nullptr;
-int ShapeOBB::hullEdgesAmount = 0;
+HullPolygon ShapeOBB::hullPolygonsStatic[6];
+HullEdge *ShapeOBB::hullEdgesStatic = nullptr;
+int ShapeOBB::hullEdgesAmountStatic = 0;
 
 ShapeOBB::ShapeOBB(const Vector3 &center, float width, float height, float depth, float density)
 {
@@ -29,8 +29,12 @@ ShapeOBB::ShapeOBB(const Vector3 &center, float width, float height, float depth
     inertia[1] = Vector3(0.0f, (1.0f / 12.0f) * mass * (width2 + depth2), 0.0f);
     inertia[2] = Vector3(0.0f, 0.0f, (1.0f / 12.0f) * mass * (width2 + height2));
 
-    if (hullEdgesAmount == 0)
+    if (hullEdgesAmountStatic == 0)
         rebuildPolygons();
+
+    hullPolygons = hullPolygonsStatic;
+    hullEdges = hullEdgesStatic;
+    hullEdgesAmount = hullEdgesAmountStatic;
 }
 
 ShapeCollisionType ShapeOBB::getType()
@@ -41,7 +45,7 @@ ShapeCollisionType ShapeOBB::getType()
 AABB ShapeOBB::getAABB(Matrix4 *model)
 {
     Vector3 modelCenter = *model * Vector4(center, 1.0f);
-    return AABB(modelCenter - Vector3(halfWidth, halfHeight, halfDepth) * 1.5f, modelCenter + Vector3(halfWidth, halfHeight, halfDepth) * 1.5f);
+    return AABB(modelCenter - Vector3(halfWidth, halfHeight, halfDepth) * 1.4f, modelCenter + Vector3(halfWidth, halfHeight, halfDepth) * 1.4f);
 }
 
 int ShapeOBB::castRay(const Segment &ray, PhysicsBodyPoint *newPoints, PhysicsBodyCache *cache)
@@ -128,53 +132,53 @@ Vector3 ShapeOBB::getClosestPoint(Matrix4 &OBBTransformation, Vector3 point)
 
 void ShapeOBB::rebuildPolygons()
 {
-    hullPolygons[0].points[0] = 0;
-    hullPolygons[0].points[1] = 1;
-    hullPolygons[0].points[2] = 3;
-    hullPolygons[0].points[3] = 2;
-    hullPolygons[0].pointsAmount = 4;
-    hullPolygons[0].index = 0;
-    hullPolygons[0].normal = Vector3(0.0f, 1.0f, 0.0f);
+    hullPolygonsStatic[0].points[0] = 0;
+    hullPolygonsStatic[0].points[1] = 1;
+    hullPolygonsStatic[0].points[2] = 3;
+    hullPolygonsStatic[0].points[3] = 2;
+    hullPolygonsStatic[0].pointsAmount = 4;
+    hullPolygonsStatic[0].index = 0;
+    hullPolygonsStatic[0].normal = Vector3(0.0f, 1.0f, 0.0f);
 
-    hullPolygons[1].points[0] = 5;
-    hullPolygons[1].points[1] = 4;
-    hullPolygons[1].points[2] = 6;
-    hullPolygons[1].points[3] = 7;
-    hullPolygons[1].pointsAmount = 4;
-    hullPolygons[1].index = 1;
-    hullPolygons[1].normal = Vector3(0.0f, -1.0f, 0.0f);
+    hullPolygonsStatic[1].points[0] = 5;
+    hullPolygonsStatic[1].points[1] = 4;
+    hullPolygonsStatic[1].points[2] = 6;
+    hullPolygonsStatic[1].points[3] = 7;
+    hullPolygonsStatic[1].pointsAmount = 4;
+    hullPolygonsStatic[1].index = 1;
+    hullPolygonsStatic[1].normal = Vector3(0.0f, -1.0f, 0.0f);
 
-    hullPolygons[2].points[0] = 1;
-    hullPolygons[2].points[1] = 0;
-    hullPolygons[2].points[2] = 4;
-    hullPolygons[2].points[3] = 5;
-    hullPolygons[2].pointsAmount = 4;
-    hullPolygons[2].index = 2;
-    hullPolygons[2].normal = Vector3(1.0f, 0.0f, 0.0f);
+    hullPolygonsStatic[2].points[0] = 1;
+    hullPolygonsStatic[2].points[1] = 0;
+    hullPolygonsStatic[2].points[2] = 4;
+    hullPolygonsStatic[2].points[3] = 5;
+    hullPolygonsStatic[2].pointsAmount = 4;
+    hullPolygonsStatic[2].index = 2;
+    hullPolygonsStatic[2].normal = Vector3(1.0f, 0.0f, 0.0f);
 
-    hullPolygons[3].points[0] = 2;
-    hullPolygons[3].points[1] = 3;
-    hullPolygons[3].points[2] = 7;
-    hullPolygons[3].points[3] = 6;
-    hullPolygons[3].pointsAmount = 4;
-    hullPolygons[3].index = 3;
-    hullPolygons[3].normal = Vector3(-1.0f, 0.0f, 0.0f);
+    hullPolygonsStatic[3].points[0] = 2;
+    hullPolygonsStatic[3].points[1] = 3;
+    hullPolygonsStatic[3].points[2] = 7;
+    hullPolygonsStatic[3].points[3] = 6;
+    hullPolygonsStatic[3].pointsAmount = 4;
+    hullPolygonsStatic[3].index = 3;
+    hullPolygonsStatic[3].normal = Vector3(-1.0f, 0.0f, 0.0f);
 
-    hullPolygons[4].points[0] = 4;
-    hullPolygons[4].points[1] = 0;
-    hullPolygons[4].points[2] = 2;
-    hullPolygons[4].points[3] = 6;
-    hullPolygons[4].pointsAmount = 4;
-    hullPolygons[4].index = 4;
-    hullPolygons[4].normal = Vector3(0.0f, 0.0f, 1.0f);
+    hullPolygonsStatic[4].points[0] = 4;
+    hullPolygonsStatic[4].points[1] = 0;
+    hullPolygonsStatic[4].points[2] = 2;
+    hullPolygonsStatic[4].points[3] = 6;
+    hullPolygonsStatic[4].pointsAmount = 4;
+    hullPolygonsStatic[4].index = 4;
+    hullPolygonsStatic[4].normal = Vector3(0.0f, 0.0f, 1.0f);
 
-    hullPolygons[5].points[0] = 7;
-    hullPolygons[5].points[1] = 3;
-    hullPolygons[5].points[2] = 1;
-    hullPolygons[5].points[3] = 5;
-    hullPolygons[5].pointsAmount = 4;
-    hullPolygons[5].index = 5;
-    hullPolygons[5].normal = Vector3(0.0f, 0.0f, -1.0f);
+    hullPolygonsStatic[5].points[0] = 7;
+    hullPolygonsStatic[5].points[1] = 3;
+    hullPolygonsStatic[5].points[2] = 1;
+    hullPolygonsStatic[5].points[3] = 5;
+    hullPolygonsStatic[5].pointsAmount = 4;
+    hullPolygonsStatic[5].index = 5;
+    hullPolygonsStatic[5].normal = Vector3(0.0f, 0.0f, -1.0f);
 
-    hullEdgesAmount = rebuildEdges(hullPolygons, 6, &hullEdges);
+    hullEdgesAmountStatic = rebuildEdges(hullPolygonsStatic, 6, &hullEdgesStatic);
 }
