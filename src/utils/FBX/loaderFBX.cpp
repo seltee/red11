@@ -17,8 +17,10 @@ bool LoaderFBX::loadFBXFile(std::string path, std::vector<MeshObject *> *meshObj
 {
     printf("Loading FBX %s ...\n", path.c_str());
     FILE *file = fopen(path.c_str(), "rb");
-    if (file == nullptr)
+    if (file == nullptr){
+        printf("Unable to open file\n");
         return false;
+    }
 
     // =======
     // Checking header

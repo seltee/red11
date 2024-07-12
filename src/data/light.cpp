@@ -14,8 +14,8 @@ Light::Light()
     this->position = Vector3(0.0f, 0.0f, 0.0f);
     this->color = Color(0.8f, 0.8f, 0.8f);
     this->radius = 1.0f;
+    this->affectDistance = 1.0f;
     this->innerRadius = 0.0f;
-    this->falloff = 1.0f;
 
     rebuildShadowTextures();
 }
@@ -30,7 +30,7 @@ Light::Light(Vector3 &directionalNormal, Color &directionalColor, bool bShadowEn
     this->color = directionalColor;
     this->radius = 1.0f;
     this->innerRadius = 0.0f;
-    this->falloff = 1.0f;
+    this->affectDistance = 1.0f;
     this->bShadowEnabled = bShadowEnabled;
     this->shadowQuality = shadowQuality;
 
@@ -46,8 +46,8 @@ Light::Light(Attenuation &omniAttenuation, Color &omniColor, bool bShadowEnabled
     this->position = Vector3(0.0f, 0.0f, 0.0f);
     this->color = omniColor;
     this->radius = omniAttenuation.calcRadius();
+    this->affectDistance = this->radius;
     this->innerRadius = 0.0f;
-    this->falloff = 1.0f;
     this->bShadowEnabled = bShadowEnabled;
     this->shadowQuality = shadowQuality;
 
@@ -58,20 +58,19 @@ Light::Light(Vector3 &spotDirection,
              Attenuation &spotAttenuation,
              float spotOuterRadius,
              float spotInnerRadius,
-             float spotFalloff,
              Color &spotColor,
              bool bShadowEnabled,
              LightShadowQuality shadowQuality)
 {
     this->type = LightType::Spot;
-    this->normal = glm::normalize(spotDirection);
+    this->normal = -glm::normalize(spotDirection);
     this->originalNormal = this->normal;
     this->attenuation = spotAttenuation;
     this->position = Vector3(0.0f, 0.0f, 0.0f);
     this->color = spotColor;
-    this->radius = spotOuterRadius;
-    this->innerRadius = spotInnerRadius;
-    this->falloff = spotFalloff;
+    this->radius = cosf(spotOuterRadius);
+    this->innerRadius = cosf(spotInnerRadius);
+    this->affectDistance = spotAttenuation.calcRadius();
     this->bShadowEnabled = bShadowEnabled;
     this->shadowQuality = shadowQuality;
 
@@ -83,6 +82,13 @@ float Light::isAffecting(Vector3 point, float radius)
     if (type == LightType::Directional)
         return 0.00001f;
     if (type == LightType::Omni)
+    {
+        float distance = glm::distance(position, point);
+        // if (distance < radius + this->radius)
+        return distance + 0.000011f; // to make it always more far than directional lights
+        // return 0.0f;
+    }
+    if (type == LightType::Spot)
     {
         float distance = glm::distance(position, point);
         // if (distance < radius + this->radius)

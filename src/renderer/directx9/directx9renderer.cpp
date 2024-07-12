@@ -440,10 +440,10 @@ void DirectX9Renderer::setupLights(Vector3 objectPosition, float objectRadius)
             dxLight.type = 1.0f;
             dxLight.castShadow = castShadow ? 1.0f : 0.0f;
             dxLight.texelSize = light->getShadowTextureTexelSize();
-            dxLight.data0 = 1.0f;
-            dxLight.data1 = 1.0f;
-            dxLight.data2 = 1.0f;
-            dxLight.data3 = 1.0f;
+            dxLight.attConstant = 1.0f;
+            dxLight.attLinear = 1.0f;
+            dxLight.attQuadratic = 1.0f;
+            dxLight.innerRadius = 1.0f;
 
             dxLight.normal[0] = lightDirection.x;
             dxLight.normal[1] = lightDirection.y;
@@ -476,14 +476,43 @@ void DirectX9Renderer::setupLights(Vector3 objectPosition, float objectRadius)
             dxLight.type = 2.0f;
             dxLight.castShadow = 0.0f;
             dxLight.texelSize = 0.0f;
-            dxLight.data0 = light->getAttenuation().constant;
-            dxLight.data1 = light->getAttenuation().linear;
-            dxLight.data2 = light->getAttenuation().quadratic;
-            dxLight.data3 = 0.0f;
+            dxLight.attConstant = light->getAttenuation().constant;
+            dxLight.attLinear = light->getAttenuation().linear;
+            dxLight.attQuadratic = light->getAttenuation().quadratic;
+            dxLight.innerRadius = 0.0f;
 
             dxLight.position[0] = lightPosition.x;
             dxLight.position[1] = lightPosition.y;
             dxLight.position[2] = lightPosition.z;
+
+            dxLight.color[0] = lightColor.r;
+            dxLight.color[1] = lightColor.g;
+            dxLight.color[2] = lightColor.b;
+
+            d3ddev->SetPixelShaderConstantF(baseReg, (const float *)&dxLight, 4);
+        }
+        else if (light->getType() == LightType::Spot)
+        {
+            Color lightColor = light->getColor();
+            Vector3 lightDirection = light->getNormal();
+            Vector3 lightPosition = light->getPosition();
+            bool castShadow = light->isShadowsEnabled() && (shadowMatrixBaseReg < 60);
+
+            dxLight.type = 3.0f;
+            dxLight.castShadow = castShadow ? 1.0f : 0.0f;
+            dxLight.texelSize = light->getRadius();
+            dxLight.innerRadius = light->getInnerRadius();
+            dxLight.attConstant = light->getAttenuation().constant;
+            dxLight.attLinear = light->getAttenuation().linear;
+            dxLight.attQuadratic = light->getAttenuation().quadratic;
+
+            dxLight.position[0] = lightPosition.x;
+            dxLight.position[1] = lightPosition.y;
+            dxLight.position[2] = lightPosition.z;
+
+            dxLight.normal[0] = lightDirection.x;
+            dxLight.normal[1] = lightDirection.y;
+            dxLight.normal[2] = lightDirection.z;
 
             dxLight.color[0] = lightColor.r;
             dxLight.color[1] = lightColor.g;

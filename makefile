@@ -64,7 +64,7 @@ OBJ_FILES = ${OBJDIR}/red11.o \
 			${OBJDIR}/loaderFBX.o ${OBJDIR}/FBXNode.o ${OBJDIR}/FBXAnimationStack.o ${OBJDIR}/FBXAnimationLayer.o ${OBJDIR}/FBXAnimationCurve.o ${OBJDIR}/FBXAnimationCurveNode.o \
 			${OBJDIR}/FBXDeform.o ${OBJDIR}/FBXGeometry.o ${OBJDIR}/FBXModel.o ${OBJDIR}/FBXAttribute.o
 
-EXAMPLES = 1-window${EXT} 2-textures${EXT} 3-animation${EXT} 4-bones${EXT} 5-physics${EXT}
+EXAMPLES = 1-window${EXT} 2-textures${EXT} 3-animation${EXT} 4-bones${EXT} 5-physics${EXT}  demo-1${EXT}
 
 all: engine examples
 
@@ -306,6 +306,15 @@ ${OBJDIR}/5-physics.o: ${EXMDIR}/5-physics.cpp
 5-physics${EXT}: ${OBJDIR}/5-physics.o
 	$(LD) ${EFLAGS} ${OBJDIR}/5-physics.o -o 5-physics${EXT}
 	${MOVE} 5-physics${EXT} ${BINDIR}/5-physics${EXT}
+
+${OBJDIR}/demo-1.o: ${EXMDIR}/demo-1.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/demo-1.o ${EXMDIR}/demo-1.cpp
+
+demo-1${EXT}: ${OBJDIR}/demo-1.o
+	$(LD) ${EFLAGS} ${OBJDIR}/demo-1.o -o demo-1${EXT}
+	${MOVE} demo-1${EXT} ${BINDIR}/demo-1${EXT}
+
+
 
 
 # llvm-objcopy

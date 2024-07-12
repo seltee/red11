@@ -24,7 +24,7 @@ VS_Output main(VS_Input vin)
 {
     VS_Output vout;
     vout.pos = mul(float4(vin.pos, 1.f), WorldViewProj);
-    vout.worldPos = (float3)mul(float4(vin.pos, 1.f), World);
+    vout.worldPos = mul(float4(vin.pos, 1.f), World).xyz;
     vout.normal = normalize(mul(vin.normal, (float3x3)WorldInverseTranspose));
     vout.texCoord = vin.texCoord;
     for (int i = 0; i < 2; i++)

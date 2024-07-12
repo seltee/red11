@@ -28,12 +28,12 @@ APPMAIN
 
     auto monTexture = new TextureFile("MonsterDefuse", "./data/miner_defuse.png");
     auto monMaterial = new MaterialSimple(monTexture);
-    monMaterial->setRoughness(0.25f);
+    monMaterial->setRoughness(0.7f);
 
     auto concreteTexture = new TextureFile("Concrete", "./data/concrete_albedo.jpg");
     auto sphereNormalTexture = new TextureFile("SphereNormal", "./data/spehere_normal.png");
     auto concreteMaterial = new MaterialSimple(concreteTexture, sphereNormalTexture);
-    // auto concreteMaterial = new MaterialSimple(concreteTexture);
+    concreteMaterial->setRoughness(0.52f);
 
     // Meshes
     auto minerIdleFileData = new Data3DFile("./data/miner_anim_idle.fbx");

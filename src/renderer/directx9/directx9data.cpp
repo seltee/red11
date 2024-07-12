@@ -114,15 +114,14 @@ bool Directx9data::isLightVisibleToCamera(QueuedLightRenderData *light, Camera *
     if (light->light->getType() == LightType::Directional)
         return true;
 
-    if (light->light->getType() == LightType::Omni)
+    if (light->light->getType() == LightType::Omni || light->light->getType() == LightType::Spot)
     {
         Vector3 position = light->light->getPosition();
         Sphere sphere;
-        sphere.setup(position, light->light->getRadius());
+        sphere.setup(position, light->light->getAffectDistance());
         if (sphere.isSphereInFrustum(camera->getViewMatrix(), camera->getCullingPlanes()))
             return true;
         return false;
     }
-
     return false;
 }

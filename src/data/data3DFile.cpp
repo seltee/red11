@@ -56,6 +56,8 @@ void Data3DFile::load()
 {
     if (LoaderFBX::loadFBXFile(path, bLoadMeshData ? &meshObjectList : nullptr, &animationsList))
         bLoaded = true;
+    else
+        printf("Unable to load %s\n", path.c_str());
 }
 
 void Data3DFile::freeCache()

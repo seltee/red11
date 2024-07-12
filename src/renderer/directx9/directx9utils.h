@@ -67,16 +67,16 @@ struct DX9LightShaderStruct
     float type;
     float castShadow;
     float texelSize;
-    float data0;
+    float attConstant;
 
     float position[3];
-    float data1;
+    float attLinear;
 
     float normal[3];
-    float data2;
+    float attQuadratic;
 
     float color[3];
-    float data3;
+    float innerRadius;
 };
 
 //

@@ -62,6 +62,31 @@ float ShadowCalculation(sampler2D shadowTexSampler, float3 fragPosLightSpace, fl
     return shadow;
 }
 
+float GeometrySchlickGGX(float NdotV, float roughness)
+{
+    float r = (roughness + 1.0);
+    float k = (r * r) * 0.125;
+    float num = NdotV;
+    float denom = NdotV * (1.0 - k) + k;
+    return num / denom;
+}
+
+float DistributionGGX(float NdotH, float roughness)
+{
+    float a = roughness * roughness;
+    float a2 = a * a;
+    float denom = (NdotH * NdotH * (a2 - 1.0) + 1.0);
+    denom = 3.14159265359 * denom * denom;
+    return a2 / denom;
+}
+
+float GeometrySmith(float NdotV, float NdotL, float roughness)
+{
+    float ggx2 = GeometrySchlickGGX(NdotV, roughness);
+    float ggx1 = GeometrySchlickGGX(NdotL, roughness);
+    return ggx1 * ggx2;
+}
+
 float4 main(VS_Output pin) : SV_TARGET
 {
     // Simplified material properties
@@ -70,7 +95,7 @@ float4 main(VS_Output pin) : SV_TARGET
     if (MaterialData3[3] == 1.0f && alpha < 0.5f)
         discard;
     float3 normalMapSample = MaterialData1[2] == 1.0f ? tex2D(normalTexSampler, pin.texCoord).xyz * 2.0 - 1.0 : float3(0.0f, 0.0f, 1.0);
-    float3 emission = MaterialData2[2] == 1.0f ? (float3)tex2D(emissionTexSampler, pin.texCoord) * (float3)EmissionColor : (float3)EmissionColor;
+    float3 emission = MaterialData2[2] == 1.0f ? tex2D(emissionTexSampler, pin.texCoord).xyz * EmissionColor.xyz : EmissionColor.xyz;
     float metallic = MaterialData1[3] == 1.0f ? tex2D(metallicTexSampler, pin.texCoord).r * MaterialData3[1] : MaterialData3[1];
     float roughness = max(MaterialData2[0] == 1.0f ? tex2D(roughnessTexSampler, pin.texCoord).r * MaterialData3[0] : MaterialData3[0], 0.0001);
     float ao = MaterialData2[1] ? tex2D(aoTexSampler, pin.texCoord).r : 1.0;
@@ -84,11 +109,11 @@ float4 main(VS_Output pin) : SV_TARGET
         normalize(pin.normal));
 
     float3 N = normalize(mul(normalMapSample, TBN));
-    float3 V = normalize((float3)CameraPosition - pin.worldPos);
+    float3 V = normalize(CameraPosition.xyz - pin.worldPos);
     float3 H, L, F;
-    float3 diffuse = (float3)albedo / 3.14159265359;
+    float3 diffuse = albedo.xyz / 3.14159265359;
 
-    float3 color = (float3)albedo * (float3)AmbientLightColor * ao + emission;
+    float3 color = albedo.xyz * AmbientLightColor.xyz * ao + emission;
 
     for (int i = 0; i < 8; i++)
     {
@@ -106,10 +131,17 @@ float4 main(VS_Output pin) : SV_TARGET
             // Approximate GGX for DirectX9 limitations
             float NdotL = max(dot(N, L), 0.0);
             float NdotH = max(dot(N, H), 0.0);
+            float NdotV = max(dot(N, V), 0.0);
             float3 kD = (float3(1.0, 1.0, 1.0) - F) * (1.0 - metallic);
 
             // Simplified specular
-            float3 specular = F * pow(NdotH, 8.0 / roughness);
+            // float3 specular = F * pow(NdotH, 8.0 / roughness);
+
+            float NDF = DistributionGGX(NdotH, roughness);
+            float G = GeometrySmith(NdotV, NdotL, roughness);
+            float3 numerator = NDF * G * F;
+            float denominator = 4.0 * max(NdotV, 0.0) * max(NdotL, 0.0) + 0.0001;
+            float3 specular = numerator / denominator;
 
             float shadow = 1.0f;
             if (Lights[i].type[1] == 1.0f && i < 2)
@@ -119,14 +151,14 @@ float4 main(VS_Output pin) : SV_TARGET
             }
 
             // Accumulate lighting contributions
-            color += (kD * diffuse + specular) * (float3)Lights[i].color * NdotL * shadow;
+            color += (kD * diffuse + specular) * Lights[i].color.xyz * NdotL * shadow;
             continue;
         }
 
         // Omni
         if (Lights[i].type[0] == 2.0f)
         {
-            L = (float3)Lights[i].position - pin.worldPos;
+            L = Lights[i].position.xyz - pin.worldPos;
             float distance = length(L);
             L = normalize(L);
             H = normalize(V + L);
@@ -135,17 +167,63 @@ float4 main(VS_Output pin) : SV_TARGET
             // NdotL and NdotH
             float NdotL = max(dot(N, L), 0.0);
             float NdotH = max(dot(N, H), 0.0);
+            float NdotV = max(dot(N, V), 0.0);
             float3 kD = (float3(1.0, 1.0, 1.0) - F) * (1.0 - metallic);
 
             // Simplified specular
-            float3 specular = F * pow(NdotH, 8.0 / roughness);
+            // float3 specular = F * pow(NdotH, 8.0 / roughness);
+
+            float NDF = DistributionGGX(NdotH, roughness);
+            float G = GeometrySmith(NdotV, NdotL, roughness);
+            float3 numerator = NDF * G * F;
+            float denominator = 4.0 * max(NdotV, 0.0) * max(NdotL, 0.0) + 0.0001;
+            float3 specular = numerator / denominator;
 
             float attenuation = 1.0 / (Lights[i].type[3] +
                                        Lights[i].position[3] * distance +
                                        Lights[i].normal[3] * distance * distance);
             // Accumulate lighting contributions
-            if (attenuation >= 0.01)
-                color += (kD * diffuse + specular) * (float3)Lights[i].color * NdotL * attenuation;
+            if (attenuation >= 0.004)
+                color += (kD * diffuse + specular) * Lights[i].color.xyz * NdotL * attenuation;
+            continue;
+        }
+
+        // SPOT
+        if (Lights[i].type[0] == 3.0f)
+        {
+            L = (Lights[i].position.xyz - pin.worldPos);
+            float distance = length(L);
+            L = normalize(L);
+            H = normalize(V + L);
+            F = float3(0.04, 0.04, 0.04) + (float3(0.96, 0.96, 0.96)) * pow(1.0 - max(dot(H, V), 0.0), 5.0);
+
+            // NdotL and NdotH
+            float NdotL = max(dot(N, L), 0.0);
+            float NdotH = max(dot(N, H), 0.0);
+            float NdotV = max(dot(N, V), 0.0);
+            float3 kD = (float3(1.0, 1.0, 1.0) - F) * (1.0 - metallic);
+
+            float NDF = DistributionGGX(NdotH, roughness);
+            float G = GeometrySmith(NdotV, NdotL, roughness);
+            float3 numerator = NDF * G * F;
+            float denominator = 4.0 * max(NdotV, 0.0) * max(NdotL, 0.0) + 0.0001;
+            float3 specular = numerator / denominator;
+
+            float attenuation = 1.0 / (Lights[i].type[3] +
+                                       Lights[i].position[3] * distance +
+                                       Lights[i].normal[3] * distance * distance);
+
+            // Spot light angle attenuation
+            float3 spotDirection = Lights[i].normal.xyz;
+            float spotEffect = dot(L, spotDirection);
+            float innerCone = Lights[i].color[3];
+            float outerCone = Lights[i].type[2];
+            float spotAttenuation = saturate((spotEffect - outerCone) / (innerCone - outerCone));
+            // Final attenuation combining distance and spot attenuation
+            attenuation *= spotAttenuation;
+
+            // Accumulate lighting contributions
+            color += (kD * diffuse + specular) * Lights[i].color.xyz * NdotL * attenuation;
             continue;
         }
     }

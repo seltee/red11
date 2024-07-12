@@ -95,7 +95,6 @@ public:
                  Attenuation &spotAttenuation,
                  float spotOuterRadius,
                  float spotInnerRadius,
-                 float spotFalloff,
                  Color &spotColor,
                  bool bShadowEnabled = false,
                  LightShadowQuality shadowQuality = LightShadowQuality::Low);
@@ -115,7 +114,7 @@ public:
     inline Attenuation &getAttenuation() { return attenuation; }
     inline float getRadius() { return radius; }
     inline float getInnerRadius() { return innerRadius; }
-    inline float getFalloff() { return falloff; }
+    inline float getAffectDistance() { return affectDistance; }
     inline Color &getColor() { return color; }
     inline bool isShadowsEnabled() { return shadowTextures && bShadowEnabled; }
     inline Texture *getShadowTexture(int number) { return (shadowTextures && number >= 0 && number < numOfCascades) ? shadowTextures[number] : nullptr; }
@@ -149,5 +148,5 @@ protected:
 
     float radius;
     float innerRadius;
-    float falloff;
+    float affectDistance;
 };

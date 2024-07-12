@@ -26,7 +26,6 @@ public:
                           Attenuation spotAttenuation,
                           float spotInnerRadius,
                           float spotOuterRadius,
-                          float spotFalloff,
                           Color spotColor,
                           bool bEnableShadow = false,
                           LightShadowQuality shadowQuality = LightShadowQuality::Low);
