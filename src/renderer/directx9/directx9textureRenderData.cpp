@@ -73,7 +73,7 @@ void Directx9TextureRenderData::createStencilTexture(LPDIRECT3DDEVICE9 d3ddev, T
         dataTexture->getHeight(),
         1,
         D3DUSAGE_DEPTHSTENCIL,
-        D3DFMT_D24S8,
+        D3DFMT_D24X8,
         D3DPOOL::D3DPOOL_DEFAULT,
         &depthDataTexture,
         nullptr);

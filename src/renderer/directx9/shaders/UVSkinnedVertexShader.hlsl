@@ -1,3 +1,5 @@
+#include "common.hlsl"
+
 struct VS_Input
 {
     float3 pos : POSITION;
@@ -49,12 +51,11 @@ VS_Output main(VS_Input vin)
     vout.normal = normalize(normal);
     vout.uv = vin.uv;
 
-    for (int i = 0; i < 2; i++)
+    for (int p = 0; p < 2; p++)
     {
-        float4 shadowCoord = mul(float4(vout.worldPos, 1.0), LightsShadowMatricies[i]);
-        shadowCoord.xy = shadowCoord.xy * 0.5 + 0.5;
-        shadowCoord.y = 1.0 - shadowCoord.y;
-        vout.shadowCoord[i] = shadowCoord.xyz;
+        float4 shadowCoord = mul(float4(vout.worldPos, 1.0), LightsShadowMatricies[p]);
+        shadowCoord.z *= 0.1;
+        vout.shadowCoord[p] = shadowCoord.xyz;
     }
 
     return vout;

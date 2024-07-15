@@ -121,6 +121,9 @@ public:
     inline float getShadowTextureTexelSize() { return texelSize; }
     inline int getNumOfCascades() { return numOfCascades; }
     inline float getCascadeDistance() { return cascadeDistance; }
+    inline float getBufferSize() { return bufferSize; }
+    inline void setShadowMaskTexture(Texture *texture) { this->shadowMaskTexture = texture; }
+    inline Texture *getShadowMaskTexture() { return shadowMaskTexture; };
 
     inline void setShadowViewProjectionMatrix(Matrix4 mShadowViewProjection) { this->mShadowViewProjection = mShadowViewProjection; }
     inline Matrix4 getShadowViewProjectionMatrix() { return mShadowViewProjection; }
@@ -131,6 +134,7 @@ protected:
     bool bShadowEnabled = false;
     LightShadowQuality shadowQuality;
     Texture **shadowTextures = nullptr;
+    Texture *shadowMaskTexture = nullptr;
     int numOfCascades = 0;
     int bufferSize = 0;
     float texelSize = 0.0f;

@@ -65,7 +65,8 @@ protected:
     void renderQueueDepthEqual(Vector3 &cameraPosition, Camera *camera);
     void cleanD3D(void);
 
-    void setupLights(Vector3 objectPosition, float objectRadius);
+    // Bonned meshed limited to 2 shadows per mesh, usual 4 shadows per mesh
+    void setupLights(Vector3 objectPosition, float objectRadius, bool hasBones);
 
     inline void setupMaterialColorRender(Material *material)
     {
@@ -87,6 +88,7 @@ protected:
 
     void renderShadowBuffers(Vector3 &cameraPosition, Vector3 &cameraFrowardVector);
     void renderShadowBuffersDirectional(Vector3 &cameraPosition, Vector3 &cameraFrowardVector, Light *light);
+    void renderShadowBuffersSpot(Light *light);
 
     Color ambientColor = Color(1.0f, 1.0f, 1.0f);
 
@@ -95,6 +97,10 @@ protected:
 
     Mesh *cubeMesh = nullptr;
     Material *lineMaterial = nullptr;
+
+    // Common textures
+    Texture *white = nullptr;
+    Texture *black = nullptr;
 
     // To render depth into depth buffer without color
     IDirect3DVertexShader9 *pUVSimpleVertexShader = nullptr;

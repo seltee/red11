@@ -68,8 +68,8 @@ Light::Light(Vector3 &spotDirection,
     this->attenuation = spotAttenuation;
     this->position = Vector3(0.0f, 0.0f, 0.0f);
     this->color = spotColor;
-    this->radius = cosf(spotOuterRadius);
-    this->innerRadius = cosf(spotInnerRadius);
+    this->radius = spotOuterRadius;
+    this->innerRadius = spotInnerRadius;
     this->affectDistance = spotAttenuation.calcRadius();
     this->bShadowEnabled = bShadowEnabled;
     this->shadowQuality = shadowQuality;
@@ -81,19 +81,10 @@ float Light::isAffecting(Vector3 point, float radius)
 {
     if (type == LightType::Directional)
         return 0.00001f;
-    if (type == LightType::Omni)
+    if (type == LightType::Omni || type == LightType::Spot)
     {
         float distance = glm::distance(position, point);
-        // if (distance < radius + this->radius)
         return distance + 0.000011f; // to make it always more far than directional lights
-        // return 0.0f;
-    }
-    if (type == LightType::Spot)
-    {
-        float distance = glm::distance(position, point);
-        // if (distance < radius + this->radius)
-        return distance + 0.000011f; // to make it always more far than directional lights
-        // return 0.0f;
     }
     return 0.0f;
 }
@@ -118,28 +109,28 @@ void Light::rebuildShadowTextures()
         case LightShadowQuality::Low:
             numOfCascades = 1;
             bufferSize = 1024;
-            cascadeDistance = 2.4f;
+            cascadeDistance = 2.6f;
             break;
         case LightShadowQuality::Medium:
             bufferSize = 1024;
             numOfCascades = 1;
-            cascadeDistance = 2.4f;
+            cascadeDistance = 2.6f;
             break;
         case LightShadowQuality::High:
             bufferSize = 2048;
             numOfCascades = 1;
-            cascadeDistance = 3.2f;
+            cascadeDistance = 3.6f;
             break;
         case LightShadowQuality::Ultra:
             bufferSize = 2048;
             numOfCascades = 1;
-            cascadeDistance = 3.2f;
+            cascadeDistance = 3.6f;
             break;
         case LightShadowQuality::AmountOfValues:
         case LightShadowQuality::Maximum:
             bufferSize = 4096;
             numOfCascades = 1;
-            cascadeDistance = 4.4f;
+            cascadeDistance = 5.4f;
             break;
         }
     }
@@ -169,7 +160,28 @@ void Light::rebuildShadowTextures()
     }
 
     if (type == LightType::Spot)
-        return;
+    {
+        numOfCascades = 1;
+        switch (shadowQuality)
+        {
+        case LightShadowQuality::Low:
+            bufferSize = 128;
+            break;
+        case LightShadowQuality::Medium:
+            bufferSize = 256;
+            break;
+        case LightShadowQuality::High:
+            bufferSize = 512;
+            break;
+        case LightShadowQuality::Ultra:
+            bufferSize = 1024;
+            break;
+        case LightShadowQuality::AmountOfValues:
+        case LightShadowQuality::Maximum:
+            bufferSize = 2048;
+            break;
+        }
+    }
 
     texelSize = 1.0f / ((float)bufferSize);
 

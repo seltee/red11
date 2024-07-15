@@ -53,9 +53,16 @@ APPMAIN
     doorMaterial->setRoughness(0.7f);
 
     auto lampAlbedo = new TextureFile("WallAddTextureAlbedo", "./data/demo/lamp_albedo.jpg");
-    auto lampEmission = new TextureFile("WallAddTextureAlbedo", "./data/demo/lamp_emission.jpg");
+    auto lampEmission = new TextureFile("WallAddTextureEmission", "./data/demo/lamp_emission.jpg");
     auto lampMaterial = new MaterialSimple(lampAlbedo, nullptr, lampEmission);
     lampMaterial->setRoughness(0.5f);
+
+    auto paintBoardAlbedo = new TextureFile("PaintBoardTextureAlbedo", "./data/demo/paint_board_albedo.jpg");
+    auto paintBoardRoughness = new TextureFile("PaintBoardTextureRoughness", "./data/demo/paint_board_roughness.jpg");
+    auto paintBoardMaterial = new MaterialSimple(paintBoardAlbedo, nullptr, nullptr, nullptr, paintBoardRoughness);
+    paintBoardMaterial->setRoughness(0.8f);
+
+    auto flashlight = new TextureFile("FlashlightTexture", "./data/demo/flashlight.jpg");
 
     // Room Meshes
     auto roomFloorFileData = new Data3DFile("./data/demo/room_floor.fbx");
@@ -64,9 +71,12 @@ APPMAIN
     auto ceilingFileData = new Data3DFile("./data/demo/room_ceiling.fbx");
     auto doorFileData = new Data3DFile("./data/demo/room_door.fbx");
     auto lampFileData = new Data3DFile("./data/demo/lamp.fbx");
+    auto paintBoardFileData = new Data3DFile("./data/demo/paint_board.fbx");
+
+    auto cubeMesh = Red11::getMeshBuilder()->createCube(0.1f);
 
     auto scene = Red11::createScene();
-    scene->setAmbientLight(Color(0.13f, 0.12f, 0.1f));
+    scene->setAmbientLight(Color(0.15f, 0.14f, 0.1f));
 
     const float scale = 0.002f;
     const float scaleNormal = scale / 0.01f;
@@ -92,9 +102,13 @@ APPMAIN
     doorComponent->setMaterial(doorMaterial);
     doorComponent->setScale(scale);
 
+    auto paintBoardComponent = room->createComponentMesh(paintBoardFileData->getAsMesh());
+    paintBoardComponent->setMaterial(paintBoardMaterial);
+    paintBoardComponent->setScale(scale);
+
     std::vector<Actor *> lightActors;
-    Color lightColor = Color(24.0f, 22.0f, 18.0f);
-    auto generateSpotLight = [&](const Vector3 &center)
+    Color lightColor = Color(46.0f, 38.0f, 34.0f);
+    auto generateSpotLight = [&](const Vector3 &center, bool shadows)
     {
         auto light = scene->createActor<Actor>("Light");
         light->setPosition(center);
@@ -104,19 +118,36 @@ APPMAIN
         lightComponent->setScale(scale);
 
         auto lightSpot = light->createComponent<ComponentLight>();
-        lightSpot->setupSpot(Vector3(0, -1.0f, 0), Attenuation(4.0f, 1.0f, 6.0f), glm::radians(64.0f), glm::radians(32.0f), lightColor, true, LightShadowQuality::High);
-        lightSpot->setPosition(Vector3(0, -0.1f, 0));
+        lightSpot->setupSpot(Vector3(0, -1.0f, 0), Attenuation(4.0f, 1.0f, 6.0f), glm::radians(58.0f), glm::radians(24.0f), lightColor, shadows, LightShadowQuality::Ultra);
+        lightSpot->setPosition(Vector3(0, -0.069f, 0));
+        lightSpot->getLight()->setShadowMaskTexture(flashlight);
 
         lightActors.push_back(light);
+
+        return lightSpot;
     };
 
-    generateSpotLight(Vector3(-1.25f, 3.0f, 1.36f) * scaleNormal);
-    generateSpotLight(Vector3(-1.25f, 3.0f, 8.36f) * scaleNormal);
-    generateSpotLight(Vector3(-8.25f, 3.0f, 1.36f) * scaleNormal);
+    auto lightSpot = generateSpotLight(Vector3(-1.25f, 3.0f, 1.36f) * scaleNormal, true);
+    generateSpotLight(Vector3(-1.25f, 3.0f, 8.36f) * scaleNormal, true);
+    generateSpotLight(Vector3(-8.25f, 3.0f, 1.36f) * scaleNormal, true);
 
+    // Light shadow presenter
+    auto lightShadowPresenter = scene->createActor<Actor>("LightShadowPresenter");
+    auto lightShadowComponent = lightShadowPresenter->createComponentMesh(cubeMesh);
+    auto lightShadowMaterial = new MaterialSimple(lightSpot->getLight()->getShadowTexture(0));
+    lightShadowMaterial->setAlbedoColor(Color(1, 0, 0));
+    lightShadowComponent->setMaterial(lightShadowMaterial);
+    lightShadowComponent->setPosition(Vector3(-1.25f, 0.3f, 2.4f) * scaleNormal);
+    lightShadowComponent->setScale(Vector3(1.2f, 1.2f, 1.2f));
+
+    auto lightShadowCasterComponent = lightShadowPresenter->createComponentMesh(cubeMesh);
+    lightShadowCasterComponent->setMaterial(lightShadowMaterial);
+    lightShadowCasterComponent->setScale(Vector3(0.2f, 0.2f, 0.2f));
+
+    // Camera and controls
     Camera camera;
     Entity cameraTransform;
-    cameraTransform.setPosition(-0.4, 0.4, 0.4);
+    cameraTransform.setPosition(-0.6, 0.6, 0.6);
 
     CameraControl cameraControl;
     memset(&cameraControl, 0, sizeof(CameraControl));
@@ -168,11 +199,10 @@ APPMAIN
         accDelta += delta;
 
         float add = 0.0f;
-        float power = fabsf(sinf(accDelta * 0.2f)) + 0.1f;
-
         for (auto &light : lightActors)
         {
-            light->setRotation(Vector3(cos(accDelta + add) * 0.05f * power, 0, 0));
+            float rCos = cos(accDelta * 1.75f + add);
+            light->setRotation(Vector3(rCos * 0.05f, 0, 0));
             add += 1.0f;
         }
 
@@ -190,10 +220,12 @@ APPMAIN
         cameraRX = glm::clamp(cameraRX, -1.2f, 1.0f);
         cameraTransform.setRotation(Vector3(cameraRX, cameraRY, 0));
 
-        auto forward = cameraTransform.getRotation() * Vector3(0, 0, 1.6f);
+        auto forward = cameraTransform.getRotation() * Vector3(0, 0, 1.2f);
         cameraTransform.translate(forward * delta * cameraControl.move);
-        auto side = cameraTransform.getRotation() * Vector3(1.6f, 0, 0);
+        auto side = cameraTransform.getRotation() * Vector3(1.2f, 0, 0);
         cameraTransform.translate(side * delta * cameraControl.sideMove);
+
+        lightShadowCasterComponent->setPosition(cameraTransform.getPosition());
 
         camera.updateViewMatrix(cameraTransform.getModelMatrix());
         scene->render(renderer, &camera);

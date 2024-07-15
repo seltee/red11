@@ -264,8 +264,14 @@ void DirectX9Renderer::initD3D(HWND hWnd, bool bIsFullscreen, int width, int hei
         d3ddev->SetSamplerState(i, D3DSAMP_BORDERCOLOR, D3DCOLOR_XRGB(255, 255, 255));
         d3ddev->SetSamplerState(i, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);
         d3ddev->SetSamplerState(i, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
-        d3ddev->SetSamplerState(i, D3DSAMP_MIPFILTER, D3DTEXF_LINEAR);
+        d3ddev->SetSamplerState(i, D3DSAMP_MIPFILTER, D3DTEXF_NONE);
     }
+
+    // basic textures
+    unsigned char whiteData[4] = {255, 255, 255, 255};
+    unsigned char blackData[4] = {0, 0, 0, 255};
+    white = new Texture("WhiteTexture", TextureType::Normal, 1, 1, whiteData);
+    black = new Texture("BlackTexture", TextureType::Normal, 1, 1, blackData);
 }
 
 void DirectX9Renderer::resizeD3D(int width, int height)
@@ -391,7 +397,7 @@ void DirectX9Renderer::cleanD3D(void)
     }
 }
 
-void DirectX9Renderer::setupLights(Vector3 objectPosition, float objectRadius)
+void DirectX9Renderer::setupLights(Vector3 objectPosition, float objectRadius, bool hasBones)
 {
     // registers for lights:
     // 20 - 52 - light data
@@ -416,8 +422,10 @@ void DirectX9Renderer::setupLights(Vector3 objectPosition, float objectRadius)
     if (affectingLights.size() > MAX_LIGHTS_PER_MESH_COUNT)
         affectingLights.resize(MAX_LIGHTS_PER_MESH_COUNT);
 
+    // Bonned meshed limited to 2 shadows per mesh, usual 4 shadows per mesh
     int baseReg = 20;
     int shadowMatrixBaseReg = 52;
+    int shaodwMatrixMaxReg = hasBones ? 60 : 68;
     int shadowTextureBaseReg = 8;
     DX9LightShaderStruct dxLight;
     memset(&dxLight, 0, sizeof(DX9LightShaderStruct));
@@ -435,7 +443,7 @@ void DirectX9Renderer::setupLights(Vector3 objectPosition, float objectRadius)
         {
             Color lightColor = light->getColor();
             Vector3 lightDirection = light->getNormal();
-            bool castShadow = light->isShadowsEnabled() && (shadowMatrixBaseReg < 60);
+            bool castShadow = light->isShadowsEnabled() && (shadowMatrixBaseReg < shaodwMatrixMaxReg);
 
             dxLight.type = 1.0f;
             dxLight.castShadow = castShadow ? 1.0f : 0.0f;
@@ -496,12 +504,12 @@ void DirectX9Renderer::setupLights(Vector3 objectPosition, float objectRadius)
             Color lightColor = light->getColor();
             Vector3 lightDirection = light->getNormal();
             Vector3 lightPosition = light->getPosition();
-            bool castShadow = light->isShadowsEnabled() && (shadowMatrixBaseReg < 60);
+            bool castShadow = light->isShadowsEnabled() && (shadowMatrixBaseReg < shaodwMatrixMaxReg);
 
             dxLight.type = 3.0f;
             dxLight.castShadow = castShadow ? 1.0f : 0.0f;
-            dxLight.texelSize = light->getRadius();
-            dxLight.innerRadius = light->getInnerRadius();
+            dxLight.texelSize = cosf(light->getRadius());
+            dxLight.innerRadius = cosf(light->getInnerRadius());
             dxLight.attConstant = light->getAttenuation().constant;
             dxLight.attLinear = light->getAttenuation().linear;
             dxLight.attQuadratic = light->getAttenuation().quadratic;
@@ -519,6 +527,22 @@ void DirectX9Renderer::setupLights(Vector3 objectPosition, float objectRadius)
             dxLight.color[2] = lightColor.b;
 
             d3ddev->SetPixelShaderConstantF(baseReg, (const float *)&dxLight, 4);
+
+            if (castShadow)
+            {
+                Directx9TextureRenderData *shadowTexture = data.getTextureRenderData(light->getShadowTexture(0));
+                if (shadowTexture)
+                {
+                    Directx9TextureRenderData *shadowMaskTexture = data.getTextureRenderData(light->getShadowMaskTexture());
+                    if (!shadowMaskTexture)
+                        shadowMaskTexture = data.getTextureRenderData(white);
+
+                    d3ddev->SetTexture(shadowTextureBaseReg, shadowTexture->texture);
+                    if (shadowMaskTexture)
+                        d3ddev->SetTexture(shadowTextureBaseReg + 1, shadowMaskTexture->texture);
+                }
+                d3ddev->SetVertexShaderConstantF(shadowMatrixBaseReg, (const float *)value_ptr(light->getShadowViewProjectionMatrix()), 4);
+            }
         }
         baseReg += 4;
         shadowMatrixBaseReg += 4;
@@ -528,7 +552,7 @@ void DirectX9Renderer::setupLights(Vector3 objectPosition, float objectRadius)
 
 void DirectX9Renderer::renderMeshColorData(Camera *camera, Vector3 &cameraPosition, QueuedMeshRenderData *mesh)
 {
-    setupLights(Vector3(*mesh->model * Vector4(mesh->centroid, 1.0f)), 1.0f);
+    setupLights(Vector3(*mesh->model * Vector4(mesh->centroid, 1.0f)), 1.0f, mesh->mesh->hasBones());
     setupMaterialColorRender(mesh->material);
 
     if (mesh->bones)
@@ -626,13 +650,14 @@ void DirectX9Renderer::renderShadowBuffers(Vector3 &cameraPosition, Vector3 &cam
         {
             if (data.queueActiveLights[i]->light->getType() == LightType::Directional)
                 renderShadowBuffersDirectional(cameraPosition, cameraFrowardVector, data.queueActiveLights[i]->light);
+            if (data.queueActiveLights[i]->light->getType() == LightType::Spot)
+                renderShadowBuffersSpot(data.queueActiveLights[i]->light);
         }
     }
 }
 
 void DirectX9Renderer::renderShadowBuffersDirectional(Vector3 &cameraPosition, Vector3 &cameraFrowardVector, Light *light)
 {
-    Vector3 forward = Vector3(0.0f, 0.0f, -1.0f);
     IDirect3DSurface9 *originalRenderTarget = NULL;
     IDirect3DSurface9 *originalDepthStencil = NULL;
     Camera camera;
@@ -649,10 +674,10 @@ void DirectX9Renderer::renderShadowBuffersDirectional(Vector3 &cameraPosition, V
         if (!cascade)
             continue;
 
-        Vector3 lightShotPosition = cameraPosition + light->getNormal() * cascadeSize * -2.0f + cameraFrowardVector * 0.5f * cascadeSize;
-        camera.setupAsOrthographic(cascadeSize, cascadeSize, cascadeSize * -4.0f, cascadeSize * 4.0f);
+        Vector3 lightShotPosition = cameraPosition + light->getNormal() * cascadeSize * -4.0f + cameraFrowardVector * 0.2f * cascadeSize;
+        camera.setupAsOrthographic(cascadeSize, cascadeSize, cascadeSize * -8.0f, cascadeSize * 8.0f);
         cameraEntity.setPosition(lightShotPosition);
-        cameraEntity.setRotation(glm::rotation(forward, light->getNormal()));
+        cameraEntity.rotateByNormal(light->getNormal(), Vector3(0.0f, 0.0f, -1.0f));
         camera.updateViewMatrix(cameraEntity.getModelMatrix());
 
         d3ddev->SetRenderTarget(0, cascade->surface);
@@ -665,6 +690,44 @@ void DirectX9Renderer::renderShadowBuffersDirectional(Vector3 &cameraPosition, V
         if (i == 0)
             light->setShadowViewProjectionMatrix(glm::transpose(*camera.getProjectionMatrix() * *camera.getViewMatrix()));
     }
+
+    d3ddev->SetRenderTarget(0, originalRenderTarget);
+    d3ddev->SetDepthStencilSurface(originalDepthStencil);
+}
+
+void DirectX9Renderer::renderShadowBuffersSpot(Light *light)
+{
+    Directx9TextureRenderData *shadowData = data.getTextureRenderData(light->getShadowTexture(0));
+    if (!shadowData)
+        return;
+
+    IDirect3DSurface9 *originalRenderTarget = NULL;
+    IDirect3DSurface9 *originalDepthStencil = NULL;
+    Camera camera;
+    Entity cameraEntity;
+
+    Vector3 &lightPosition = light->getPosition();
+    Vector3 &lightNormal = light->getNormal();
+    float outerRadius = light->getRadius();
+
+    cameraEntity.setPosition(lightPosition);
+    cameraEntity.rotateByNormal(-lightNormal, Vector3(0.0f, 0.0f, -1.0f));
+
+    d3ddev->GetRenderTarget(0, &originalRenderTarget);
+    d3ddev->GetDepthStencilSurface(&originalDepthStencil);
+
+    camera.setupAsPerspective(light->getBufferSize(), light->getBufferSize(), 0.001f, 16.0f, outerRadius * 2.2f);
+    camera.updateViewMatrix(cameraEntity.getModelMatrix());
+
+    d3ddev->SetRenderTarget(0, shadowData->surface);
+    d3ddev->SetDepthStencilSurface(shadowData->depthDataSurface);
+
+    d3ddev->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_XRGB(0, 0, 0), 1.0f, 0);
+    d3ddev->Clear(0, NULL, D3DCLEAR_ZBUFFER, D3DCOLOR_XRGB(0, 0, 0), 1.0f, 0);
+
+    renderQueueLightDepthBuffer(lightPosition, &camera);
+
+    light->setShadowViewProjectionMatrix(glm::transpose(*camera.getProjectionMatrix() * *camera.getViewMatrix()));
 
     d3ddev->SetRenderTarget(0, originalRenderTarget);
     d3ddev->SetDepthStencilSurface(originalDepthStencil);

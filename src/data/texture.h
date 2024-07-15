@@ -18,6 +18,7 @@ class Texture
 public:
     EXPORT Texture(TextureType textureType);
     EXPORT Texture(std::string name, TextureType textureType);
+    EXPORT Texture(std::string name, TextureType textureType, int width, int height, unsigned char *data);
     EXPORT virtual ~Texture();
 
     EXPORT virtual unsigned char *getBufferData();

@@ -21,6 +21,13 @@ Texture::Texture(std::string name, TextureType textureType)
     textures.push_back(this);
 }
 
+Texture::Texture(std::string name, TextureType textureType, int width, int height, unsigned char *data)
+{
+    Texture(name, textureType);
+    setBuffer(width, height);
+    memcpy(this->data, data, width * height * 4);
+}
+
 Texture::~Texture()
 {
     releaseBuffer();

@@ -19,6 +19,7 @@ VS_Output main(VS_Input vin)
 {
     VS_Output vout;
     vout.pos = mul(float4(vin.pos, 1.f), WorldViewProj);
-    vout.depth = vout.pos.z;
+    vout.depth = vout.pos.z * 0.1;
+    // vout.depth = vout.pos.z / vout.pos.w;
     return vout;
 }

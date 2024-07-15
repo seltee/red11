@@ -176,8 +176,7 @@ APPMAIN
     // Light
     auto lightSun = scene->createActor<Actor>("Light");
     auto lightSunComponent = lightSun->createComponent<ComponentLight>();
-    int shadowQuality = (int)LightShadowQuality::High;
-    lightSunComponent->setupDirectional(glm::normalize(Vector3(-1.0f, -1.0f, -1.0)), Color(3.8f, 3.4f, 3.2f), true, (LightShadowQuality)shadowQuality);
+    lightSunComponent->setupDirectional(glm::normalize(Vector3(-1.0f, -1.0f, -1.0)), Color(3.8f, 3.4f, 3.2f), true, LightShadowQuality::Maximum);
 
     Camera camera;
     Entity cameraTransform;

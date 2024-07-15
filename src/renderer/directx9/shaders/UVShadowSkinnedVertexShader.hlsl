@@ -37,7 +37,7 @@ VS_Output main(VS_Input vin)
     VS_Output vout;
 
     vout.pos = mul(position, ViewProj);
-    vout.depth = vout.pos.z;
+    vout.depth = vout.pos.z * 0.1;
 
     return vout;
 }

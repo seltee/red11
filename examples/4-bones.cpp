@@ -93,13 +93,13 @@ APPMAIN
     auto lightShadowPresenter = scene->createActor<Actor>("LightShadowPresenter");
     auto lightShadowComponent = lightShadowPresenter->createComponentMesh(cubeMesh);
     auto lightShadowMaterial = new MaterialSimple(lightSunComponent->getLight()->getShadowTexture(0));
-    lightShadowMaterial->setAlbedoColor(Color(1, 0, 0));
+    lightShadowMaterial->setAlbedoColor(Color(8.0f, 0, 0));
     lightShadowComponent->setMaterial(lightShadowMaterial);
     lightShadowComponent->setPosition(0.0f, 0.9f, -2.5f);
     lightShadowComponent->setScale(Vector3(4.0f, 4.0f, 4.0f));
 
     // rotating lights
-    const int omniLightsAmount = 20;
+    const int omniLightsAmount = 7;
     Actor *omniActors[omniLightsAmount];
     for (int i = 0; i < omniLightsAmount; i++)
     {

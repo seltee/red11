@@ -106,6 +106,11 @@ public:
         this->rotation *= r;
         bIsTransformationDirty = true;
     }
+    inline void rotateByNormal(Vector3 normal, Vector3 up = Vector3(0.0f, 1.0f, 0.0f))
+    {
+        this->rotation = glm::rotation(up, normal);
+        bIsTransformationDirty = true;
+    }
 
     inline Quat getRotation() { return rotation; };
     inline Vector3 getRotationEuler() { return glm::eulerAngles(rotation); };

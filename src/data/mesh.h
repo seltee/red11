@@ -138,6 +138,8 @@ public:
     inline void setCastsShadow(bool bCastsShadow) { this->bCastsShadow = bCastsShadow; }
     inline bool isCastsShadow() { return bCastsShadow; }
 
+    inline bool hasBones() { return deforms.size() > 0; }
+
 protected:
     void rebuildTangents();
     void getTangentBitangent(VertexDataUV &v1, VertexDataUV &v2, VertexDataUV &v3, Vector3 *tangent, Vector3 *bitangent);
