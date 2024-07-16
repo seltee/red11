@@ -31,7 +31,7 @@ inline float GeometrySmith(float NdotV, float NdotL, float roughness)
     return ggx1 * ggx2;
 }
 
-inline float ShadowCalculation(sampler2D shadowTexSampler, float3 fragPosLightSpace, float3 lightDir, float3 Normal, float texelSize, float bias)
+inline float ShadowCalculation(sampler2D shadowTexSampler, float3 fragPosLightSpace, float texelSize, float bias)
 {
     float2 projCoords = fragPosLightSpace.xy;
     float currentDepth = fragPosLightSpace.z;
@@ -54,7 +54,7 @@ inline float ShadowCalculation(sampler2D shadowTexSampler, float3 fragPosLightSp
     return shadow * edge;
 }
 
-inline float ShadowCalculationL(sampler2D shadowTexSampler, float3 fragPosLightSpace, float3 lightDir, float3 Normal, float bias)
+inline float ShadowCalculationL(sampler2D shadowTexSampler, float3 fragPosLightSpace, float bias)
 {
     float depth = tex2D(shadowTexSampler, fragPosLightSpace.xy).r;
     return step(step(fragPosLightSpace.z - bias, depth) + fragPosLightSpace.z, 1.0);
@@ -135,7 +135,7 @@ inline float3 CaclLightWithShadow(
             shadowCoords.xy = shadowCoords.xy * 0.5 + 0.5;
             shadowCoords.y = 1.0 - shadowCoords.y;
             float bias = max(0.0002 * (1.0 - dot(N, L)), 0.00004);
-            shadow = 1.0 - ShadowCalculation(lightShadowTexSampler, shadowCoords, L, polygonNormal, light.type[2], bias);
+            shadow = 1.0 - ShadowCalculation(lightShadowTexSampler, shadowCoords, light.type[2], bias);
         }
         if (type == 3.0f)
         {
@@ -143,7 +143,7 @@ inline float3 CaclLightWithShadow(
             shadowCoords.y = 1.0 - shadowCoords.y;
             float bias = max(0.04 * (1.0 - dot(N, L)), 0.0032);
             float mask = tex2D(lightAdditionShadowTexSampler, shadowCoords.xy).r;
-            shadow = (1.0 - ShadowCalculationL(lightShadowTexSampler, shadowCoords, L, polygonNormal, bias)) * mask;
+            shadow = (1.0 - ShadowCalculationL(lightShadowTexSampler, shadowCoords, bias)) * mask;
         }
     }
 

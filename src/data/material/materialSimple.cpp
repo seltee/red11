@@ -102,6 +102,12 @@ bool MaterialSimple::isAlphaPhase()
     return this->display > MaterialDisplay::SolidMask;
 }
 
+void MaterialSimple::setDisplayMode(MaterialDisplay mode)
+{
+    this->display = mode;
+    updIndex++;
+}
+
 void MaterialSimple::setAlbedoColor(Color albedoColor)
 {
     this->albedoColor = albedoColor;

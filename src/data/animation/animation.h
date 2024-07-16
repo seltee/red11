@@ -4,21 +4,22 @@
 #pragma once
 #include "data/entity.h"
 #include "animationTarget.h"
+#include "utils/utils.h"
 #include <string>
 #include <vector>
 
 class Animation
 {
 public:
-    Animation(std::string name);
+    EXPORT Animation(std::string name);
 
-    AnimationTarget *getAnimationTarget(std::string &targetName);
-    AnimationTarget *createAnimationTarget(std::string &targetName);
-    AnimationTarget *getTargetByName(std::string &targetName);
+    EXPORT AnimationTarget *getAnimationTarget(std::string &targetName);
+    EXPORT AnimationTarget *createAnimationTarget(std::string &targetName);
+    EXPORT AnimationTarget *getTargetByName(std::string &targetName);
 
-    bool getAnimationTransformation(std::string &name, float timeStamp, Entity *entity);
+    EXPORT bool getAnimationTransformation(std::string &name, float timeStamp, Entity *entity);
 
-    void recalcAnimationLength();
+    EXPORT void recalcAnimationLength();
 
     inline float getTimeLength() { return timeLength; }
 

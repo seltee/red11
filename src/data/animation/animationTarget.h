@@ -25,7 +25,10 @@ public:
 
     EXPORT float getAnimationTimeLength();
 
+    // interpolates between 2 frames
     EXPORT void getTransformByTime(float timeStamp, Entity *entity);
+    // picks static
+    EXPORT void getTransformByTimeFixedFrame(float timeStamp, Entity *entity);
 
     inline bool isName(std::string targetName) { return this->targetName == targetName; }
     inline std::string getTargetName() { return targetName; }

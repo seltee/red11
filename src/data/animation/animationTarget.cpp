@@ -46,3 +46,18 @@ void AnimationTarget::getTransformByTime(float timeStamp, Entity *entity)
         }
     }
 }
+
+void AnimationTarget::getTransformByTimeFixedFrame(float timeStamp, Entity *entity)
+{
+    int size = keys.size();
+    for (int i = 0; i < size; i++)
+    {
+        if (timeStamp <= keys[i].timeStamp)
+        {
+            entity->setPosition(keys[i].position);
+            entity->setRotation(keys[i].rotation);
+            entity->setScale(keys[i].scale);
+            break;
+        }
+    }
+}

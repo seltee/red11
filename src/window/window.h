@@ -42,6 +42,8 @@ public:
     EXPORT void udpateRealSize(int width, int height);
 
     virtual void setMousePosition(int x, int y, bool generateMoveEvents = false) = 0;
+    virtual void setCursorVisibility(bool bState) = 0;
+    virtual bool isFocused() = 0;
 
 protected:
     WindowState state;

@@ -29,6 +29,14 @@ LRESULT CALLBACK WindowProcedure(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
         PostQuitMessage(0);
         break;
 
+    case WM_SETFOCUS:
+        window->setIsFocused(true);
+        break;
+
+    case WM_KILLFOCUS:
+        window->setIsFocused(false);
+        break;
+
     case WM_KEYDOWN:
         inputData.keyboard.keyCode = (KeyboardCode)wParam;
         inputData.keyboard.state = 1;
@@ -242,12 +250,25 @@ void WindowsWindow::setResolution(int width, int height)
 
 void WindowsWindow::setMousePosition(int x, int y, bool generateMoveEvents)
 {
-    POINT p = {x, y};
-    ClientToScreen(hWnd, &p);
-    if (SetCursorPos(p.x, p.y))
+    if (bIsFocused)
     {
-        InputProvider::setMousePosition(x, y, generateMoveEvents);
+        POINT p = {x, y};
+        ClientToScreen(hWnd, &p);
+        if (SetCursorPos(p.x, p.y))
+        {
+            InputProvider::setMousePosition(x, y, generateMoveEvents);
+        }
     }
+}
+
+void WindowsWindow::setCursorVisibility(bool state)
+{
+    ShowCursor(state);
+}
+
+bool WindowsWindow::isFocused()
+{
+    return bIsFocused;
 }
 
 int WindowsWindow::getStyleForState(WindowState &state)
@@ -266,6 +287,11 @@ int WindowsWindow::getStyleForState(WindowState &state)
         style = WS_OVERLAPPEDWINDOW | WS_SIZEBOX | WS_VISIBLE;
     }
     return style;
+}
+
+void WindowsWindow::setIsFocused(bool bState)
+{
+    bIsFocused = bState;
 }
 
 #endif

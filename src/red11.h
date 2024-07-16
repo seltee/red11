@@ -7,6 +7,7 @@
 #include "utils/meshBuilder.h"
 #include "utils/deltaCounter.h"
 #include "utils/jobQueue.h"
+#include "utils/logger.h"
 #include "utils/glm/glm.hpp"
 #include "utils/glm/gtx/vector_angle.inl"
 #include "scene/scene.h"
@@ -57,9 +58,12 @@ public:
 
     EXPORT static DebugEntities *getDebugEntities();
 
+    EXPORT static Logger *getLogger();
+
 protected:
     static MeshBuilder *meshBuilder;
     static InputProvider *globalInputProvider;
     static JobQueue *jobQueue;
     static DebugEntities *debugEntities;
+    static Logger *logger;
 };

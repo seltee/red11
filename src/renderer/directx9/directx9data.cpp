@@ -103,6 +103,9 @@ void Directx9data::remakeActiveQueueForCamera(Camera *camera)
 
 bool Directx9data::isMeshVisibleToCamera(QueuedMeshRenderData *mesh, Camera *camera)
 {
+    // todo proper bones check
+    if (mesh->bones)
+        return true;
     Matrix4 mv = *camera->getViewMatrix() * *mesh->model;
     if (mesh->mesh->getBoundVolumeSphere().isSphereInFrustum(&mv, camera->getCullingPlanes()))
         return true;

@@ -10,6 +10,7 @@ MeshBuilder *Red11::meshBuilder = nullptr;
 InputProvider *Red11::globalInputProvider = nullptr;
 JobQueue *Red11::jobQueue = nullptr;
 DebugEntities *Red11::debugEntities = nullptr;
+Logger *Red11::logger = nullptr;
 
 Red11::Red11()
 {
@@ -69,4 +70,11 @@ DebugEntities *Red11::getDebugEntities()
     if (!debugEntities)
         debugEntities = new DebugEntities();
     return debugEntities;
+}
+
+Logger *Red11::getLogger()
+{
+    if (!logger)
+        logger = new Logger("log.txt");
+    return logger;
 }

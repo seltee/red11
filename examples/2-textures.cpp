@@ -20,6 +20,7 @@ APPMAIN
     Red11::openConsole();
 
     auto window = Red11::createWindow("Textures/Input Example", WINDOW_WIDTH, WINDOW_HEIGHT, false);
+    window->setCursorVisibility(false);
     auto renderer = Red11::createRenderer(window, RendererType::DirectX9);
 
     // Textures & Materials

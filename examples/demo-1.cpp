@@ -15,6 +15,7 @@ struct CameraControl
     float sideMove;
     float rotateX;
     float rotateY;
+    bool freeCamera;
 };
 
 APPMAIN
@@ -22,6 +23,7 @@ APPMAIN
     Red11::openConsole();
 
     auto window = Red11::createWindow("Demo 1", WINDOW_WIDTH, WINDOW_HEIGHT, 0);
+    window->setCursorVisibility(false);
     auto renderer = Red11::createRenderer(window, RendererType::DirectX9);
 
     // Textures & Materials
@@ -62,6 +64,12 @@ APPMAIN
     auto paintBoardMaterial = new MaterialSimple(paintBoardAlbedo, nullptr, nullptr, nullptr, paintBoardRoughness);
     paintBoardMaterial->setRoughness(0.8f);
 
+    auto mothAlbedo = new TextureFile("MothTextureAlbedo", "./data/demo/moth_albedo.png");
+    auto mothEmission = new TextureFile("MothTextureEmission", "./data/demo/moth_emission.jpg");
+    auto mothMaterial = new MaterialSimple(mothAlbedo, nullptr, mothEmission);
+    mothMaterial->setDisplayMode(MaterialDisplay::SolidMask);
+    mothMaterial->setRoughness(0.6f);
+
     auto flashlight = new TextureFile("FlashlightTexture", "./data/demo/flashlight.jpg");
 
     // Room Meshes
@@ -72,6 +80,8 @@ APPMAIN
     auto doorFileData = new Data3DFile("./data/demo/room_door.fbx");
     auto lampFileData = new Data3DFile("./data/demo/lamp.fbx");
     auto paintBoardFileData = new Data3DFile("./data/demo/paint_board.fbx");
+    auto mothFileData = new Data3DFile("./data/demo/moth.fbx");
+    auto cameraFileData = new Data3DFile("./data/demo/camera.fbx");
 
     auto cubeMesh = Red11::getMeshBuilder()->createCube(0.1f);
 
@@ -108,7 +118,7 @@ APPMAIN
 
     std::vector<Actor *> lightActors;
     Color lightColor = Color(46.0f, 38.0f, 34.0f);
-    auto generateSpotLight = [&](const Vector3 &center, bool shadows)
+    auto generateSpotLight = [&](const Vector3 &center, bool shadows, bool moth = false)
     {
         auto light = scene->createActor<Actor>("Light");
         light->setPosition(center);
@@ -124,25 +134,29 @@ APPMAIN
 
         lightActors.push_back(light);
 
+        if (moth)
+        {
+            auto mothComponent = light->createComponentMeshGroup(mothFileData->getMeshObjectList());
+            mothComponent->setMaterial(mothMaterial);
+            mothComponent->setScale(scale);
+            auto trackBox = mothComponent->createAnimationTrack(mothFileData->getAnimationsList()->at(0));
+            trackBox->loop(1.0f);
+        }
+
         return lightSpot;
     };
 
-    auto lightSpot = generateSpotLight(Vector3(-1.25f, 3.0f, 1.36f) * scaleNormal, true);
+    auto lightSpot = generateSpotLight(Vector3(-1.25f, 3.0f, 1.36f) * scaleNormal, true, true);
     generateSpotLight(Vector3(-1.25f, 3.0f, 8.36f) * scaleNormal, true);
     generateSpotLight(Vector3(-8.25f, 3.0f, 1.36f) * scaleNormal, true);
 
-    // Light shadow presenter
-    auto lightShadowPresenter = scene->createActor<Actor>("LightShadowPresenter");
-    auto lightShadowComponent = lightShadowPresenter->createComponentMesh(cubeMesh);
-    auto lightShadowMaterial = new MaterialSimple(lightSpot->getLight()->getShadowTexture(0));
-    lightShadowMaterial->setAlbedoColor(Color(1, 0, 0));
-    lightShadowComponent->setMaterial(lightShadowMaterial);
-    lightShadowComponent->setPosition(Vector3(-1.25f, 0.3f, 2.4f) * scaleNormal);
-    lightShadowComponent->setScale(Vector3(1.2f, 1.2f, 1.2f));
+    auto cameraAnimation = scene->createActor<Actor>("CameraAnimation");
+    auto cameraAnimationComponent = cameraAnimation->createComponentMeshGroup(cameraFileData->getMeshObjectList());
+    cameraAnimationComponent->setScale(scale);
 
-    auto lightShadowCasterComponent = lightShadowPresenter->createComponentMesh(cubeMesh);
-    lightShadowCasterComponent->setMaterial(lightShadowMaterial);
-    lightShadowCasterComponent->setScale(Vector3(0.2f, 0.2f, 0.2f));
+    auto cameraAnimationData = cameraFileData->getAnimationsList()->at(0);
+    auto cameraAnimationTrack = new AnimationTrack(cameraAnimationData);
+    float cameraFrame = 0.0f;
 
     // Camera and controls
     Camera camera;
@@ -179,6 +193,11 @@ APPMAIN
     input->addInput(rotateCameraYList, &cameraControl, [](InputType type, InputData *data, float value, void *userData)
                     { ((CameraControl *)userData)->rotateY = glm::clamp(-value, -64.0f, 64.0f); });
 
+    InputDescriptorList toggleFreeCam;
+    toggleFreeCam.addKeyboardInput(KeyboardCode::KeyQ, 1.0f);
+    input->addInput(toggleFreeCam, &cameraControl, [](InputType type, InputData *data, float value, void *userData)
+                    { if (value > 0.5) ((CameraControl *)userData)->freeCamera = !((CameraControl *)userData)->freeCamera; });
+
     InputDescriptorList quitButtonList;
     quitButtonList.addKeyboardInput(KeyboardCode::Escape, 1.0f);
     input->addInput(quitButtonList, window, [](InputType type, InputData *data, float value, void *userData)
@@ -197,6 +216,9 @@ APPMAIN
     {
         float delta = deltaCounter.getDelta();
         accDelta += delta;
+        cameraFrame += delta;
+        if (cameraFrame >= cameraAnimationData->getTimeLength())
+            cameraFrame -= cameraAnimationData->getTimeLength();
 
         float add = 0.0f;
         for (auto &light : lightActors)
@@ -215,17 +237,27 @@ APPMAIN
 
         scene->process(delta);
 
-        cameraRX += cameraControl.rotateY * 0.0015f;
-        cameraRY += cameraControl.rotateX * 0.0015f;
-        cameraRX = glm::clamp(cameraRX, -1.2f, 1.0f);
-        cameraTransform.setRotation(Vector3(cameraRX, cameraRY, 0));
+        if (cameraControl.freeCamera)
+        {
+            cameraRX += cameraControl.rotateY * 0.0015f;
+            cameraRY += cameraControl.rotateX * 0.0015f;
+            cameraRX = glm::clamp(cameraRX, -1.2f, 1.0f);
+            cameraTransform.setRotation(Vector3(cameraRX, cameraRY, 0));
 
-        auto forward = cameraTransform.getRotation() * Vector3(0, 0, 1.2f);
-        cameraTransform.translate(forward * delta * cameraControl.move);
-        auto side = cameraTransform.getRotation() * Vector3(1.2f, 0, 0);
-        cameraTransform.translate(side * delta * cameraControl.sideMove);
-
-        lightShadowCasterComponent->setPosition(cameraTransform.getPosition());
+            auto forward = cameraTransform.getRotation() * Vector3(0, 0, 1.2f);
+            cameraTransform.translate(forward * delta * cameraControl.move);
+            auto side = cameraTransform.getRotation() * Vector3(1.2f, 0, 0);
+            cameraTransform.translate(side * delta * cameraControl.sideMove);
+        }
+        else
+        {
+            std::string targetName = "Camera";
+            auto animator = cameraAnimationData->getTargetByName(targetName);
+            Entity cameraAnimationEntity;
+            animator->getTransformByTime(roundf(cameraFrame * 30.0f) / 30.0f, &cameraAnimationEntity);
+            cameraTransform.setPosition(cameraAnimationEntity.getPosition() * scale);
+            cameraTransform.setRotation(cameraAnimationEntity.getRotation() * Quat(Vector3(0, -CONST_PI / 2, 0)));
+        }
 
         camera.updateViewMatrix(cameraTransform.getModelMatrix());
         scene->render(renderer, &camera);

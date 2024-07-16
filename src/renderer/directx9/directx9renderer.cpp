@@ -552,7 +552,7 @@ void DirectX9Renderer::setupLights(Vector3 objectPosition, float objectRadius, b
 
 void DirectX9Renderer::renderMeshColorData(Camera *camera, Vector3 &cameraPosition, QueuedMeshRenderData *mesh)
 {
-    setupLights(Vector3(*mesh->model * Vector4(mesh->centroid, 1.0f)), 1.0f, mesh->mesh->hasBones());
+    setupLights(Vector3(*mesh->model * Vector4(mesh->centroid, 1.0f)), 1.0f, mesh->bones ? true : false);
     setupMaterialColorRender(mesh->material);
 
     if (mesh->bones)

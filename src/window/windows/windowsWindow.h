@@ -24,12 +24,19 @@ public:
 
     EXPORT void setMousePosition(int x, int y, bool generateMoveEvents = false) override final;
 
-    EXPORT int getStyleForState(WindowState &state);
+    EXPORT void setCursorVisibility(bool state) override final;
+
+    EXPORT bool isFocused() override final;
+
+    EXPORT int getStyleForState(WindowState &bState);
+
+    EXPORT void setIsFocused(bool state);
 
 protected:
     HWND hWnd;
     HINSTANCE hInstance;
 
+    bool bIsFocused = true;
     bool isWindowsVersionOrGreater(WORD wMajorVersion, WORD wMinorVersion, WORD wServicePackMajor);
 };
 

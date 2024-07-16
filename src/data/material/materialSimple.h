@@ -54,7 +54,9 @@ public:
     inline float getMetallic() { return metallic; }
     inline float getRoughness() { return roughness; }
     inline float getAlpha() { return alpha; }
+    inline MaterialDisplay getDisplayMode() { return display; }
 
+    EXPORT void setDisplayMode(MaterialDisplay mode);
     EXPORT void setAlbedoColor(Color albedoColor);
     EXPORT void setEmissionColor(Color emissionColor);
     EXPORT void setMetallic(float metallic);

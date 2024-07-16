@@ -60,7 +60,7 @@ OBJ_FILES = ${OBJDIR}/red11.o \
 			${OBJDIR}/actor.o ${OBJDIR}/actorTemporary.o \
 			${OBJDIR}/component.o ${OBJDIR}/componentMesh.o ${OBJDIR}/componentLight.o ${OBJDIR}/componentMeshGroup.o ${OBJDIR}/componentCamera.o \
 			${OBJDIR}/utils.o ${OBJDIR}/color.o ${OBJDIR}/meshBuilder.o ${OBJDIR}/meshCombiner.o ${OBJDIR}/destroyable.o ${OBJDIR}/stb_image.o \
-			${OBJDIR}/deltaCounter.o ${OBJDIR}/jobQueue.o ${OBJDIR}/hullCliping.o \
+			${OBJDIR}/deltaCounter.o ${OBJDIR}/jobQueue.o ${OBJDIR}/logger.o ${OBJDIR}/hullCliping.o \
 			${OBJDIR}/loaderFBX.o ${OBJDIR}/FBXNode.o ${OBJDIR}/FBXAnimationStack.o ${OBJDIR}/FBXAnimationLayer.o ${OBJDIR}/FBXAnimationCurve.o ${OBJDIR}/FBXAnimationCurveNode.o \
 			${OBJDIR}/FBXDeform.o ${OBJDIR}/FBXGeometry.o ${OBJDIR}/FBXModel.o ${OBJDIR}/FBXAttribute.o
 
@@ -233,6 +233,9 @@ ${OBJDIR}/deltaCounter.o: ${SRCDIR}/utils/deltaCounter.cpp
 
 ${OBJDIR}/jobQueue.o: ${SRCDIR}/utils/jobQueue.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/jobQueue.o ${SRCDIR}/utils/jobQueue.cpp
+
+${OBJDIR}/logger.o: ${SRCDIR}/utils/logger.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/logger.o ${SRCDIR}/utils/logger.cpp
 
 ${OBJDIR}/hullCliping.o: ${SRCDIR}/utils/hullCliping.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/hullCliping.o ${SRCDIR}/utils/hullCliping.cpp
