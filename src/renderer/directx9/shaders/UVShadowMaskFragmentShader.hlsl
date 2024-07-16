@@ -5,7 +5,7 @@ struct VS_Output
 {
     float4 pos : POSITION;
     float2 texCoord : TEXCOORD;
-    float depth : TEXCOORD1;
+    float2 depth : TEXCOORD1;
 };
 
 // useAlbedoTexture, useAlphaTexture, useNormalTexture, useMetallicTexture;
@@ -24,6 +24,6 @@ float4 main(VS_Output pin) : SV_TARGET
     float alpha = MaterialData1[1] == 1.0f ? tex2D(alphaTexSampler, pin.texCoord).a * MaterialData3[2] : albedo.a * MaterialData3[2];
     if (alpha < 0.5f)
         discard;
-
-    return float4(pin.depth, pin.depth, pin.depth, 1.0f);
+    float depth = pin.depth.x / pin.depth.y;
+    return float4(depth, depth, depth, 1.0f);
 }

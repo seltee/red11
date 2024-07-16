@@ -107,6 +107,7 @@ void Directx9MeshRenderData::initPositionSkinned(LPDIRECT3DDEVICE9 d3ddev, Mesh 
     vBuffer->Lock(0, 0, (void **)&vBufferData, 0); // locks v_buffer, the buffer we made earlier
     std::vector<Deform *> *deforms = mesh->getDeforms();
 
+    bool hasMoreThanFourDeformations = false;
     for (int i = 0; i < vAmount; i++)
     {
         VertexDataUV v = verticies->vertexPositionUV[i];
@@ -114,16 +115,20 @@ void Directx9MeshRenderData::initPositionSkinned(LPDIRECT3DDEVICE9 d3ddev, Mesh 
         float boneWeights[4] = {0.0f, 0.0f, 0.0f, 0.0f};
         unsigned char boneIndices[4] = {0, 0, 0, 0};
 
+        int counter = 0;
         for (auto &deform : *deforms)
         {
             float weight = deform->getWeightForIndex(v.index);
             if (weight > 0.0f)
             {
+                counter++;
                 int smallestWeightIndex = getSmallestWeightIndex(boneWeights);
                 boneWeights[smallestWeightIndex] = weight;
                 boneIndices[smallestWeightIndex] = deform->index;
             }
         }
+        if (counter >= 4)
+            hasMoreThanFourDeformations = true;
 
         float totalWeight = 0.0f;
         for (int b = 0; b < 4; b++)
@@ -146,5 +151,8 @@ void Directx9MeshRenderData::initPositionSkinned(LPDIRECT3DDEVICE9 d3ddev, Mesh 
             {boneWeights[0], boneWeights[1], boneWeights[2], boneWeights[3]},
         };
     }
+    if (hasMoreThanFourDeformations)
+        printf("Warning: vertex with >= 4 deformations - v %i defs %i\n", i, counter);
+
     vBuffer->Unlock(); // unlock v_buffer
 }

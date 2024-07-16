@@ -61,7 +61,9 @@ VS_Output main(VS_Input vin)
     for (int p = 0; p < 2; p++)
     {
         float4 shadowCoord = mul(float4(vout.worldPos, 1.0), LightsShadowMatricies[p]);
-        shadowCoord.z *= 0.1;
+        shadowCoord.xyz /= shadowCoord.w;
+        shadowCoord.xy = shadowCoord.xy * 0.5 + 0.5;
+        shadowCoord.y = 1.0 - shadowCoord.y;
         vout.shadowCoord[p] = shadowCoord.xyz;
     }
     return vout;

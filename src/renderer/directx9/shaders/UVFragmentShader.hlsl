@@ -56,31 +56,31 @@ float4 main(VS_Output pin) : SV_TARGET
 
     if (Lights[0].type[0] > 0.1)
         color += CaclLightWithShadow(
-            Lights[0], shadowTexSampler[0], shadowTexSampler[1], diffuse, metallic, roughness, N, V, pin.worldPos, pin.shadowCoord[0], pin.normal);
+            Lights[0], shadowTexSampler[0], shadowTexSampler[1], diffuse, metallic, roughness, N, V, pin.worldPos, pin.shadowCoord[0], N);
 
     if (Lights[1].type[0] > 0.1)
         color += CaclLightWithShadow(
-            Lights[1], shadowTexSampler[2], shadowTexSampler[3], diffuse, metallic, roughness, N, V, pin.worldPos, pin.shadowCoord[1], pin.normal);
+            Lights[1], shadowTexSampler[2], shadowTexSampler[3], diffuse, metallic, roughness, N, V, pin.worldPos, pin.shadowCoord[1], N);
 
     if (Lights[2].type[0] > 0.1)
         color += CaclLightWithShadow(
-            Lights[2], shadowTexSampler[4], shadowTexSampler[5], diffuse, metallic, roughness, N, V, pin.worldPos, pin.shadowCoord[2], pin.normal);
+            Lights[2], shadowTexSampler[4], shadowTexSampler[5], diffuse, metallic, roughness, N, V, pin.worldPos, pin.shadowCoord[2], N);
 
     if (Lights[3].type[0] > 0.1)
         color += CaclLightWithShadow(
-            Lights[3], shadowTexSampler[6], shadowTexSampler[7], diffuse, metallic, roughness, N, V, pin.worldPos, pin.shadowCoord[3], pin.normal);
+            Lights[3], shadowTexSampler[6], shadowTexSampler[7], diffuse, metallic, roughness, N, V, pin.worldPos, pin.shadowCoord[3], N);
 
     if (Lights[4].type[0] > 0.1)
-        color += CaclLight(Lights[4], diffuse, metallic, roughness, N, V, pin.worldPos);
+        color += CaclLight(Lights[4], diffuse, metallic, roughness, N, V, N);
 
     if (Lights[5].type[0] > 0.1)
-        color += CaclLight(Lights[5], diffuse, metallic, roughness, N, V, pin.worldPos);
+        color += CaclLight(Lights[5], diffuse, metallic, roughness, N, V, N);
 
     if (Lights[6].type[0] > 0.1)
-        color += CaclLight(Lights[6], diffuse, metallic, roughness, N, V, pin.worldPos);
+        color += CaclLight(Lights[6], diffuse, metallic, roughness, N, V, N);
 
     if (Lights[7].type[0] > 0.1)
-        color += CaclLight(Lights[7], diffuse, metallic, roughness, N, V, pin.worldPos);
+        color += CaclLight(Lights[7], diffuse, metallic, roughness, N, V, N);
 
     // gamma
     color = pow(color, 1.0 / 1.2);

@@ -70,6 +70,12 @@ APPMAIN
     mothMaterial->setDisplayMode(MaterialDisplay::SolidMask);
     mothMaterial->setRoughness(0.6f);
 
+    auto tzushiAlbedo = new TextureFile("TzushiAlbedo", "./data/demo/tzushi_albedo.jpg");
+    auto tzushiEmission = new TextureFile("TzushiAlbedo", "./data/demo/tzushi_emission.jpg");
+    auto tzushiMaterial = new MaterialSimple(tzushiAlbedo, nullptr, tzushiEmission);
+    tzushiMaterial->setRoughness(0.7f);
+    tzushiMaterial->setDisplayMode(MaterialDisplay::Solid);
+
     auto flashlight = new TextureFile("FlashlightTexture", "./data/demo/flashlight.jpg");
 
     // Room Meshes
@@ -81,12 +87,13 @@ APPMAIN
     auto lampFileData = new Data3DFile("./data/demo/lamp.fbx");
     auto paintBoardFileData = new Data3DFile("./data/demo/paint_board.fbx");
     auto mothFileData = new Data3DFile("./data/demo/moth.fbx");
+    auto tzushiFileData = new Data3DFile("./data/demo/tzushi.fbx");
     auto cameraFileData = new Data3DFile("./data/demo/camera.fbx");
 
     auto cubeMesh = Red11::getMeshBuilder()->createCube(0.1f);
 
     auto scene = Red11::createScene();
-    scene->setAmbientLight(Color(0.15f, 0.14f, 0.1f));
+    scene->setAmbientLight(Color(0.18f, 0.16f, 0.12f));
 
     const float scale = 0.002f;
     const float scaleNormal = scale / 0.01f;
@@ -116,6 +123,12 @@ APPMAIN
     paintBoardComponent->setMaterial(paintBoardMaterial);
     paintBoardComponent->setScale(scale);
 
+    auto tzushiComponent = room->createComponentMeshGroup(tzushiFileData->getMeshObjectList());
+    tzushiComponent->setMaterial(tzushiMaterial);
+    tzushiComponent->setScale(scale);
+    auto tzushiTrack = tzushiComponent->createAnimationTrack(tzushiFileData->getAnimationsList()->at(0));
+    tzushiTrack->loop(1.0f);
+
     std::vector<Actor *> lightActors;
     Color lightColor = Color(46.0f, 38.0f, 34.0f);
     auto generateSpotLight = [&](const Vector3 &center, bool shadows, bool moth = false)
@@ -128,8 +141,8 @@ APPMAIN
         lightComponent->setScale(scale);
 
         auto lightSpot = light->createComponent<ComponentLight>();
-        lightSpot->setupSpot(Vector3(0, -1.0f, 0), Attenuation(4.0f, 1.0f, 6.0f), glm::radians(58.0f), glm::radians(24.0f), lightColor, shadows, LightShadowQuality::Ultra);
-        lightSpot->setPosition(Vector3(0, -0.069f, 0));
+        lightSpot->setupSpot(Vector3(0, -1.0f, 0), Attenuation(4.0f, 1.0f, 6.0f), glm::radians(45.0f), glm::radians(20.0f), lightColor, shadows, LightShadowQuality::Maximum);
+        lightSpot->setPosition(Vector3(0, -0.01, 0));
         lightSpot->getLight()->setShadowMaskTexture(flashlight);
 
         lightActors.push_back(light);
@@ -139,8 +152,8 @@ APPMAIN
             auto mothComponent = light->createComponentMeshGroup(mothFileData->getMeshObjectList());
             mothComponent->setMaterial(mothMaterial);
             mothComponent->setScale(scale);
-            auto trackBox = mothComponent->createAnimationTrack(mothFileData->getAnimationsList()->at(0));
-            trackBox->loop(1.0f);
+            auto mothTrack = mothComponent->createAnimationTrack(mothFileData->getAnimationsList()->at(0));
+            mothTrack->loop(1.0f);
         }
 
         return lightSpot;
@@ -149,6 +162,17 @@ APPMAIN
     auto lightSpot = generateSpotLight(Vector3(-1.25f, 3.0f, 1.36f) * scaleNormal, true, true);
     generateSpotLight(Vector3(-1.25f, 3.0f, 8.36f) * scaleNormal, true);
     generateSpotLight(Vector3(-8.25f, 3.0f, 1.36f) * scaleNormal, true);
+
+    // Light shadow presenter
+    /*
+    auto lightShadowPresenter = scene->createActor<Actor>("LightShadowPresenter");
+    auto lightShadowComponent = lightShadowPresenter->createComponentMesh(cubeMesh);
+    auto lightShadowMaterial = new MaterialSimple(lightSpot->getLight()->getShadowTexture(0));
+    lightShadowMaterial->setAlbedoColor(Color(1, 0, 0));
+    lightShadowComponent->setMaterial(lightShadowMaterial);
+    lightShadowComponent->setPosition(Vector3(-1.25f, 0.3f, 2.4f) * scaleNormal);
+    lightShadowComponent->setScale(Vector3(1.2f, 1.2f, 1.2f));
+    */
 
     auto cameraAnimation = scene->createActor<Actor>("CameraAnimation");
     auto cameraAnimationComponent = cameraAnimation->createComponentMeshGroup(cameraFileData->getMeshObjectList());
@@ -165,6 +189,7 @@ APPMAIN
 
     CameraControl cameraControl;
     memset(&cameraControl, 0, sizeof(CameraControl));
+    cameraControl.freeCamera = false;
 
     auto input = Red11::getGlobalInputProvider();
     InputDescriptorList forwardList;

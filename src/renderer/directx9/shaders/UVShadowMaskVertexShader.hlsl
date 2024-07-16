@@ -9,7 +9,7 @@ struct VS_Output
 {
     float4 pos : POSITION;
     float2 texCoord : TEXCOORD;
-    float depth : TEXCOORD1;
+    float2 depth : TEXCOORD1;
 };
 
 matrix World : register(c0);
@@ -18,9 +18,13 @@ matrix WorldInverseTranspose : register(c8);
 
 VS_Output main(VS_Input vin)
 {
+    float4 clipPos = mul(float4(vin.pos.xyz, 1.0), WorldViewProj);
+
     VS_Output vout;
-    vout.pos = mul(float4(vin.pos, 1.f), WorldViewProj);
-    vout.depth = vout.pos.z * 0.1;
     vout.texCoord = vin.texCoord;
+    vout.pos = clipPos;
+    // vout.pos.z *= vout.pos.w;
+    // vout.pos.w = 1.0;
+    vout.depth = float2(clipPos.z, clipPos.w);
     return vout;
 }

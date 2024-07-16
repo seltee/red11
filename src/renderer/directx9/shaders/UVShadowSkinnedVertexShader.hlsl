@@ -10,7 +10,7 @@ struct VS_Input
 struct VS_Output
 {
     float4 pos : POSITION;
-    float depth : TEXCOORD1;
+    float2 depth : TEXCOORD1;
 };
 
 matrix ViewProj : register(c0);
@@ -37,7 +37,9 @@ VS_Output main(VS_Input vin)
     VS_Output vout;
 
     vout.pos = mul(position, ViewProj);
-    vout.depth = vout.pos.z * 0.1;
+    // vout.pos.z *= vout.pos.w;
+    // vout.pos.w = 1.0;
+    vout.depth = float2(vout.pos.z, vout.pos.w);
 
     return vout;
 }

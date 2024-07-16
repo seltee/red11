@@ -132,16 +132,12 @@ inline float3 CaclLightWithShadow(
     {
         if (type == 1.0f)
         {
-            shadowCoords.xy = shadowCoords.xy * 0.5 + 0.5;
-            shadowCoords.y = 1.0 - shadowCoords.y;
-            float bias = max(0.0002 * (1.0 - dot(N, L)), 0.00004);
+            float bias = max(0.0002 * (1.0 - dot(polygonNormal, L)), 0.00004);
             shadow = 1.0 - ShadowCalculation(lightShadowTexSampler, shadowCoords, light.type[2], bias);
         }
         if (type == 3.0f)
         {
-            shadowCoords.xy = shadowCoords.xy + 0.5;
-            shadowCoords.y = 1.0 - shadowCoords.y;
-            float bias = max(0.04 * (1.0 - dot(N, L)), 0.0032);
+            float bias = max(0.01 * (1.0 - dot(polygonNormal, L)), 0.002);
             float mask = tex2D(lightAdditionShadowTexSampler, shadowCoords.xy).r;
             shadow = (1.0 - ShadowCalculationL(lightShadowTexSampler, shadowCoords, bias)) * mask;
         }

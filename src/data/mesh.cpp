@@ -79,6 +79,18 @@ Mesh::~Mesh()
 
 void Mesh::addDeform(Deform *deform)
 {
+    bool bAffects = false;
+    for (int v = 0; v < vLength; v++)
+    {
+        if (deform->hasIndex(v))
+        {
+            bAffects = true;
+            break;
+        }
+    }
+    if (!bAffects)
+        return;
+
     // TODO calc visibility of bone animated meshes by their bone volumes
     if (deforms.size() == 0)
         boundVolume.radius *= 1.25f;

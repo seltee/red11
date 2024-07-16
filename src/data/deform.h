@@ -25,6 +25,19 @@ public:
 
     inline Matrix4 &getInvBindMatrix() { return invBindMatrix; }
 
+    inline bool hasIndex(int index)
+    {
+        if (deformIndexDataAmount == 0)
+            return false;
+
+        for (int i = 0; i < deformIndexDataAmount; i++)
+        {
+            if (deformIndexData[i].index == index)
+                return true;
+        }
+        return false;
+    }
+
     float getWeightForIndex(int vIndex);
 
     unsigned int index = 0;

@@ -591,6 +591,7 @@ void DirectX9Renderer::renderMeshDepthData(Camera *camera, Vector3 &cameraPositi
 {
     if (mesh->bones)
     {
+        setupMaterialDepthRender(mesh->material);
         d3ddev->SetVertexShader(pUVSkinnedVertexShader);
         d3ddev->SetPixelShader(pUVSkinnedFragmentShader);
 
@@ -716,7 +717,7 @@ void DirectX9Renderer::renderShadowBuffersSpot(Light *light)
     d3ddev->GetRenderTarget(0, &originalRenderTarget);
     d3ddev->GetDepthStencilSurface(&originalDepthStencil);
 
-    camera.setupAsPerspective(light->getBufferSize(), light->getBufferSize(), 0.001f, 16.0f, outerRadius * 2.2f);
+    camera.setupAsPerspective(light->getBufferSize(), light->getBufferSize(), 0.05f, 16.0f, outerRadius * 2.0f);
     camera.updateViewMatrix(cameraEntity.getModelMatrix());
 
     d3ddev->SetRenderTarget(0, shadowData->surface);
