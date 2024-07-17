@@ -152,7 +152,7 @@ void Directx9MeshRenderData::initPositionSkinned(LPDIRECT3DDEVICE9 d3ddev, Mesh 
         };
     }
     if (hasMoreThanFourDeformations)
-        printf("Warning: vertex with >= 4 deformations - v %i defs %i\n", i, counter);
+        printf("Warning: vertex with >= 4 deformations\n");
 
     vBuffer->Unlock(); // unlock v_buffer
 }

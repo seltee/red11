@@ -22,6 +22,12 @@ APPMAIN
 {
     Red11::openConsole();
 
+    // Settings
+    bool showBones = false;
+    bool lightShadowDepthPresenter = false;
+    bool initialFreeCamera = false;
+
+    // Window and renderer
     auto window = Red11::createWindow("Demo 1", WINDOW_WIDTH, WINDOW_HEIGHT, 0);
     window->setCursorVisibility(false);
     auto renderer = Red11::createRenderer(window, RendererType::DirectX9);
@@ -60,8 +66,9 @@ APPMAIN
     lampMaterial->setRoughness(0.5f);
 
     auto paintBoardAlbedo = new TextureFile("PaintBoardTextureAlbedo", "./data/demo/paint_board_albedo.jpg");
+    auto paintBoardEmission = new TextureFile("PaintBoardTextureEmission", "./data/demo/paint_board_emission.jpg");
     auto paintBoardRoughness = new TextureFile("PaintBoardTextureRoughness", "./data/demo/paint_board_roughness.jpg");
-    auto paintBoardMaterial = new MaterialSimple(paintBoardAlbedo, nullptr, nullptr, nullptr, paintBoardRoughness);
+    auto paintBoardMaterial = new MaterialSimple(paintBoardAlbedo, nullptr, paintBoardEmission, nullptr, paintBoardRoughness);
     paintBoardMaterial->setRoughness(0.8f);
 
     auto mothAlbedo = new TextureFile("MothTextureAlbedo", "./data/demo/moth_albedo.png");
@@ -93,7 +100,7 @@ APPMAIN
     auto cubeMesh = Red11::getMeshBuilder()->createCube(0.1f);
 
     auto scene = Red11::createScene();
-    scene->setAmbientLight(Color(0.18f, 0.16f, 0.12f));
+    scene->setAmbientLight(Color(0.2f, 0.18f, 0.14f));
 
     const float scale = 0.002f;
     const float scaleNormal = scale / 0.01f;
@@ -126,6 +133,7 @@ APPMAIN
     auto tzushiComponent = room->createComponentMeshGroup(tzushiFileData->getMeshObjectList());
     tzushiComponent->setMaterial(tzushiMaterial);
     tzushiComponent->setScale(scale);
+    tzushiComponent->setDebugBonesView(showBones);
     auto tzushiTrack = tzushiComponent->createAnimationTrack(tzushiFileData->getAnimationsList()->at(0));
     tzushiTrack->loop(1.0f);
 
@@ -152,6 +160,7 @@ APPMAIN
             auto mothComponent = light->createComponentMeshGroup(mothFileData->getMeshObjectList());
             mothComponent->setMaterial(mothMaterial);
             mothComponent->setScale(scale);
+            mothComponent->setDebugBonesView(showBones);
             auto mothTrack = mothComponent->createAnimationTrack(mothFileData->getAnimationsList()->at(0));
             mothTrack->loop(1.0f);
         }
@@ -164,15 +173,16 @@ APPMAIN
     generateSpotLight(Vector3(-8.25f, 3.0f, 1.36f) * scaleNormal, true);
 
     // Light shadow presenter
-    /*
-    auto lightShadowPresenter = scene->createActor<Actor>("LightShadowPresenter");
-    auto lightShadowComponent = lightShadowPresenter->createComponentMesh(cubeMesh);
-    auto lightShadowMaterial = new MaterialSimple(lightSpot->getLight()->getShadowTexture(0));
-    lightShadowMaterial->setAlbedoColor(Color(1, 0, 0));
-    lightShadowComponent->setMaterial(lightShadowMaterial);
-    lightShadowComponent->setPosition(Vector3(-1.25f, 0.3f, 2.4f) * scaleNormal);
-    lightShadowComponent->setScale(Vector3(1.2f, 1.2f, 1.2f));
-    */
+    if (lightShadowDepthPresenter)
+    {
+        auto lightShadowPresenter = scene->createActor<Actor>("LightShadowPresenter");
+        auto lightShadowComponent = lightShadowPresenter->createComponentMesh(cubeMesh);
+        auto lightShadowMaterial = new MaterialSimple(lightSpot->getLight()->getShadowTexture(0));
+        lightShadowMaterial->setAlbedoColor(Color(1, 0, 0));
+        lightShadowComponent->setMaterial(lightShadowMaterial);
+        lightShadowComponent->setPosition(Vector3(-1.25f, 0.3f, 2.4f) * scaleNormal);
+        lightShadowComponent->setScale(Vector3(1.2f, 1.2f, 1.2f));
+    }
 
     auto cameraAnimation = scene->createActor<Actor>("CameraAnimation");
     auto cameraAnimationComponent = cameraAnimation->createComponentMeshGroup(cameraFileData->getMeshObjectList());
@@ -189,7 +199,7 @@ APPMAIN
 
     CameraControl cameraControl;
     memset(&cameraControl, 0, sizeof(CameraControl));
-    cameraControl.freeCamera = false;
+    cameraControl.freeCamera = initialFreeCamera;
 
     auto input = Red11::getGlobalInputProvider();
     InputDescriptorList forwardList;

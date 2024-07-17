@@ -40,7 +40,7 @@ void ComponentMeshGroup::onRenderQueue(Renderer *renderer)
             {
                 Vector3 from = Vector3(*it->getModelMatrix() * Vector4(0.0f, 0.0f, 0.0f, 1.0f));
                 Vector3 to = Vector3(*it->getParent()->getModelMatrix() * Vector4(0.0f, 0.0f, 0.0f, 1.0f));
-                renderer->queueLine(from, to, Color(0.8f, 0.8f, 0.8f, 1.0f));
+                renderer->queueLine(from, to, Color(0.2f, 0.8f, 0.2f, 1.0f));
             }
         }
     }
