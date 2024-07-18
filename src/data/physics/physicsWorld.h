@@ -36,6 +36,9 @@ public:
     EXPORT std::vector<PhysicsBodyPoint> castSphereCollision(const Vector3 &p, float radius);
     EXPORT std::vector<PhysicsBodyPoint> castPointCollision(const Vector3 &p);
 
+    inline CollisionCollector *getCollisionCollector() { return &collisionCollector; }
+    inline CollisionDispatcher *getCollisionDispatcher() { return &collisionDispatcher; }
+
     inline float getSimScale() { return simScale; }
     inline float getSubStep() { return subStep; }
 

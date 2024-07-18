@@ -55,7 +55,15 @@ struct PhysicsBodyCacheTypeConvex
 {
     Vector3 center;
     Vector3 *verticies;
+    Vector3 *locVerticies;
     Vector3 *normals;
+    Vector3 *locNormals;
+};
+
+struct PhysicsBodyCacheTypeMesh
+{
+    Matrix4 transformation;
+    Matrix4 invTransformation;
 };
 
 union PhysicsBodyCache
@@ -65,6 +73,7 @@ union PhysicsBodyCache
     PhysicsBodyCacheTypeOBB OBB;
     PhysicsBodyCacheTypeCapsule capsule;
     PhysicsBodyCacheTypeConvex convex;
+    PhysicsBodyCacheTypeMesh mesh;
 };
 
 inline bool _compareBodyPoints(PhysicsBodyPoint a, PhysicsBodyPoint b)

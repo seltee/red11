@@ -4,16 +4,14 @@
 #include "collisionDispatcher.h"
 #include "shapes/shapePlain.h"
 #include "shapes/shapeSphere.h"
-/*
-#include "physics/shapes/shapeBox.h"
-#include "physics/shapes/shapeConvex.h"
-#include "physics/shapes/shapeGeometry.h"
-#include "physics/shapes/shapeCapsule.h"
-#include "math/hullCliping.h"
-*/
-#include <vector>
 #include "utils/algorithms.h"
 #include "utils/hullCliping.h"
+#include "renderer/renderer.h"
+
+#include <vector>
+
+HullEdge CollisionDispatcher::meshPolyEdges[6];
+HullPolygon CollisionDispatcher::meshPolygon;
 
 CollisionDispatcher::CollisionDispatcher()
 {
@@ -40,19 +38,6 @@ CollisionDispatcher::CollisionDispatcher()
         CollisionDispatcher::collideSphereVsSphere(sphere1, sphere2, collector);
     };
 
-    /*
-
-    collectCollisions[(int)ShapeCollisionType::Sphere][(int)ShapeCollisionType::Geometry] = [](PhysicsBody *sphere, PhysicsBody *geometry, CollisionCollector *collector)
-    {
-        CollisionDispatcher::collideSphereVsGeometry(sphere, geometry, collector);
-    };
-
-    collectCollisions[(int)ShapeCollisionType::Geometry][(int)ShapeCollisionType::Sphere] = [](PhysicsBody *geometry, PhysicsBody *sphere, CollisionCollector *collector)
-    {
-        CollisionDispatcher::collideSphereVsGeometry(sphere, geometry, collector);
-    };
-
-    */
     collectCollisions[(int)ShapeCollisionType::Sphere][(int)ShapeCollisionType::Convex] = [](PhysicsBody *sphere, PhysicsBody *convex, CollisionCollector *collector)
     {
         CollisionDispatcher::collideSphereVsConvex(sphere, convex, collector);
@@ -73,14 +58,24 @@ CollisionDispatcher::CollisionDispatcher()
         CollisionDispatcher::collideOBBVsPlain(OBB, plain, collector);
     };
 
-    collectCollisions[(int)ShapeCollisionType::OBB][(int)ShapeCollisionType::Sphere] = [](PhysicsBody *OBB, PhysicsBody *Sphere, CollisionCollector *collector)
+    collectCollisions[(int)ShapeCollisionType::OBB][(int)ShapeCollisionType::Sphere] = [](PhysicsBody *OBB, PhysicsBody *sphere, CollisionCollector *collector)
     {
-        CollisionDispatcher::collideOBBVsSphere(OBB, Sphere, collector);
+        CollisionDispatcher::collideOBBVsSphere(OBB, sphere, collector);
     };
 
-    collectCollisions[(int)ShapeCollisionType::Sphere][(int)ShapeCollisionType::OBB] = [](PhysicsBody *Sphere, PhysicsBody *OBB, CollisionCollector *collector)
+    collectCollisions[(int)ShapeCollisionType::Sphere][(int)ShapeCollisionType::OBB] = [](PhysicsBody *sphere, PhysicsBody *OBB, CollisionCollector *collector)
     {
-        CollisionDispatcher::collideOBBVsSphere(OBB, Sphere, collector);
+        CollisionDispatcher::collideOBBVsSphere(OBB, sphere, collector);
+    };
+
+    collectCollisions[(int)ShapeCollisionType::OBB][(int)ShapeCollisionType::Mesh] = [](PhysicsBody *OBB, PhysicsBody *mesh, CollisionCollector *collector)
+    {
+        CollisionDispatcher::collideOBBVsMesh(OBB, mesh, collector);
+    };
+
+    collectCollisions[(int)ShapeCollisionType::Mesh][(int)ShapeCollisionType::OBB] = [](PhysicsBody *mesh, PhysicsBody *OBB, CollisionCollector *collector)
+    {
+        CollisionDispatcher::collideOBBVsMesh(OBB, mesh, collector);
     };
 
     collectCollisions[(int)ShapeCollisionType::OBB][(int)ShapeCollisionType::OBB] = [](PhysicsBody *OBB_A, PhysicsBody *OBB_B, CollisionCollector *collector)
@@ -114,28 +109,25 @@ CollisionDispatcher::CollisionDispatcher()
         CollisionDispatcher::collideConvexVsPlain(convex, plain, collector);
     };
 
-    /*
-        collectCollisions[(int)ShapeCollisionType::Convex][(int)ShapeCollisionType::Geometry] = [](PhysicsBody *convex, PhysicsBody *geometry, CollisionCollector *collector)
-        {
-            CollisionDispatcher::collideConvexVsGeometry(convex, geometry, collector);
-        };
+    collectCollisions[(int)ShapeCollisionType::Convex][(int)ShapeCollisionType::Mesh] = [](PhysicsBody *convex, PhysicsBody *mesh, CollisionCollector *collector)
+    {
+        CollisionDispatcher::collideConvexVsMesh(convex, mesh, collector);
+    };
 
-        collectCollisions[(int)ShapeCollisionType::Geometry][(int)ShapeCollisionType::Convex] = [](PhysicsBody *geometry, PhysicsBody *convex, CollisionCollector *collector)
-        {
-            CollisionDispatcher::collideConvexVsGeometry(convex, geometry, collector);
-        };
+    collectCollisions[(int)ShapeCollisionType::Mesh][(int)ShapeCollisionType::Convex] = [](PhysicsBody *mesh, PhysicsBody *convex, CollisionCollector *collector)
+    {
+        CollisionDispatcher::collideConvexVsMesh(convex, mesh, collector);
+    };
 
-        collectCollisions[(int)ShapeCollisionType::OBB][(int)ShapeCollisionType::Geometry] = [](PhysicsBody *OBB, PhysicsBody *geometry, CollisionCollector *collector)
-        {
-            CollisionDispatcher::collideConvexVsGeometry(OBB, geometry, collector);
-        };
+    collectCollisions[(int)ShapeCollisionType::Sphere][(int)ShapeCollisionType::Mesh] = [](PhysicsBody *sphere, PhysicsBody *mesh, CollisionCollector *collector)
+    {
+        CollisionDispatcher::collideSphereVsMesh(sphere, mesh, collector);
+    };
 
-        collectCollisions[(int)ShapeCollisionType::Geometry][(int)ShapeCollisionType::OBB] = [](PhysicsBody *geometry, PhysicsBody *OBB, CollisionCollector *collector)
-        {
-            CollisionDispatcher::collideConvexVsGeometry(OBB, geometry, collector);
-        };
-
-        */
+    collectCollisions[(int)ShapeCollisionType::Mesh][(int)ShapeCollisionType::Sphere] = [](PhysicsBody *mesh, PhysicsBody *sphere, CollisionCollector *collector)
+    {
+        CollisionDispatcher::collideSphereVsMesh(sphere, mesh, collector);
+    };
 
     collectCollisions[(int)ShapeCollisionType::Capsule][(int)ShapeCollisionType::Plain] = [](PhysicsBody *capsule, PhysicsBody *plain, CollisionCollector *collector)
     {
@@ -182,19 +174,41 @@ CollisionDispatcher::CollisionDispatcher()
         CollisionDispatcher::collideCapsuleVsConvex(capsule, convex, collector);
     };
 
-    /*
+    collectCollisions[(int)ShapeCollisionType::Capsule][(int)ShapeCollisionType::Mesh] = [](PhysicsBody *capsule, PhysicsBody *mesh, CollisionCollector *collector)
+    {
+        CollisionDispatcher::collideCapsuleVsMesh(capsule, mesh, collector);
+    };
 
-collectCollisions[(int)ShapeCollisionType::Capsule][(int)ShapeCollisionType::Geometry] = [](PhysicsBody *capsule, PhysicsBody *geometry, CollisionCollector *collector)
-{
-    CollisionDispatcher::collideCapsuleVsGeometry(capsule, geometry, collector);
-};
+    collectCollisions[(int)ShapeCollisionType::Mesh][(int)ShapeCollisionType::Capsule] = [](PhysicsBody *mesh, PhysicsBody *capsule, CollisionCollector *collector)
+    {
+        CollisionDispatcher::collideCapsuleVsMesh(capsule, mesh, collector);
+    };
 
-collectCollisions[(int)ShapeCollisionType::Geometry][(int)ShapeCollisionType::Capsule] = [](PhysicsBody *geometry, PhysicsBody *capsule, CollisionCollector *collector)
-{
-    CollisionDispatcher::collideCapsuleVsGeometry(capsule, geometry, collector);
-};
+    meshPolyEdges[0].polygon = 0;
+    meshPolyEdges[0].a = 0;
+    meshPolyEdges[0].b = 1;
+    meshPolyEdges[1].polygon = -1;
+    meshPolyEdges[1].a = 1;
+    meshPolyEdges[1].b = 0;
+    meshPolyEdges[2].polygon = 0;
+    meshPolyEdges[2].a = 1;
+    meshPolyEdges[2].b = 2;
+    meshPolyEdges[3].polygon = -1;
+    meshPolyEdges[3].a = 2;
+    meshPolyEdges[3].b = 1;
+    meshPolyEdges[4].polygon = 0;
+    meshPolyEdges[4].a = 2;
+    meshPolyEdges[4].b = 0;
+    meshPolyEdges[5].polygon = -1;
+    meshPolyEdges[5].a = 0;
+    meshPolyEdges[5].b = 2;
 
-*/
+    meshPolygon.index = 0;
+    meshPolygon.normal = Vector3(0, 1, 0);
+    meshPolygon.pointsAmount = 3;
+    meshPolygon.points[0] = 0;
+    meshPolygon.points[1] = 1;
+    meshPolygon.points[2] = 2;
 }
 
 void CollisionDispatcher::collideSphereVsPlain(PhysicsBody *sphere, PhysicsBody *plain, CollisionCollector *collector)
@@ -239,6 +253,56 @@ void CollisionDispatcher::collideSphereVsSphere(PhysicsBody *sphereA, PhysicsBod
         Vector3 normal = difference / distance;
         manifold.addCollisionPoint(Vector3(sphereAPosition + normal * shapeARadius), Vector3(sphereBPosition - normal * shapeBRadius), radiusSumm - distance, normal);
         collector->addBodyPair(sphereA, sphereB, manifold);
+    }
+}
+
+void CollisionDispatcher::collideSphereVsMesh(PhysicsBody *sphere, PhysicsBody *mesh, CollisionCollector *collector)
+{
+    PhysicsBodyCacheTypeSphere *sphereData = sphere->getCacheSphere(0);
+    ShapeMesh *meshShape = (ShapeMesh *)mesh->getForm()->getSimpleShape();
+    PhysicsBodyCacheTypeMesh *meshData = mesh->getCacheMesh(0);
+
+    Vector3 center = sphereData->center;
+    float radius = sphereData->radius;
+
+    Vector3 locCenter = Vector3(meshData->invTransformation * Vector4(center, 1.0f));
+    Vector3 locClosest = meshShape->getClosestPoint(locCenter);
+    Vector3 closest = Vector3(meshData->transformation * Vector4(locClosest, 1.0f));
+
+    Vector3 difference = closest - center;
+    float distance = glm::length(difference);
+    if (distance < radius)
+    {
+        CollisionManifold manifold;
+        Vector3 normal = difference / distance;
+        Vector3 collisionPoint = Vector3(center + normal * radius);
+        manifold.addCollisionPoint(collisionPoint, closest, radius - distance, normal);
+
+        collector->addBodyPair(sphere, mesh, manifold);
+    }
+}
+
+void CollisionDispatcher::collideSphereVsConvex(PhysicsBody *sphere, PhysicsBody *convex, CollisionCollector *collector)
+{
+
+    ShapeConvex *convexShape = (ShapeConvex *)convex->getForm()->getSimpleShape();
+    PhysicsBodyCacheTypeConvex *convexData = convex->getCacheConvex(0);
+    PhysicsBodyCacheTypeSphere *sphereData = sphere->getCacheSphere(0);
+
+    Vector3 center = sphereData->center;
+    float radius = sphereData->radius;
+    Vector3 closest = getClosestPointToHull(center, convexData->verticies, convexShape->getPolygons(), convexShape->getPolygonsAmount());
+
+    Vector3 difference = closest - center;
+    float distance = glm::length(difference);
+
+    if (distance < radius)
+    {
+        CollisionManifold manifold;
+        Vector3 normal = difference / distance;
+        Vector3 collisionPoint = Vector3(center + normal * radius);
+        manifold.addCollisionPoint(collisionPoint, closest, radius - distance, normal);
+        collector->addBodyPair(sphere, convex, manifold);
     }
 }
 
@@ -319,6 +383,137 @@ void CollisionDispatcher::collideOBBVsSphere(PhysicsBody *OBB, PhysicsBody *sphe
         Vector3 normal = difference / distance;
         manifold.addCollisionPoint(sphereCenter + normal * sphereRadius, closestPoint, sphereRadius - distance, normal);
         collector->addBodyPair(OBB, sphere, manifold);
+    }
+}
+
+void CollisionDispatcher::collideOBBVsMesh(PhysicsBody *OBB, PhysicsBody *mesh, CollisionCollector *collector)
+{
+    ShapeOBB *OBBShape = (ShapeOBB *)OBB->getForm()->getSimpleShape();
+    PhysicsBodyCacheTypeOBB *OBBData = OBB->getCacheOBB(0);
+    ShapeMesh *meshShape = (ShapeMesh *)mesh->getForm()->getSimpleShape();
+    PhysicsBodyCacheTypeMesh *meshData = mesh->getCacheMesh(0);
+
+    Vector3 locOBBVerticies[8];
+    Vector3 locOBBNormals[6];
+
+    for (int i = 0; i < 8; i++)
+        locOBBVerticies[i] = Vector3(meshData->invTransformation * Vector4(OBBData->points[i], 1.0f));
+    for (int p = 0; p < 6; p++)
+        locOBBNormals[p] = rotateNormal(OBBData->normals[p], -mesh->getRotation());
+
+    Vector3 OBBCenter = Vector3(meshData->invTransformation * Vector4(OBBData->center, 1.0f));
+
+    int meshPolyAmount = meshShape->getPolygonsAmount();
+    auto meshVerticies = meshShape->getVerticies();
+    Vector3 meshPolyVerts[3];
+
+    CollisionManifold manifold;
+
+    for (int i = 0; i < meshPolyAmount; i++)
+    {
+        PolygonTriPoints &poly = meshShape->getPolygons()[i];
+        meshPolyVerts[0] = meshVerticies[poly.a];
+        meshPolyVerts[1] = meshVerticies[poly.b];
+        meshPolyVerts[2] = meshVerticies[poly.c];
+        Vector3 normal = meshShape->getNormals()[i];
+
+        FaceQuery faceQueryA = queryFaceDirection(
+            OBBShape->getPolygons(),
+            6,
+            locOBBVerticies,
+            locOBBNormals,
+            meshPolyVerts,
+            3);
+
+        if (faceQueryA.separation > 0.0f)
+            continue;
+
+        FaceQuery faceQueryB = queryFaceDirection(
+            &meshPolygon,
+            1,
+            meshPolyVerts,
+            &normal,
+            locOBBVerticies,
+            8);
+
+        if (faceQueryB.separation > 0.0f)
+            continue;
+
+        EdgeQuery edgeQuery = queryEdgeDirection(
+            OBBCenter,
+            OBBShape->getEdges(),
+            OBBShape->getEdgesAmount(),
+            locOBBVerticies,
+            locOBBNormals,
+            meshPolyEdges,
+            6,
+            meshPolyVerts,
+            &normal);
+
+        if (edgeQuery.separation > 0.0f)
+            continue;
+
+        bool bIsFaceContactA = faceQueryA.separation > edgeQuery.separation;
+        bool bIsFaceContactB = faceQueryB.separation > edgeQuery.separation;
+
+        if (bIsFaceContactA && bIsFaceContactB)
+        {
+            if (faceQueryA.separation > faceQueryB.separation)
+            {
+                HullCliping::clipHullAgainstHullWithPostTransformation(-faceQueryA.axis,
+                                                                       OBBShape->getPolygons(),
+                                                                       6,
+                                                                       locOBBVerticies,
+                                                                       8,
+                                                                       locOBBNormals,
+                                                                       &meshPolygon,
+                                                                       1,
+                                                                       meshPolyVerts,
+                                                                       3,
+                                                                       &normal,
+                                                                       &meshData->transformation,
+                                                                       &manifold);
+            }
+            else
+            {
+                HullCliping::clipHullAgainstHullWithPostTransformation(faceQueryB.axis,
+                                                                       OBBShape->getPolygons(),
+                                                                       6,
+                                                                       locOBBVerticies,
+                                                                       8,
+                                                                       locOBBNormals,
+                                                                       &meshPolygon,
+                                                                       1,
+                                                                       meshPolyVerts,
+                                                                       3,
+                                                                       &normal,
+                                                                       &meshData->transformation,
+                                                                       &manifold);
+            }
+        }
+        else
+        {
+            HullCliping::clipHullAgainstHullWithPostTransformation(-edgeQuery.axis,
+                                                                   OBBShape->getPolygons(),
+                                                                   6,
+                                                                   locOBBVerticies,
+                                                                   8,
+                                                                   locOBBNormals,
+                                                                   &meshPolygon,
+                                                                   1,
+                                                                   meshPolyVerts,
+                                                                   3,
+                                                                   &normal,
+                                                                   &meshData->transformation,
+                                                                   &manifold);
+        }
+    }
+
+    if (manifold.collisionAmount > 0)
+    {
+        manifold.combineIntoOne();
+        if (manifold.depth[0] > 0.0f)
+            collector->addBodyPair(OBB, mesh, manifold);
     }
 }
 
@@ -407,30 +602,6 @@ void CollisionDispatcher::collideOBBVsOBB(PhysicsBody *OBB_A, PhysicsBody *OBB_B
     if (manifold.collisionAmount > 0)
     {
         collector->addBodyPair(OBB_A, OBB_B, manifold);
-    }
-}
-
-void CollisionDispatcher::collideSphereVsConvex(PhysicsBody *sphere, PhysicsBody *convex, CollisionCollector *collector)
-{
-
-    ShapeConvex *convexShape = (ShapeConvex *)convex->getForm()->getSimpleShape();
-    PhysicsBodyCacheTypeConvex *convexData = convex->getCacheConvex(0);
-    PhysicsBodyCacheTypeSphere *sphereData = sphere->getCacheSphere(0);
-
-    Vector3 center = sphereData->center;
-    float radius = sphereData->radius;
-    Vector3 closest = getClosestPointToHull(center, convexData->verticies, convexShape->getPolygons(), convexShape->getPolygonsAmount());
-
-    Vector3 difference = closest - center;
-    float distance = glm::length(difference);
-
-    if (distance < radius)
-    {
-        CollisionManifold manifold;
-        Vector3 normal = difference / distance;
-        Vector3 collisionPoint = Vector3(center + normal * radius);
-        manifold.addCollisionPoint(collisionPoint, closest, radius - distance, normal);
-        collector->addBodyPair(sphere, convex, manifold);
     }
 }
 
@@ -673,6 +844,136 @@ void CollisionDispatcher::collideConvexVsPlain(PhysicsBody *convex, PhysicsBody 
     }
 }
 
+void CollisionDispatcher::collideConvexVsMesh(PhysicsBody *convex, PhysicsBody *mesh, CollisionCollector *collector)
+{
+    ShapeConvex *convexShape = (ShapeConvex *)convex->getForm()->getSimpleShape();
+    PhysicsBodyCacheTypeConvex *convexData = convex->getCacheConvex(0);
+    ShapeMesh *meshShape = (ShapeMesh *)mesh->getForm()->getSimpleShape();
+    PhysicsBodyCacheTypeMesh *meshData = mesh->getCacheMesh(0);
+
+    int convexVertAmount = convexShape->getVerticiesAmount();
+    int convexPolyAmount = convexShape->getPolygonsAmount();
+    for (int i = 0; i < convexVertAmount; i++)
+        convexData->locVerticies[i] = Vector3(meshData->invTransformation * Vector4(convexData->verticies[i], 1.0f));
+    for (int p = 0; p < convexPolyAmount; p++)
+        convexData->locNormals[p] = rotateNormal(convexData->normals[p], -mesh->getRotation());
+
+    Vector3 convexCenter = Vector3(meshData->invTransformation * Vector4(convexData->center, 1.0f));
+
+    int meshPolyAmount = meshShape->getPolygonsAmount();
+    auto meshVerticies = meshShape->getVerticies();
+    Vector3 meshPolyVerts[3];
+
+    CollisionManifold manifold;
+
+    for (int i = 0; i < meshPolyAmount; i++)
+    {
+        PolygonTriPoints &poly = meshShape->getPolygons()[i];
+        meshPolyVerts[0] = meshVerticies[poly.a];
+        meshPolyVerts[1] = meshVerticies[poly.b];
+        meshPolyVerts[2] = meshVerticies[poly.c];
+        Vector3 normal = meshShape->getNormals()[i];
+
+        FaceQuery faceQueryA = queryFaceDirection(
+            convexShape->getPolygons(),
+            convexShape->getPolygonsAmount(),
+            convexData->locVerticies,
+            convexData->locNormals,
+            meshPolyVerts,
+            3);
+
+        if (faceQueryA.separation > 0.0f)
+            continue;
+
+        FaceQuery faceQueryB = queryFaceDirection(
+            &meshPolygon,
+            1,
+            meshPolyVerts,
+            &normal,
+            convexData->locVerticies,
+            convexShape->getVerticiesAmount());
+
+        if (faceQueryB.separation > 0.0f)
+            continue;
+
+        EdgeQuery edgeQuery = queryEdgeDirection(
+            convexCenter,
+            convexShape->getEdges(),
+            convexShape->getEdgesAmount(),
+            convexData->locVerticies,
+            convexData->locNormals,
+            meshPolyEdges,
+            6,
+            meshPolyVerts,
+            &normal);
+
+        if (edgeQuery.separation > 0.0f)
+            continue;
+
+        bool bIsFaceContactA = faceQueryA.separation > edgeQuery.separation;
+        bool bIsFaceContactB = faceQueryB.separation > edgeQuery.separation;
+
+        if (bIsFaceContactA && bIsFaceContactB)
+        {
+            if (faceQueryA.separation > faceQueryB.separation)
+            {
+                HullCliping::clipHullAgainstHullWithPostTransformation(-faceQueryA.axis,
+                                                                       convexShape->getPolygons(),
+                                                                       convexShape->getPolygonsAmount(),
+                                                                       convexData->locVerticies,
+                                                                       convexShape->getVerticiesAmount(),
+                                                                       convexData->locNormals,
+                                                                       &meshPolygon,
+                                                                       1,
+                                                                       meshPolyVerts,
+                                                                       3,
+                                                                       &normal,
+                                                                       &meshData->transformation,
+                                                                       &manifold);
+            }
+            else
+            {
+                HullCliping::clipHullAgainstHullWithPostTransformation(faceQueryB.axis,
+                                                                       convexShape->getPolygons(),
+                                                                       convexShape->getPolygonsAmount(),
+                                                                       convexData->locVerticies,
+                                                                       convexShape->getVerticiesAmount(),
+                                                                       convexData->locNormals,
+                                                                       &meshPolygon,
+                                                                       1,
+                                                                       meshPolyVerts,
+                                                                       3,
+                                                                       &normal,
+                                                                       &meshData->transformation,
+                                                                       &manifold);
+            }
+        }
+        else
+        {
+            HullCliping::clipHullAgainstHullWithPostTransformation(-edgeQuery.axis,
+                                                                   convexShape->getPolygons(),
+                                                                   convexShape->getPolygonsAmount(),
+                                                                   convexData->locVerticies,
+                                                                   convexShape->getVerticiesAmount(),
+                                                                   convexData->locNormals,
+                                                                   &meshPolygon,
+                                                                   1,
+                                                                   meshPolyVerts,
+                                                                   3,
+                                                                   &normal,
+                                                                   &meshData->transformation,
+                                                                   &manifold);
+        }
+    }
+
+    if (manifold.collisionAmount > 0)
+    {
+        manifold.combineIntoOne();
+        if (manifold.depth[0] > 0.0f)
+            collector->addBodyPair(convex, mesh, manifold);
+    }
+}
+
 void CollisionDispatcher::collideCapsuleVsPlain(PhysicsBody *capsule, PhysicsBody *plain, CollisionCollector *collector)
 {
     PhysicsBodyCacheTypeCapsule *capsuleData = capsule->getCacheCapsule(0);
@@ -870,124 +1171,37 @@ void CollisionDispatcher::collideCapsuleVsConvex(PhysicsBody *capsule, PhysicsBo
     }
 }
 
-/*
-void CollisionDispatcher::collideSphereVsGeometry(PhysicsBody *sphere, PhysicsBody *geometry, CollisionCollector *collector)
+void CollisionDispatcher::collideCapsuleVsMesh(PhysicsBody *capsule, PhysicsBody *mesh, CollisionCollector *collector)
 {
-    ShapeSphere *sphereShape = (ShapeSphere *)sphere->getShape();
-    ShapeGeometry *geometryShape = (ShapeGeometry *)geometry->getShape();
+    PhysicsBodyCacheTypeCapsule *capsuleData = capsule->getCacheCapsule(0);
+    ShapeMesh *meshShape = (ShapeMesh *)mesh->getForm()->getSimpleShape();
+    PhysicsBodyCacheTypeMesh *meshData = mesh->getCacheMesh(0);
 
-    Vector3 center = sphere->getCenterOfMass();
-    Vector3 closest = geometryShape->getClosestPoint(center);
+    Vector3 locA = Vector3(meshData->invTransformation * Vector4(capsuleData->a, 1.0f));
+    Vector3 locB = Vector3(meshData->invTransformation * Vector4(capsuleData->b, 1.0f));
+    float radius = capsuleData->radius;
 
-    Vector3 difference = closest - center;
-    float distance = glm::length(difference);
-    if (distance < sphereShape->getRadius())
-    {
-        CollisionManifold manifold;
-        Vector3 normal = difference / distance;
-        Vector3 collisionPoint = Vector3(center + normal * sphereShape->getRadius());
-        manifold.addCollisionPoint(collisionPoint, closest, sphereShape->getRadius() - distance, normal);
+    Segment segment = Segment(locA, locB);
 
-        collector->addBodyPair(sphere, geometry, manifold);
-    }
-}
+    Vector3 locOnSegment, locOnMesh;
+    meshShape->getClosestPoint(segment, &locOnSegment, &locOnMesh);
 
+    Vector3 onSegment = Vector3(meshData->transformation * Vector4(locOnSegment, 1.0f));
+    Vector3 onMesh = Vector3(meshData->transformation * Vector4(locOnMesh, 1.0f));
 
-void CollisionDispatcher::collideConvexVsGeometry(PhysicsBody *convex, PhysicsBody *geometry, CollisionCollector *collector)
-{
-    ShapeConvex *convexShape = (ShapeConvex *)convex->getShape();
-    ShapeGeometry *geometryShape = (ShapeGeometry *)geometry->getShape();
-    Hull *convexHull = convexShape->getHull();
-    if (!convexHull)
-        return;
-
-    ShapeConvex geometryToConvex(Vector3(0.0f), nullptr);
-    Vector3 verticies[3] = {Vector3(0.0f), Vector3(1.0f), Vector3(2.0f)};
-    Hull *hull = geometryToConvex.setNewHull(verticies, 3);
-    int pointsA[3] = {0, 1, 2};
-    hull->addPolygon(pointsA, 3);
-
-    int pointsB[3] = {0, 2, 1};
-    hull->addPolygon(pointsB, 3);
-
-    hull->hullCenter = geometry->getCenterOfMass();
-
-    auto amountVerticies = geometryShape->getVerticiesAmount();
-    auto amountTries = amountVerticies / 3;
-    auto tri = geometryShape->getAbsoluteVerticies();
-
-    CollisionManifold manifold;
-    for (int i = 0; i < amountTries; i++)
-    {
-        int polyInside = i * 3;
-
-        hull->absoluteVerticies[0] = tri[polyInside];
-        hull->absoluteVerticies[1] = tri[polyInside + 1];
-        hull->absoluteVerticies[2] = tri[polyInside + 2];
-        hull->rebuildEdges();
-        hull->rebuildNormals();
-
-        Vector3 center = (hull->absoluteVerticies[0] + hull->absoluteVerticies[1] + hull->absoluteVerticies[2]) / 3.0f;
-        hull->hullCenter = center;
-
-        FaceQuery faceQueryA = geometryToConvex.queryFaceDirection(convexShape);
-        if (faceQueryA.separation > 0.0f)
-            continue;
-
-        FaceQuery faceQueryB = convexShape->queryFaceDirection(&geometryToConvex);
-        if (faceQueryB.separation > 0.0f)
-            continue;
-
-        EdgeQuery edgeQuery = geometryToConvex.queryEdgeDirection(convexShape);
-        if (edgeQuery.separation > 0.0f)
-            continue;
-
-        bool bIsFaceContactA = faceQueryA.separation > edgeQuery.separation;
-        bool bIsFaceContactB = faceQueryB.separation > edgeQuery.separation;
-
-        if (bIsFaceContactA && bIsFaceContactB)
-        {
-            if (faceQueryA.separation > faceQueryB.separation)
-                HullCliping::clipHullAgainstHull(convexHull, hull, faceQueryA.axis, &manifold);
-            else
-                HullCliping::clipHullAgainstHull(convexHull, hull, -faceQueryB.axis, &manifold);
-        }
-        else
-        {
-            HullCliping::clipHullAgainstHull(convexHull, hull, edgeQuery.axis, &manifold);
-        }
-    }
-    if (manifold.collisionAmount > 0)
-    {
-        // printf("Collisions: %i\n", manifold.collisionAmount);
-        manifold.combineIntoOne();
-        // printf("%f %f %f, %f\n", manifold.normal.x, manifold.normal.y, manifold.normal.z, manifold.depth);
-        // printf("%f %f %f - %f %f %f\n", manifold.pointsOnA[0].x, manifold.pointsOnA[0].y, manifold.pointsOnA[0].z, manifold.pointsOnB[0].x, manifold.pointsOnB[0].y, manifold.pointsOnB[0].z);
-        if (manifold.depth[0] > 0.0f)
-            collector->addBodyPair(convex, geometry, manifold);
-    }
-}
-
-
-void CollisionDispatcher::collideCapsuleVsGeometry(PhysicsBody *capsule, PhysicsBody *geometry, CollisionCollector *collector)
-{
-    ShapeCapsule *capsuleShape = (ShapeCapsule *)capsule->getShape();
-    ShapeGeometry *geometryShape = (ShapeGeometry *)geometry->getShape();
-    Segment segment = capsuleShape->getAbsoluteCapsule();
-
-    float radius = capsuleShape->getRadius();
-
-    Vector3 onSegment, onGeometry;
-    float distance = geometryShape->getClosestPoint(segment, onSegment, onGeometry);
-
+    float distance = glm::length(onSegment - onMesh);
     if (distance < radius)
     {
         CollisionManifold manifold;
 
-        Vector3 normal = glm::normalize(onGeometry - onSegment);
-        manifold.addCollisionPoint(onSegment + normal * capsuleShape->getRadius(), onGeometry, radius - distance, normal);
-        collector->addBodyPair(capsule, geometry, manifold);
+        Vector3 normal = glm::normalize(onMesh - onSegment);
+        manifold.addCollisionPoint(onSegment + normal * radius, onMesh, radius - distance, normal);
+        collector->addBodyPair(capsule, mesh, manifold);
     }
 }
 
-*/
+void CollisionDispatcher::collideMeshVsMesh(PhysicsBody *meshA, PhysicsBody *meshB, CollisionCollector *collector)
+{
+    // Do nothing cause we don't process this
+    // TODO: make it work it's possible but terrible
+}

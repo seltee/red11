@@ -79,11 +79,15 @@ public:
 
     inline PhysicsWorld *getPhysicsWorld() { return world; }
 
+    inline Quat getRotation() { return rotation; }
+    inline Vector3 getPosition() { return position; }
+
     PhysicsBodyCacheTypeSphere *getCacheSphere(int bodyNum) { return &cache[bodyNum].sphere; }
     PhysicsBodyCacheTypePlain *getCachePlain(int bodyNum) { return &cache[bodyNum].plain; }
     PhysicsBodyCacheTypeOBB *getCacheOBB(int bodyNum) { return &cache[bodyNum].OBB; }
     PhysicsBodyCacheTypeConvex *getCacheConvex(int bodyNum) { return &cache[bodyNum].convex; }
     PhysicsBodyCacheTypeCapsule *getCacheCapsule(int bodyNum) { return &cache[bodyNum].capsule; }
+    PhysicsBodyCacheTypeMesh *getCacheMesh(int bodyNum) { return &cache[bodyNum].mesh; }
 
 protected:
     inline void checkLimits(float limit)

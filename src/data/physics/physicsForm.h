@@ -10,6 +10,7 @@
 #include "shapes/shapeOBB.h"
 #include "shapes/shapeConvex.h"
 #include "shapes/shapeCapsule.h"
+#include "shapes/shapeMesh.h"
 #include "physicsUtils.h"
 #include <vector>
 
@@ -27,7 +28,7 @@ public:
     EXPORT ShapeOBB *createOBB(Vector3 center, float size, float density = 22.0f);
     EXPORT ShapeCapsule *createCapsule(Vector3 a, Vector3 b, float radius, float density = 22.0f);
     EXPORT ShapeConvex *createConvex(Vector3 *verticies, int verticiesAmount, HullPolygon *polygons, int polygonsAmount, float density = 22.0f);
-
+    EXPORT ShapeMesh *createMesh(Mesh *mesh, float density = 22.0f);
     EXPORT void recalcParameters();
 
     EXPORT AABB getAABB(Matrix4 *model);

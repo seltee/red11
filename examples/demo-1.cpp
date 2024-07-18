@@ -189,7 +189,6 @@ APPMAIN
     cameraAnimationComponent->setScale(scale);
 
     auto cameraAnimationData = cameraFileData->getAnimationsList()->at(0);
-    auto cameraAnimationTrack = new AnimationTrack(cameraAnimationData);
     float cameraFrame = 0.0f;
 
     // Camera and controls

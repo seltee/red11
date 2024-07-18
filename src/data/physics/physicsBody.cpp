@@ -201,7 +201,9 @@ void PhysicsBody::updateCache()
         if (!cache[0].convex.verticies)
         {
             cache[0].convex.verticies = new Vector3[verticiesAmount];
+            cache[0].convex.locVerticies = new Vector3[verticiesAmount];
             cache[0].convex.normals = new Vector3[polygonsAmount];
+            cache[0].convex.locNormals = new Vector3[polygonsAmount];
         }
 
         cache[0].convex.center = position;
@@ -246,6 +248,14 @@ void PhysicsBody::updateCache()
         cache[0].OBB.axisZ = Vector3(m * Vector4(0.0f, 0.0f, 1.0f, 1.0f));
 
         cache[0].OBB.transformation = transformation;
+        return;
+    }
+
+    if (form->getType() == ShapeCollisionType::Mesh)
+    {
+        ShapeMesh *meshShape = (ShapeMesh *)form->getSimpleShape();
+        cache[0].mesh.transformation = glm::translate(Matrix4(1.0f), position) * glm::toMat4(rotation) * glm::scale(Matrix4(1.0f), entity->getScale());
+        cache[0].mesh.invTransformation = glm::inverse(cache[0].mesh.transformation);
         return;
     }
 

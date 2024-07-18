@@ -26,8 +26,8 @@ std::string Shape::getTypeName(ShapeCollisionType type)
         return "Convex";
     case ShapeCollisionType::Plain:
         return "Plain";
-    case ShapeCollisionType::Geometry:
-        return "PolygonalGeometry";
+    case ShapeCollisionType::Mesh:
+        return "Mesh";
     case ShapeCollisionType::Capsule:
         return "Capsule";
     case ShapeCollisionType::Combined:

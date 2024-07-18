@@ -32,6 +32,7 @@ APPMAIN
 
     auto redBallMaterial = new MaterialSimple(Color(0.8f, 0.1f, 0.1f), Color(0, 0, 0), 0.0f, 0.4f);
     auto capsuleMaterial = new MaterialSimple(Color(0.91f, 0.604f, 0.067f), Color(0, 0, 0), 0.0f, 0.25f);
+    auto buildingMaterial = new MaterialSimple(Color(0.75f, 0.75f, 0.75f), Color(0, 0, 0), 0.0f, 0.6f);
 
     auto crateTexture = new TextureFile("Crate", "./data/crate.jpg");
     auto crateMaterial = new MaterialSimple(crateTexture);
@@ -44,6 +45,8 @@ APPMAIN
     auto sphereMesh = Red11::getMeshBuilder()->createSphere(0.101f);
     auto ballSphereMesh = Red11::getMeshBuilder()->createSphere(0.041f);
     auto capsuleMesh = Red11::getMeshBuilder()->createCapsule(Vector3(0, -0.2f, 0), Vector3(0, 0.2f, 0), 0.09f, 16);
+    auto polyMeshFileData = new Data3DFile("./data/poly_mesh.fbx");
+    auto polyMesh = polyMeshFileData->getAsMesh();
 
     auto scene = Red11::createScene();
     scene->setAmbientLight(Color(0.4f, 0.4f, 0.6f));
@@ -64,14 +67,14 @@ APPMAIN
     }
 
     // Sphere
-    auto sphereContainer = scene->createActor<Actor>("Sphere");
+    auto objectContainer = scene->createActor<Actor>("ObjectContainer");
 
-    auto sphereComponent = sphereContainer->createComponentMesh(sphereMesh);
+    auto sphereComponent = objectContainer->createComponentMesh(sphereMesh);
     sphereComponent->setMaterial(concreteMaterial);
     sphereComponent->setPosition(0.0f, 0.3f, -0.025f);
     sphereComponent->setRenderDebugPhysicsBody(true);
 
-    auto sphereComponent2 = sphereContainer->createComponentMesh(sphereMesh);
+    auto sphereComponent2 = objectContainer->createComponentMesh(sphereMesh);
     sphereComponent2->setMaterial(concreteMaterial);
     sphereComponent2->setPosition(0.0f, 0.15f, -0.02f);
     sphereComponent2->setRenderDebugPhysicsBody(true);
@@ -105,7 +108,7 @@ APPMAIN
 
     for (int i = 0; i < 3; i++)
     {
-        auto boxComponent = sphereContainer->createComponentMesh(cubeMeshBig);
+        auto boxComponent = objectContainer->createComponentMesh(cubeMeshBig);
         boxComponent->setMaterial(capsuleMaterial);
         boxComponent->setPosition(randf(-3.0f, 3.0f), 0.8f, randf(-3.0f, 3.0f));
         boxComponent->enablePhysics(PhysicsMotionType::Dynamic, boxFormConvex, boxComponent);
@@ -114,7 +117,7 @@ APPMAIN
 
     for (int i = 0; i < 8; i++)
     {
-        auto boxComponent = sphereContainer->createComponentMesh(cubeMeshBig);
+        auto boxComponent = objectContainer->createComponentMesh(cubeMeshBig);
         boxComponent->setMaterial(crateMaterial);
         boxComponent->setPosition(randf(-3.0f, 3.0f), 0.8f, randf(-3.0f, 3.0f));
         boxComponent->enablePhysics(PhysicsMotionType::Dynamic, boxForm, boxComponent);
@@ -125,14 +128,25 @@ APPMAIN
     auto capsuleFrom = world->createPhysicsForm(0.9f, 0.15f);
     capsuleFrom->createCapsule(Vector3(0, -0.2f, 0), Vector3(0, 0.2f, 0), 0.09f, 20.0f);
 
-    for (int i = 0; i < 8; i++)
+    for (int i = 0; i < 1; i++)
     {
-        auto capsuleComponent = sphereContainer->createComponentMesh(capsuleMesh);
+        auto capsuleComponent = objectContainer->createComponentMesh(capsuleMesh);
         capsuleComponent->setMaterial(capsuleMaterial);
         capsuleComponent->setPosition(randf(-3.0f, 3.0f), 1.0f, randf(-3.0f, 3.0f));
         capsuleComponent->enablePhysics(PhysicsMotionType::Dynamic, capsuleFrom);
         capsuleComponent->setRenderDebugPhysicsBody(true);
     }
+
+    // Static Mesh
+    auto meshFrom = world->createPhysicsForm(0.8f, 0.18f);
+    meshFrom->createMesh(polyMesh);
+
+    auto polyMeshComponent = objectContainer->createComponentMesh(polyMesh);
+    polyMeshComponent->setMaterial(buildingMaterial);
+    polyMeshComponent->enablePhysics(PhysicsMotionType::Static, meshFrom);
+    polyMeshComponent->setRenderDebugPhysicsBody(true);
+    polyMeshComponent->setScale(0.0012f);
+    polyMeshComponent->setPosition(Vector3(0, 0, -2));
 
     // Floor && walls
     auto floor = scene->createActor<Actor>("Floor");
@@ -254,7 +268,7 @@ APPMAIN
             sphereComponent2->enablePhysics(PhysicsMotionType::Dynamic, sphereForm, sphereComponent2);
             for (int i = 0; i < 16; i++)
             {
-                auto sphereComponentI = sphereContainer->createComponentMesh(sphereMesh);
+                auto sphereComponentI = objectContainer->createComponentMesh(sphereMesh);
                 sphereComponentI->setMaterial(concreteMaterial);
                 sphereComponentI->setPosition(randf(-3.0f, 3.0f), randf(1.5f, 3.0f), randf(-3.0f, 3.0f));
                 sphereComponentI->enablePhysics(PhysicsMotionType::Dynamic, sphereForm, sphereComponentI);
@@ -284,7 +298,7 @@ APPMAIN
         if (cameraControl.shoot)
         {
             cameraControl.shoot = false;
-            auto sphereComponent = sphereContainer->createComponentMesh(ballSphereMesh);
+            auto sphereComponent = objectContainer->createComponentMesh(ballSphereMesh);
             sphereComponent->setPosition(cameraTransform.getPosition() - Vector3(0, 0.05f, 0) + camera.getForwardVector() * 0.2f);
             sphereComponent->setMaterial(redBallMaterial);
             sphereComponent->enablePhysics(PhysicsMotionType::Dynamic, ballSphereFrom, sphereComponent);

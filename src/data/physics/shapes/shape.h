@@ -15,7 +15,7 @@ enum class ShapeCollisionType
     Sphere = 2,
     Convex = 3,
     OBB = 4,
-    Geometry = 5,
+    Mesh = 5,
     Capsule = 6,
     Combined = 7,
     Amount = 8

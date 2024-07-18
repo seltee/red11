@@ -54,4 +54,19 @@ public:
         int verticiesAmountB,
         Vector3 *normalsB,
         CollisionManifold *manifold);
+
+    static void clipHullAgainstHullWithPostTransformation(
+        Vector3 sepNormal,
+        HullPolygon *polygonsA,
+        int polygonsAmountA,
+        Vector3 *verticiesA,
+        int verticiesAmountA,
+        Vector3 *normalsA,
+        HullPolygon *polygonsB,
+        int polygonsAmountB,
+        Vector3 *verticiesB,
+        int verticiesAmountB,
+        Vector3 *normalsB,
+        Matrix4 *model,
+        CollisionManifold *manifold);
 };

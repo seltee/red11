@@ -249,3 +249,70 @@ void HullCliping::clipHullAgainstHull(
         manifold->addCollisionPoint(middle, middle, -depth, normalOnSurfaceB);
     }
 }
+
+void HullCliping::clipHullAgainstHullWithPostTransformation(
+    Vector3 sepNormal,
+    HullPolygon *polygonsA,
+    int polygonsAmountA,
+    Vector3 *verticiesA,
+    int verticiesAmountA,
+    Vector3 *normalsA,
+    HullPolygon *polygonsB,
+    int polygonsAmountB,
+    Vector3 *verticiesB,
+    int verticiesAmountB,
+    Vector3 *normalsB,
+    Matrix4 *model,
+    CollisionManifold *manifold)
+{
+    Vector4 contactsOut[MAX_POINTS];
+    const int contactCapacity = MAX_POINTS;
+
+    const float minDist = -1.0f;
+    const float maxDist = 0.0f;
+
+    int numContactsOut = clipHullAgainstHull(
+        sepNormal,
+        polygonsA,
+        polygonsAmountA,
+        verticiesA,
+        verticiesAmountA,
+        normalsA,
+        polygonsB,
+        polygonsAmountB,
+        verticiesB,
+        verticiesAmountB,
+        normalsB,
+        minDist,
+        maxDist,
+        contactsOut,
+        contactCapacity);
+
+    if (numContactsOut > 0)
+    {
+        Vector3 normalOnSurfaceB = -sepNormal;
+
+        int contacts4[4] = {0, 1, 2, 3};
+        int numPoints = reduceContacts(contactsOut, numContactsOut, normalOnSurfaceB, contacts4);
+
+        Vector3 middle(0.0f);
+        float depth = 0.0f;
+
+        Matrix3 rotationScaleMatrix = Matrix3(*model);
+        float scaleX = glm::length(rotationScaleMatrix[0]);
+        float scaleY = glm::length(rotationScaleMatrix[1]);
+        float scaleZ = glm::length(rotationScaleMatrix[2]);
+        float scale = fminf(fminf(scaleX, scaleY), scaleZ);
+
+        for (int p = 0; p < numPoints; p++)
+        {
+            depth = fminf(contactsOut[contacts4[p]].w, depth);
+            Vector3 out = Vector3(*model * Vector4(Vector3(contactsOut[contacts4[p]]), 1.0f));
+            middle += out / (float)numPoints;
+        }
+
+        Vector3 normal = glm::normalize(rotationScaleMatrix * normalOnSurfaceB);
+
+        manifold->addCollisionPoint(middle, middle, -depth * scale, normal);
+    }
+}
