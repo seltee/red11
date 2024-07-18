@@ -59,68 +59,38 @@ AABB ShapeMesh::getAABB(Matrix4 *model)
 
 int ShapeMesh::castRay(const Segment &ray, PhysicsBodyPoint *newPoints, PhysicsBodyCache *cache)
 {
-    /*
-    // Compute direction vector for the segment
-    Vector3 direction = ray.b - ray.a;
+    Vector3 locRayA = Vector3(cache->mesh.invTransformation * Vector4(ray.a, 1.0f));
+    Vector3 locRayB = Vector3(cache->mesh.invTransformation * Vector4(ray.b, 1.0f));
+    Segment locRay(locRayA, locRayB);
+    Matrix3 rotationScaleMatrix = Matrix3(cache->mesh.transformation);
 
-    // Set initial interval to being the whole segment.
-    float pointfirst = 0.0f;
-    float pointlast = 1.0f;
-    Vector3 normalOut = Vector3(0.0f, 1.0f, 0.0f);
+    float distance;
+    Vector3 point;
+    Vector3 v[3];
+    int pCount = 0;
 
-    // Intersect segment against each polygon
-    for (int p = 0; p < polygonsAmount; p++)
+    for (int i = 0; i < polygonsAmount; i++)
     {
-        // Normal of the polygon = normal of it's plain
-        Vector3 normal = cache->convex.normals[p];
-        float denom = glm::dot(normal, direction);
+        auto &poly = polygons[i];
+        v[0] = verticies[poly.a];
+        v[1] = verticies[poly.b];
+        v[2] = verticies[poly.c];
 
-        // Distance from center to polygon plane
-        float plainDistance = glm::dot(normal, cache->convex.verticies[polygons[p].points[0]]);
-        float lineOriginDistance = plainDistance - glm::dot(normal, ray.a);
+        if (testRayAgainstTriangle(v, locRay, distance, point))
+        {
+            Vector3 normalOut = glm::normalize(rotationScaleMatrix * normals[i]);
+            Vector3 pountOut = Vector3(cache->mesh.transformation * Vector4(point, 1.0f));
 
-        // Test if segment runs parallel to the plane
-        if (denom == 0.0f)
-        {
-            if (lineOriginDistance > 0.0f)
-                return 0;
-        }
-        else
-        {
-            // Compute parameterized t value for intersection with current plane
-            float t = lineOriginDistance / denom;
-            if (denom < 0.0f)
-            {
-                // Entering halfspace
-                if (t > pointfirst)
-                {
-                    normalOut = normal;
-                    pointfirst = t;
-                }
-            }
-            else
-            {
-                // Exiting halfspace
-                if (t < pointlast)
-                {
-                    normalOut = normal;
-                    pointlast = t;
-                }
-            }
-            // Exit with “no intersection” if intersection becomes empty
-            if (pointfirst > pointlast)
-                return 0;
+            newPoints[pCount] = PhysicsBodyPoint({nullptr, pountOut, normalOut, glm::length(ray.a - pountOut)});
+            pCount++;
+
+            // Only mesh can have unlimited collision points
+            if (pCount == 8)
+                break;
         }
     }
 
-    // The segment intersects the polyhedron, return first and last point
-    // For polygedron there are always will be only 2 points
-    float length = glm::length(direction);
-    newPoints[0] = PhysicsBodyPoint({nullptr, ray.a + pointfirst * direction, normalOut, pointfirst * length});
-    newPoints[1] = PhysicsBodyPoint({nullptr, ray.a + pointlast * direction, normalOut, pointlast * length});
-    return 2;
-    */
-    return 0;
+    return pCount;
 }
 
 Vector3 ShapeMesh::getClosestPoint(const Vector3 &point)
