@@ -38,8 +38,9 @@ void PhysicsWorld::process(float delta)
         findCollisions();
         solveCollisions();
         applyStep();
-        // triggerCollisionEvents(&collisionCollector);
-        // removeNotPersistedCollisions();
+        triggerCollisionEvents(&collisionCollector);
+        updateCollisionTimers(subStep);
+        removeNotPersistedCollisions();
     }
     finishBodies();
 }
@@ -310,4 +311,36 @@ void PhysicsWorld::applyStep()
         {
         };
     }
+}
+
+void PhysicsWorld::triggerCollisionEvents(CollisionCollector *collisionCollector)
+{
+    for (auto &pair : collisionCollector->pairs)
+    {
+        if (pair.a->getCollisionHandler())
+            pair.a->getCollisionHandler()->triggerCollision(pair.a, pair.b, pair.manifold.pointsOnA[0], pair.manifold.pointsOnB[0]);
+        if (pair.b->getCollisionHandler() && pair.a->getCollisionHandler() != pair.b->getCollisionHandler())
+            pair.b->getCollisionHandler()->triggerCollision(pair.a, pair.b, pair.manifold.pointsOnA[0], pair.manifold.pointsOnB[0]);
+    }
+}
+
+void PhysicsWorld::updateCollisionTimers(float delta)
+{
+    for (auto &handler : collisionHanlers)
+    {
+        handler->updateCollisionTimers(delta);
+    }
+}
+
+void PhysicsWorld::removeNotPersistedCollisions()
+{
+    for (auto &handler : collisionHanlers)
+    {
+        handler->removeNotPersistedCollisions();
+    }
+}
+
+void PhysicsWorld::prepareNewCollisionHandler(CollisionHandler *collisionHandler)
+{
+    collisionHanlers.push_back(collisionHandler);
 }

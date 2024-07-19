@@ -53,7 +53,7 @@ OBJ_FILES = ${OBJDIR}/red11.o \
 			${OBJDIR}/mesh.o ${OBJDIR}/meshObject.o ${OBJDIR}/entity.o ${OBJDIR}/light.o ${OBJDIR}/camera.o ${OBJDIR}/texture.o ${OBJDIR}/textureFile.o ${OBJDIR}/inputProvider.o \
 			${OBJDIR}/deform.o ${OBJDIR}/boneTransform.o ${OBJDIR}/animation.o ${OBJDIR}/animationTarget.o ${OBJDIR}/animator.o ${OBJDIR}/animationTrack.o \
 			${OBJDIR}/physicsWorld.o ${OBJDIR}/physicsBody.o ${OBJDIR}/physicsForm.o ${OBJDIR}/physicsUtils.o \
-			${OBJDIR}/collisionDispatcher.o ${OBJDIR}/collisionSolver.o \
+			${OBJDIR}/collisionDispatcher.o ${OBJDIR}/collisionSolver.o ${OBJDIR}/collisionHandler.o \
 			${OBJDIR}/shape.o ${OBJDIR}/shapePlain.o ${OBJDIR}/shapeSphere.o ${OBJDIR}/shapeOBB.o ${OBJDIR}/shapeCapsule.o ${OBJDIR}/shapeConvex.o ${OBJDIR}/shapeMesh.o \
 			${OBJDIR}/data3DFile.o ${OBJDIR}/debugEntities.o \
 			${OBJDIR}/material.o ${OBJDIR}/materialSimple.o \
@@ -64,7 +64,7 @@ OBJ_FILES = ${OBJDIR}/red11.o \
 			${OBJDIR}/loaderFBX.o ${OBJDIR}/FBXNode.o ${OBJDIR}/FBXAnimationStack.o ${OBJDIR}/FBXAnimationLayer.o ${OBJDIR}/FBXAnimationCurve.o ${OBJDIR}/FBXAnimationCurveNode.o \
 			${OBJDIR}/FBXDeform.o ${OBJDIR}/FBXGeometry.o ${OBJDIR}/FBXModel.o ${OBJDIR}/FBXAttribute.o
 
-EXAMPLES = 1-window${EXT} 2-textures${EXT} 3-animation${EXT} 4-bones${EXT} 5-physics${EXT}  demo-1${EXT}
+EXAMPLES = 1-window${EXT} 2-textures${EXT} 3-animation${EXT} 4-bones${EXT} 5-physics${EXT} 6-collisionEvents${EXT} demo-1${EXT}
 
 all: engine examples
 
@@ -158,6 +158,9 @@ ${OBJDIR}/collisionDispatcher.o: ${SRCDIR}/data/physics/collisionDispatcher.cpp
 
 ${OBJDIR}/collisionSolver.o: ${SRCDIR}/data/physics/collisionSolver.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/collisionSolver.o ${SRCDIR}/data/physics/collisionSolver.cpp
+
+${OBJDIR}/collisionHandler.o: ${SRCDIR}/data/physics/collisionHandler.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/collisionHandler.o ${SRCDIR}/data/physics/collisionHandler.cpp
 
 ${OBJDIR}/shape.o: ${SRCDIR}/data/physics/shapes/shape.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/shape.o ${SRCDIR}/data/physics/shapes/shape.cpp
@@ -312,6 +315,13 @@ ${OBJDIR}/5-physics.o: ${EXMDIR}/5-physics.cpp
 5-physics${EXT}: ${OBJDIR}/5-physics.o
 	$(LD) ${EFLAGS} ${OBJDIR}/5-physics.o -o 5-physics${EXT}
 	${MOVE} 5-physics${EXT} ${BINDIR}/5-physics${EXT}
+
+${OBJDIR}/6-collisionEvents.o: ${EXMDIR}/6-collisionEvents.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/6-collisionEvents.o ${EXMDIR}/6-collisionEvents.cpp
+
+6-collisionEvents${EXT}: ${OBJDIR}/6-collisionEvents.o
+	$(LD) ${EFLAGS} ${OBJDIR}/6-collisionEvents.o -o 6-collisionEvents${EXT}
+	${MOVE} 6-collisionEvents${EXT} ${BINDIR}/6-collisionEvents${EXT}
 
 ${OBJDIR}/demo-1.o: ${EXMDIR}/demo-1.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/demo-1.o ${EXMDIR}/demo-1.cpp

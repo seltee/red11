@@ -35,6 +35,12 @@ public:
         return actor;
     }
 
+    template <class T, typename std::enable_if<std::is_base_of<CollisionHandler, T>::value>::type * = nullptr>
+    EXPORT T *createCollisionHandler()
+    {
+        return physicsWorld.createCollisionHandler<T>();
+    }
+
     inline std::vector<PhysicsBodyPoint> castRayCollision(const Segment &ray, Channel channel = CHANNEL_RAY_PICK, bool debug = false, float debugTimeSeconds = 3.0f)
     {
         if (debug)

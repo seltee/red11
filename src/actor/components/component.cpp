@@ -28,6 +28,23 @@ Actor *Component::getOwner()
     return owner;
 }
 
+void Component::setCollisionHandler(CollisionHandler *collisionHandler)
+{
+    if (this->physicsBody)
+    {
+        this->physicsBody->setCollisionHandler(collisionHandler);
+    }
+}
+
+CollisionHandler *Component::getCollisionHandler()
+{
+    if (this->physicsBody)
+    {
+        return this->physicsBody->getCollisionHandler();
+    }
+    return nullptr;
+}
+
 void Component::assignPhysicsWorld(PhysicsWorld *physicsWorld)
 {
     this->physicsWorld = physicsWorld;

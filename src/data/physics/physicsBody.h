@@ -6,6 +6,7 @@
 #include "utils/utils.h"
 #include "utils/primitives.h"
 #include "physicsForm.h"
+#include "collisionHandler.h"
 #include "channels.h"
 #include <mutex>
 
@@ -48,6 +49,9 @@ public:
 
     inline void setChannel(Channel channel) { this->channel = channel; }
     inline Channel getChannel() { return this->channel; }
+
+    inline void setCollisionHandler(CollisionHandler *collisionHandler) { this->collisionHandler = collisionHandler; }
+    inline CollisionHandler *getCollisionHandler() { return this->collisionHandler; }
 
     inline Vector3 getPointVelocity(const Vector3 &localPoint) { return linearVelocity + glm::cross(angularVelocity, localPoint); }
     inline const Vector3 &getLinearVelocity() { return linearVelocity; }
@@ -110,10 +114,13 @@ protected:
     int cacheBodies = 0;
 
     // Pointers
-    PhysicsWorld *world;
-    Entity *entity;
-    PhysicsForm *form;
+    PhysicsWorld *world = nullptr;
+    Entity *entity = nullptr;
+    PhysicsForm *form = nullptr;
     void *userData = nullptr;
+    CollisionHandler *collisionHandler = nullptr;
+
+    // Channel
     Channel channel = CHANNEL_NONE;
 
     // Main movement parameters

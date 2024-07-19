@@ -17,6 +17,8 @@ public:
     EXPORT virtual ~Component();
     EXPORT void prepare(Actor *owner);
     EXPORT Actor *getOwner();
+    EXPORT void setCollisionHandler(CollisionHandler *collisionHandler);
+    EXPORT CollisionHandler *getCollisionHandler();
 
     EXPORT void assignPhysicsWorld(PhysicsWorld *physicsWorld);
     EXPORT void enablePhysics(PhysicsMotionType motionType, PhysicsForm *physicsForm, void *userData = nullptr, Channel channel = CHANNELS_DEAFULT);

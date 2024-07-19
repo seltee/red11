@@ -126,13 +126,6 @@ void PhysicsBody::applyStep(float delta)
         updateAABB();
         updateCache();
     }
-
-    /*
-        for (auto &body : bodyCollisionData)
-        {
-            body.reaccuredTimer += delta;
-        }
-        */
 }
 
 void PhysicsBody::translate(Vector3 v)

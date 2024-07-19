@@ -24,6 +24,14 @@ struct BodyPair
     PhysicsBody *b;
 };
 
+struct BodyCollisionData
+{
+    PhysicsBody *bodyA, *bodyB;
+    Vector3 pointA, pointB;
+    float reaccuredTimer;
+    float persistedTimer;
+};
+
 struct PhysicsBodyCacheTypeSphere
 {
     float radius;

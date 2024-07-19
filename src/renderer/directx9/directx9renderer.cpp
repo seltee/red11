@@ -675,8 +675,8 @@ void DirectX9Renderer::renderShadowBuffersDirectional(Vector3 &cameraPosition, V
         if (!cascade)
             continue;
 
-        Vector3 lightShotPosition = cameraPosition + light->getNormal() * cascadeSize * -4.0f + cameraFrowardVector * 0.2f * cascadeSize;
-        camera.setupAsOrthographic(cascadeSize, cascadeSize, cascadeSize * -8.0f, cascadeSize * 8.0f);
+        Vector3 lightShotPosition = cameraPosition + light->getNormal() * cascadeSize * -8.0f;
+        camera.setupAsOrthographic(cascadeSize, cascadeSize, 0.0f, cascadeSize * 12.0f);
         cameraEntity.setPosition(lightShotPosition);
         cameraEntity.rotateByNormal(light->getNormal(), Vector3(0.0f, 0.0f, -1.0f));
         camera.updateViewMatrix(cameraEntity.getModelMatrix());

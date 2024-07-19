@@ -13,6 +13,7 @@
 #include "physicsBody.h"
 #include "physicsForm.h"
 #include "physicsUtils.h"
+#include "collisionHandler.h"
 #include "channels.h"
 #include <string>
 #include <list>
@@ -36,6 +37,14 @@ public:
     EXPORT std::vector<PhysicsBodyPoint> castRayCollision(const Segment &ray, Channel channel);
     EXPORT std::vector<PhysicsBodyPoint> castSphereCollision(const Vector3 &p, float radius, Channel channel);
     EXPORT std::vector<PhysicsBodyPoint> castPointCollision(const Vector3 &p, Channel channel);
+
+    template <class T, typename std::enable_if<std::is_base_of<CollisionHandler, T>::value>::type * = nullptr>
+    EXPORT T *createCollisionHandler()
+    {
+        auto newCollisionHandler = new T();
+        prepareNewCollisionHandler(newCollisionHandler);
+        return newCollisionHandler;
+    }
 
     inline CollisionCollector *getCollisionCollector() { return &collisionCollector; }
     inline CollisionDispatcher *getCollisionDispatcher() { return &collisionDispatcher; }
@@ -68,6 +77,17 @@ protected:
     // apply accumulated velocities
     void applyStep();
 
+    // collision events
+    void triggerCollisionEvents(CollisionCollector *collisionCollector);
+
+    // remove collisions that ended this cycle
+    void updateCollisionTimers(float delta);
+
+    // remove collisions that ended this cycle
+    void removeNotPersistedCollisions();
+
+    EXPORT void prepareNewCollisionHandler(CollisionHandler *collisionHandler);
+
     // Bodies
     std::vector<PhysicsBody *> bodies;
 
@@ -98,4 +118,7 @@ protected:
 
     // For ray picking
     std::vector<PhysicsBodyPoint> points;
+
+    // All the collision handlers
+    std::vector<CollisionHandler *> collisionHanlers;
 };
