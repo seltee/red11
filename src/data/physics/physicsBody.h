@@ -6,6 +6,7 @@
 #include "utils/utils.h"
 #include "utils/primitives.h"
 #include "physicsForm.h"
+#include "channels.h"
 #include <mutex>
 
 class PhysicsWorld;
@@ -24,7 +25,6 @@ public:
         PhysicsForm *form,
         PhysicsWorld *world,
         Entity *entity,
-        void *userData,
         Vector3 initialPosition,
         Quat initialRotation);
     EXPORT ~PhysicsBody();
@@ -45,6 +45,9 @@ public:
 
     inline void setUserData(void *userData) { this->userData = userData; }
     inline void *getUserData() { return userData; }
+
+    inline void setChannel(Channel channel) { this->channel = channel; }
+    inline Channel getChannel() { return this->channel; }
 
     inline Vector3 getPointVelocity(const Vector3 &localPoint) { return linearVelocity + glm::cross(angularVelocity, localPoint); }
     inline const Vector3 &getLinearVelocity() { return linearVelocity; }
@@ -111,6 +114,7 @@ protected:
     Entity *entity;
     PhysicsForm *form;
     void *userData = nullptr;
+    Channel channel = CHANNEL_NONE;
 
     // Main movement parameters
     Vector3 position = Vector3({0.0f, 0.0f, 0.0f});

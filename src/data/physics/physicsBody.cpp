@@ -9,7 +9,6 @@ PhysicsBody::PhysicsBody(
     PhysicsForm *form,
     PhysicsWorld *world,
     Entity *entity,
-    void *userData,
     Vector3 initialPosition,
     Quat initialRotation)
 {
@@ -17,7 +16,6 @@ PhysicsBody::PhysicsBody(
     this->form = form;
     this->world = world;
     this->entity = entity;
-    this->userData = userData;
     this->position = initialPosition;
     this->rotation = initialRotation;
 
@@ -253,7 +251,7 @@ void PhysicsBody::updateCache()
 
     if (form->getType() == ShapeCollisionType::Mesh)
     {
-        ShapeMesh *meshShape = (ShapeMesh *)form->getSimpleShape();
+        // ShapeMesh *meshShape = (ShapeMesh *)form->getSimpleShape();
         cache[0].mesh.transformation = glm::translate(Matrix4(1.0f), position) * glm::toMat4(rotation) * glm::scale(Matrix4(1.0f), entity->getScale());
         cache[0].mesh.invTransformation = glm::inverse(cache[0].mesh.transformation);
         return;

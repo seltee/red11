@@ -50,9 +50,9 @@ PhysicsForm *PhysicsWorld::createPhysicsForm(float friction, float restitution, 
     return form;
 }
 
-PhysicsBody *PhysicsWorld::createPhysicsBody(PhysicsMotionType motionType, PhysicsForm *form, Entity *entity, void *userData, Vector3 initialPosition, Quat initialRotation)
+PhysicsBody *PhysicsWorld::createPhysicsBody(PhysicsMotionType motionType, PhysicsForm *form, Entity *entity, Vector3 initialPosition, Quat initialRotation)
 {
-    PhysicsBody *newBody = new PhysicsBody(motionType, form, this, entity, userData, initialPosition * simScale, initialRotation);
+    PhysicsBody *newBody = new PhysicsBody(motionType, form, this, entity, initialPosition * simScale, initialRotation);
     bodies.push_back(newBody);
     return newBody;
 }
@@ -70,14 +70,14 @@ void PhysicsWorld::removeBody(PhysicsBody *removeBody)
             ++body;
 }
 
-std::vector<PhysicsBodyPoint> PhysicsWorld::castRayCollision(const Segment &ray)
+std::vector<PhysicsBodyPoint> PhysicsWorld::castRayCollision(const Segment &ray, Channel channel)
 {
     points.clear();
     Segment rayLocal = Segment(ray.a * simScale, ray.b * simScale);
 
     if (maxJobs > bodies.size() || maxJobs <= 4)
     {
-        _ray(bodies.begin(), bodies.end(), rayLocal, &points);
+        _ray(bodies.begin(), bodies.end(), rayLocal, &points, channel);
     }
     else
     {
@@ -89,8 +89,8 @@ std::vector<PhysicsBodyPoint> PhysicsWorld::castRayCollision(const Segment &ray)
         {
             auto end = (i == maxJobs - 1) ? bodies.end() : currentBody + bodiesPerThread;
 
-            jobQueue->queueJob([currentBody, end, &rayLocal, points]
-                               { _ray(currentBody, end, rayLocal, points); });
+            jobQueue->queueJob([currentBody, end, &rayLocal, points, channel]
+                               { _ray(currentBody, end, rayLocal, points, channel); });
 
             currentBody += bodiesPerThread;
         }
@@ -106,13 +106,13 @@ std::vector<PhysicsBodyPoint> PhysicsWorld::castRayCollision(const Segment &ray)
     return points;
 }
 
-std::vector<PhysicsBodyPoint> PhysicsWorld::castSphereCollision(const Vector3 &p, float radius)
+std::vector<PhysicsBodyPoint> PhysicsWorld::castSphereCollision(const Vector3 &p, float radius, Channel channel)
 {
     points.clear();
     return points;
 }
 
-std::vector<PhysicsBodyPoint> PhysicsWorld::castPointCollision(const Vector3 &p)
+std::vector<PhysicsBodyPoint> PhysicsWorld::castPointCollision(const Vector3 &p, Channel channel)
 {
     points.clear();
     return points;

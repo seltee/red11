@@ -3,6 +3,7 @@
 
 #pragma once
 #include "collisionManifold.h"
+#include "channels.h"
 #include <vector>
 #include <list>
 
@@ -111,4 +112,5 @@ void _ray(
     std::vector<PhysicsBody *>::iterator bodyStart,
     std::vector<PhysicsBody *>::iterator bodyEnd,
     const Segment &rayLocal,
-    std::vector<PhysicsBodyPoint> *points);
+    std::vector<PhysicsBodyPoint> *points,
+    Channel channel);

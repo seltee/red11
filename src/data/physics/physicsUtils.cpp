@@ -42,11 +42,17 @@ void _collectPairs(
             continue;
         for (auto b = bodyList->begin(); b != bodyList->end(); b++)
         {
+            if (a == b)
+                break;
+
             if (!(*b)->isEnabled())
                 continue;
 
-            if (a == b)
-                break;
+            if (!((*a)->getChannel() & CHANNEL_SIMULATION))
+                continue;
+
+            if (!((*b)->getChannel() & CHANNEL_SIMULATION))
+                continue;
 
             if ((*a)->getMotionType() == PhysicsMotionType::Static && (*b)->getMotionType() == PhysicsMotionType::Static)
                 continue;
@@ -93,12 +99,16 @@ void _ray(
     std::vector<PhysicsBody *>::iterator bodyStart,
     std::vector<PhysicsBody *>::iterator bodyEnd,
     const Segment &rayLocal,
-    std::vector<PhysicsBodyPoint> *points)
+    std::vector<PhysicsBodyPoint> *points,
+    Channel channel)
 {
     PhysicsBodyPoint newPoints[8];
 
     for (auto body = bodyStart; body < bodyEnd; body++)
     {
+        if (!((*body)->getChannel() & channel))
+            continue;
+
         if (!(*body)->getAABB().test(rayLocal))
             continue;
 

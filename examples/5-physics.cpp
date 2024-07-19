@@ -143,7 +143,7 @@ APPMAIN
 
     auto polyMeshComponent = objectContainer->createComponentMesh(polyMesh);
     polyMeshComponent->setMaterial(buildingMaterial);
-    polyMeshComponent->enablePhysics(PhysicsMotionType::Static, meshFrom);
+    polyMeshComponent->enablePhysics(PhysicsMotionType::Static, meshFrom, nullptr, CHANNEL_SIMULATION);
     polyMeshComponent->setRenderDebugPhysicsBody(true);
     polyMeshComponent->setScale(0.0012f);
     polyMeshComponent->setPosition(Vector3(0, 0, -2));
@@ -307,7 +307,7 @@ APPMAIN
         if (cameraControl.remove)
         {
             cameraControl.remove = false;
-            std::vector<PhysicsBodyPoint> points = scene->castRayCollision(cameraTransform.getPosition(), cameraTransform.getPosition() + camera.getForwardVector() * 10.0f, true);
+            std::vector<PhysicsBodyPoint> points = scene->castRayCollision(cameraTransform.getPosition(), cameraTransform.getPosition() + camera.getForwardVector() * 10.0f, CHANNEL_RAY_PICK, true);
             if (points.size() > 0)
             {
                 for (auto &point : points)

@@ -35,11 +35,11 @@ public:
         return actor;
     }
 
-    inline std::vector<PhysicsBodyPoint> castRayCollision(const Segment &ray, bool debug = false, float debugTimeSeconds = 3.0f)
+    inline std::vector<PhysicsBodyPoint> castRayCollision(const Segment &ray, Channel channel = CHANNEL_RAY_PICK, bool debug = false, float debugTimeSeconds = 3.0f)
     {
         if (debug)
         {
-            auto points = physicsWorld.castRayCollision(ray);
+            auto points = physicsWorld.castRayCollision(ray, channel);
             ActorTemporary *debugActor = createTemporaryActor(debugTimeSeconds);
             if (points.size() > 0)
             {
@@ -67,24 +67,24 @@ public:
         }
         else
         {
-            return physicsWorld.castRayCollision(ray);
+            return physicsWorld.castRayCollision(ray, channel);
         }
     }
 
-    inline std::vector<PhysicsBodyPoint> castRayCollision(const Vector3 &from, const Vector3 &to, bool debug = false, float debugTimeSeconds = 3.0f)
+    inline std::vector<PhysicsBodyPoint> castRayCollision(const Vector3 &from, const Vector3 &to, Channel channel = CHANNEL_RAY_PICK, bool debug = false, float debugTimeSeconds = 3.0f)
     {
         Segment ray = Segment(from, to);
-        return castRayCollision(ray, debug, debugTimeSeconds);
+        return castRayCollision(ray, channel, debug, debugTimeSeconds);
     }
 
-    inline std::vector<PhysicsBodyPoint> castSphereCollision(const Vector3 &p, float radius, bool debug = false, float debugTimeSeconds = 3.0f)
+    inline std::vector<PhysicsBodyPoint> castSphereCollision(const Vector3 &p, float radius, Channel channel = CHANNEL_RAY_PICK, bool debug = false, float debugTimeSeconds = 3.0f)
     {
-        return physicsWorld.castSphereCollision(p, radius);
+        return physicsWorld.castSphereCollision(p, radius, channel);
     }
 
-    inline std::vector<PhysicsBodyPoint> castPointCollision(const Vector3 &p, bool debug = false, float debugTimeSeconds = 3.0f)
+    inline std::vector<PhysicsBodyPoint> castPointCollision(const Vector3 &p, Channel channel = CHANNEL_RAY_PICK, bool debug = false, float debugTimeSeconds = 3.0f)
     {
-        return physicsWorld.castPointCollision(p);
+        return physicsWorld.castPointCollision(p, channel);
     }
 
     inline void setAmbientLight(Color color) { this->ambientLight = color; }

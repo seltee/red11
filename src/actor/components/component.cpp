@@ -33,21 +33,30 @@ void Component::assignPhysicsWorld(PhysicsWorld *physicsWorld)
     this->physicsWorld = physicsWorld;
 }
 
-void Component::enablePhysics(PhysicsMotionType motionType, PhysicsForm *physicsForm, void *userData)
+void Component::enablePhysics(PhysicsMotionType motionType, PhysicsForm *physicsForm, void *userData, Channel channel)
 {
-    if (!physicsBody && physicsWorld)
+    if (physicsWorld)
     {
-        Vector3 scale;
-        Quat rotation;
-        Vector3 position;
-        Vector3 skew;
-        Vector4 perspective;
+        if (!physicsBody)
+        {
+            Vector3 scale;
+            Quat rotation;
+            Vector3 position;
+            Vector3 skew;
+            Vector4 perspective;
 
-        glm::decompose(*getModelMatrix(), scale, rotation, position, skew, perspective);
+            glm::decompose(*getModelMatrix(), scale, rotation, position, skew, perspective);
 
-        physicsBody = physicsWorld->createPhysicsBody(motionType, physicsForm, this, userData, position, rotation);
+            physicsBody = physicsWorld->createPhysicsBody(motionType, physicsForm, this, position, rotation);
 
-        this->setTransformationParent(nullptr);
+            this->setTransformationParent(nullptr);
+        }
+
+        if (physicsBody)
+        {
+            physicsBody->setUserData(userData);
+            physicsBody->setChannel(channel);
+        }
     }
 }
 

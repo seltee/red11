@@ -13,6 +13,7 @@
 #include "physicsBody.h"
 #include "physicsForm.h"
 #include "physicsUtils.h"
+#include "channels.h"
 #include <string>
 #include <list>
 
@@ -28,13 +29,13 @@ public:
 
     EXPORT void process(float delta);
     EXPORT PhysicsForm *createPhysicsForm(float friction, float restitution, float linearDamping = 0.15f, float angularDamping = 0.05f, float gravityFactor = 1.0f);
-    EXPORT PhysicsBody *createPhysicsBody(PhysicsMotionType motionType, PhysicsForm *form, Entity *entity, void *userData, Vector3 initialPosition, Quat initialRotation);
+    EXPORT PhysicsBody *createPhysicsBody(PhysicsMotionType motionType, PhysicsForm *form, Entity *entity, Vector3 initialPosition, Quat initialRotation);
 
     EXPORT void removeBody(PhysicsBody *removeBody);
 
-    EXPORT std::vector<PhysicsBodyPoint> castRayCollision(const Segment &ray);
-    EXPORT std::vector<PhysicsBodyPoint> castSphereCollision(const Vector3 &p, float radius);
-    EXPORT std::vector<PhysicsBodyPoint> castPointCollision(const Vector3 &p);
+    EXPORT std::vector<PhysicsBodyPoint> castRayCollision(const Segment &ray, Channel channel);
+    EXPORT std::vector<PhysicsBodyPoint> castSphereCollision(const Vector3 &p, float radius, Channel channel);
+    EXPORT std::vector<PhysicsBodyPoint> castPointCollision(const Vector3 &p, Channel channel);
 
     inline CollisionCollector *getCollisionCollector() { return &collisionCollector; }
     inline CollisionDispatcher *getCollisionDispatcher() { return &collisionDispatcher; }

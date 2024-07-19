@@ -19,7 +19,7 @@ public:
     EXPORT Actor *getOwner();
 
     EXPORT void assignPhysicsWorld(PhysicsWorld *physicsWorld);
-    EXPORT void enablePhysics(PhysicsMotionType motionType, PhysicsForm *physicsForm, void *userData = nullptr);
+    EXPORT void enablePhysics(PhysicsMotionType motionType, PhysicsForm *physicsForm, void *userData = nullptr, Channel channel = CHANNELS_DEAFULT);
     EXPORT void disablePhysics();
     inline PhysicsBody *getPhysicsBody() { return physicsBody; }
 
