@@ -5,6 +5,7 @@
 #include "data/entity.h"
 #include "utils/utils.h"
 #include "utils/primitives.h"
+#include "constraints/constraint.h"
 #include "physicsForm.h"
 #include "collisionHandler.h"
 #include "channels.h"
@@ -43,6 +44,10 @@ public:
     EXPORT void updateCache();
 
     EXPORT int castRay(const Segment &ray, PhysicsBodyPoint *newPoints);
+
+    EXPORT void addConstraint(Constraint *constraint);
+    EXPORT void removeConstraint(Constraint *constraint);
+    EXPORT std::vector<Constraint *> *getConstraints();
 
     inline void setUserData(void *userData) { this->userData = userData; }
     inline void *getUserData() { return userData; }
@@ -122,6 +127,9 @@ protected:
 
     // Channel
     Channel channel = CHANNEL_NONE;
+    
+    // Constraints
+    std::vector<Constraint *> constraints;
 
     // Main movement parameters
     Vector3 position = Vector3({0.0f, 0.0f, 0.0f});

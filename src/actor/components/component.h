@@ -32,6 +32,18 @@ public:
 
     EXPORT void setParent(Component *parent);
 
+    inline void addConstraint(Constraint *constraint)
+    {
+        if (physicsBody)
+            physicsBody->addConstraint(constraint);
+    }
+
+    inline void removeConstraint(Constraint *constraint)
+    {
+        if (physicsBody)
+            physicsBody->removeConstraint(constraint);
+    }
+
     inline void setRenderDebugPhysicsBody(bool bRenderDebugPhysicsBody) { this->bRenderDebugPhysicsBody = bRenderDebugPhysicsBody; }
     inline bool getRenderDebugPhysicsBody() { return bRenderDebugPhysicsBody; }
     inline bool hasDebugInfoToRender() { return bRenderDebugPhysicsBody; }

@@ -14,6 +14,8 @@
 #include "physicsForm.h"
 #include "physicsUtils.h"
 #include "collisionHandler.h"
+#include "constraints/constraint.h"
+#include "constraints/constraintAxis.h"
 #include "channels.h"
 #include <string>
 #include <list>

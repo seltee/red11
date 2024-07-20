@@ -53,6 +53,7 @@ OBJ_FILES = ${OBJDIR}/red11.o \
 			${OBJDIR}/mesh.o ${OBJDIR}/meshObject.o ${OBJDIR}/entity.o ${OBJDIR}/light.o ${OBJDIR}/camera.o ${OBJDIR}/texture.o ${OBJDIR}/textureFile.o ${OBJDIR}/inputProvider.o \
 			${OBJDIR}/deform.o ${OBJDIR}/boneTransform.o ${OBJDIR}/animation.o ${OBJDIR}/animationTarget.o ${OBJDIR}/animator.o ${OBJDIR}/animationTrack.o \
 			${OBJDIR}/physicsWorld.o ${OBJDIR}/physicsBody.o ${OBJDIR}/physicsForm.o ${OBJDIR}/physicsUtils.o \
+			${OBJDIR}/constraint.o ${OBJDIR}/constraintAxis.o \
 			${OBJDIR}/collisionDispatcher.o ${OBJDIR}/collisionSolver.o ${OBJDIR}/collisionHandler.o \
 			${OBJDIR}/shape.o ${OBJDIR}/shapePlain.o ${OBJDIR}/shapeSphere.o ${OBJDIR}/shapeOBB.o ${OBJDIR}/shapeCapsule.o ${OBJDIR}/shapeConvex.o ${OBJDIR}/shapeMesh.o \
 			${OBJDIR}/data3DFile.o ${OBJDIR}/debugEntities.o \
@@ -152,6 +153,12 @@ ${OBJDIR}/physicsForm.o: ${SRCDIR}/data/physics/physicsForm.cpp
 
 ${OBJDIR}/physicsUtils.o: ${SRCDIR}/data/physics/physicsUtils.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/physicsUtils.o ${SRCDIR}/data/physics/physicsUtils.cpp
+
+${OBJDIR}/constraint.o: ${SRCDIR}/data/physics/constraints/constraint.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/constraint.o ${SRCDIR}/data/physics/constraints/constraint.cpp
+
+${OBJDIR}/constraintAxis.o: ${SRCDIR}/data/physics/constraints/constraintAxis.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/constraintAxis.o ${SRCDIR}/data/physics/constraints/constraintAxis.cpp
 
 ${OBJDIR}/collisionDispatcher.o: ${SRCDIR}/data/physics/collisionDispatcher.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/collisionDispatcher.o ${SRCDIR}/data/physics/collisionDispatcher.cpp

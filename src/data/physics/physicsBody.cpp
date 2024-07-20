@@ -88,9 +88,8 @@ void PhysicsBody::applyStep(float delta)
 
     if (glm::length2(translationAccumulator) > 0.0000000001f)
     {
-        // if (!constraints.empty())
-        //     for (auto constraint = constraints.begin(); constraint != constraints.end(); constraint++)
-        //         translationAccumulator = (*constraint)->processTranslation(translationAccumulator);
+        for (auto &constraint : constraints)
+            constraint->processTranslation(&translationAccumulator);
 
         position += translationAccumulator;
         translationAccumulator = Vector3(0.0f);
@@ -101,9 +100,8 @@ void PhysicsBody::applyStep(float delta)
     {
         checkLimits(120.0f * world->getSimScale());
 
-        // if (!constraints.empty())
-        //     for (auto constraint = constraints.begin(); constraint != constraints.end(); constraint++)
-        //         (*constraint)->processMotion(motion);
+        for (auto &constraint : constraints)
+            constraint->processMotion(&linearVelocity, &angularVelocity);
 
         position += linearVelocity * delta;
 
@@ -270,4 +268,27 @@ int PhysicsBody::castRay(const Segment &ray, PhysicsBodyPoint *newPoints)
         return count;
     }
     return 0;
+}
+
+void PhysicsBody::addConstraint(Constraint *constraint)
+{
+    removeConstraint(constraint);
+    constraints.push_back(constraint);
+}
+
+void PhysicsBody::removeConstraint(Constraint *constraint)
+{
+    for (auto it = constraints.begin(); it != constraints.end(); it++)
+    {
+        if ((*it) == constraint)
+        {
+            constraints.erase(it);
+            return;
+        }
+    }
+}
+
+std::vector<Constraint *> *PhysicsBody::getConstraints()
+{
+    return &constraints;
 }
