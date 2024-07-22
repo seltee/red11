@@ -9,9 +9,7 @@ endif
 
 ifeq ($(OS),Windows_NT)
 LIBRARIES = -lkernel32 -luser32 -lgdi32 -lwinspool \
-			-lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32 -lopengl32
-else
-LIBRARIES = -lSDL2 -lSDL2main -lSDL2_ttf -framework OpenGL -framework
+			-lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32 -ldsound.lib
 endif
 
 ifeq ($(OS),Windows_NT)
@@ -46,11 +44,13 @@ BINDIR = bin
  
 OBJ_FILES = ${OBJDIR}/red11.o \
 			${OBJDIR}/window.o ${OBJDIR}/windowsWindow.o \
+			${OBJDIR}/audio.o ${OBJDIR}/audioSource.o ${OBJDIR}/audioWindows.o \
 			${OBJDIR}/scene.o \
 			${OBJDIR}/renderer.o \
 			${OBJDIR}/directx9renderer.o ${OBJDIR}/directx9meshRenderData.o ${OBJDIR}/directx9textureRenderData.o ${OBJDIR}/directx9materialRenderData.o  \
 			${OBJDIR}/directx9data.o  \
 			${OBJDIR}/mesh.o ${OBJDIR}/meshObject.o ${OBJDIR}/entity.o ${OBJDIR}/light.o ${OBJDIR}/camera.o ${OBJDIR}/texture.o ${OBJDIR}/textureFile.o ${OBJDIR}/inputProvider.o \
+			${OBJDIR}/sound.o ${OBJDIR}/soundFile.o \
 			${OBJDIR}/deform.o ${OBJDIR}/boneTransform.o ${OBJDIR}/animation.o ${OBJDIR}/animationTarget.o ${OBJDIR}/animator.o ${OBJDIR}/animationTrack.o \
 			${OBJDIR}/physicsWorld.o ${OBJDIR}/physicsBody.o ${OBJDIR}/physicsForm.o ${OBJDIR}/physicsUtils.o \
 			${OBJDIR}/constraint.o ${OBJDIR}/constraintAxis.o \
@@ -60,7 +60,7 @@ OBJ_FILES = ${OBJDIR}/red11.o \
 			${OBJDIR}/material.o ${OBJDIR}/materialSimple.o \
 			${OBJDIR}/actor.o ${OBJDIR}/actorTemporary.o \
 			${OBJDIR}/component.o ${OBJDIR}/componentMesh.o ${OBJDIR}/componentLight.o ${OBJDIR}/componentMeshGroup.o ${OBJDIR}/componentCamera.o \
-			${OBJDIR}/utils.o ${OBJDIR}/color.o ${OBJDIR}/meshBuilder.o ${OBJDIR}/meshCombiner.o ${OBJDIR}/destroyable.o ${OBJDIR}/stb_image.o \
+			${OBJDIR}/utils.o ${OBJDIR}/color.o ${OBJDIR}/meshBuilder.o ${OBJDIR}/meshCombiner.o ${OBJDIR}/destroyable.o ${OBJDIR}/stb_image.o ${OBJDIR}/stb_vorbis.o \
 			${OBJDIR}/deltaCounter.o ${OBJDIR}/jobQueue.o ${OBJDIR}/logger.o ${OBJDIR}/hullCliping.o \
 			${OBJDIR}/loaderFBX.o ${OBJDIR}/FBXNode.o ${OBJDIR}/FBXAnimationStack.o ${OBJDIR}/FBXAnimationLayer.o ${OBJDIR}/FBXAnimationCurve.o ${OBJDIR}/FBXAnimationCurveNode.o \
 			${OBJDIR}/FBXDeform.o ${OBJDIR}/FBXGeometry.o ${OBJDIR}/FBXModel.o ${OBJDIR}/FBXAttribute.o
@@ -78,6 +78,15 @@ ${OBJDIR}/window.o: ${SRCDIR}/window/window.cpp
 	
 ${OBJDIR}/windowsWindow.o: ${SRCDIR}/window/windows/windowsWindow.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/windowsWindow.o ${SRCDIR}/window/windows/windowsWindow.cpp
+
+${OBJDIR}/audio.o: ${SRCDIR}/audio/audio.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/audio.o ${SRCDIR}/audio/audio.cpp
+
+${OBJDIR}/audioSource.o: ${SRCDIR}/audio/audioSource.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/audioSource.o ${SRCDIR}/audio/audioSource.cpp
+
+${OBJDIR}/audioWindows.o: ${SRCDIR}/audio/windows/audioWindows.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/audioWindows.o ${SRCDIR}/audio/windows/audioWindows.cpp
 
 ${OBJDIR}/scene.o: ${SRCDIR}/scene/scene.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/scene.o ${SRCDIR}/scene/scene.cpp
@@ -123,6 +132,12 @@ ${OBJDIR}/textureFile.o: ${SRCDIR}/data/textureFile.cpp
 
 ${OBJDIR}/inputProvider.o: ${SRCDIR}/data/inputProvider.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/inputProvider.o ${SRCDIR}/data/inputProvider.cpp
+
+${OBJDIR}/sound.o: ${SRCDIR}/data/sound.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/sound.o ${SRCDIR}/data/sound.cpp
+
+${OBJDIR}/soundFile.o: ${SRCDIR}/data/soundFile.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/soundFile.o ${SRCDIR}/data/soundFile.cpp
 
 ${OBJDIR}/deform.o: ${SRCDIR}/data/deform.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/deform.o ${SRCDIR}/data/deform.cpp
@@ -240,6 +255,9 @@ ${OBJDIR}/destroyable.o: ${SRCDIR}/utils/destroyable.cpp
 
 ${OBJDIR}/stb_image.o: ${SRCDIR}/utils/image/stb_image.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/stb_image.o ${SRCDIR}/utils/image/stb_image.cpp
+
+${OBJDIR}/stb_vorbis.o: ${SRCDIR}/utils/sound/stb_vorbis.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/stb_vorbis.o ${SRCDIR}/utils/sound/stb_vorbis.cpp
 
 ${OBJDIR}/deltaCounter.o: ${SRCDIR}/utils/deltaCounter.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/deltaCounter.o ${SRCDIR}/utils/deltaCounter.cpp

@@ -94,3 +94,9 @@ struct EdgeQuery
     HullEdge *edgeB;
     Vector3 axis;
 };
+
+struct SoundStream
+{
+    void *fileReader;
+    int numChannels;
+};

@@ -23,9 +23,16 @@ enum class ObjectType
     BigBall
 };
 
+struct Context
+{
+    Audio *audioSystem;
+    SoundFile *soundBong;
+};
+
 struct ObjectDescriptor
 {
     ObjectType type;
+    Context *context;
     Component *component;
     std::string name;
     bool bIsSharedDescriptor;
@@ -37,6 +44,17 @@ class CollisionHandlerExample : public CollisionHandler
 public:
     void collisionStarted(BodyCollisionData *data) override final
     {
+        ObjectDescriptor *descA = (ObjectDescriptor *)data->bodyA->getUserData();
+        ObjectDescriptor *descB = (ObjectDescriptor *)data->bodyB->getUserData();
+        if (descA && descB)
+        {
+            if (descA->type == ObjectType::BigBall || descB->type == ObjectType::BigBall)
+            {
+                Audio *audioSystem = descA->context->audioSystem;
+                audioSystem->playSound3d(descA->context->soundBong, data->pointA, 0.85f, 6.0f, 0.5f);
+            }
+        }
+
         process(data, " hit ");
     }
     void collisionPersisted(BodyCollisionData *data) override final
@@ -91,6 +109,25 @@ APPMAIN
     window->setCursorVisibility(false);
     auto renderer = Red11::createRenderer(window, RendererType::DirectX9);
 
+    // Audio
+    Audio *audioSystem = Red11::getAudio();
+    auto list = audioSystem->getDevicesList();
+    for (auto &item : list)
+        Red11::getLogger()->logConsole("Audio device: %s, %s", item.name.c_str(), item.bIsDefault ? "default" : "selectable");
+    audioSystem->setup();
+
+    SoundFile *soundBong = new SoundFile("./data/metal.wav");
+    SoundFile *soundShoot = new SoundFile("./data/shoot.wav");
+    SoundFile *music = new SoundFile("./data/streamable.ogg");
+
+    AudioSource *musicSource = audioSystem->createAudioSource();
+    musicSource->loop(music);
+    musicSource->setVolume(0.2f);
+
+    Context context;
+    context.audioSystem = audioSystem;
+    context.soundBong = soundBong;
+
     // Textures & Materials
     auto concreteTexture = new TextureFile("Concrete", "./data/concrete_albedo.jpg");
     auto concreteMaterial = new MaterialSimple(concreteTexture);
@@ -112,10 +149,10 @@ APPMAIN
     world->setGravity(Vector3(0, -1.0f, 0));
 
     // Base Descriptors
-    ObjectDescriptor descriptorFloor = ObjectDescriptor({ObjectType::Floor, nullptr, "Floor", true});
-    ObjectDescriptor descriptorRedBall = ObjectDescriptor({ObjectType::BigBall, nullptr, "Red Static Ball", true});
-    ObjectDescriptor descriptorYellowBall = ObjectDescriptor({ObjectType::BigBall, nullptr, "Yellow Static Ball", true});
-    ObjectDescriptor descriptorGreenBall = ObjectDescriptor({ObjectType::BigBall, nullptr, "Green Static Ball", true});
+    ObjectDescriptor descriptorFloor = ObjectDescriptor({ObjectType::Floor, &context, nullptr, "Floor", true});
+    ObjectDescriptor descriptorRedBall = ObjectDescriptor({ObjectType::BigBall, &context, nullptr, "Red Static Ball", true});
+    ObjectDescriptor descriptorYellowBall = ObjectDescriptor({ObjectType::BigBall, &context, nullptr, "Yellow Static Ball", true});
+    ObjectDescriptor descriptorGreenBall = ObjectDescriptor({ObjectType::BigBall, &context, nullptr, "Green Static Ball", true});
 
     CollisionHandlerExample *collisionHandler = scene->createCollisionHandler<CollisionHandlerExample>();
 
@@ -252,13 +289,16 @@ APPMAIN
             auto sphereComponent = objectContainer->createComponentMesh(ballSphereMesh);
             sphereComponent->setPosition(cameraTransform.getPosition() - Vector3(0, 0.05f, 0) + camera.getForwardVector() * 0.2f);
             sphereComponent->setMaterial(shootBallMaterial);
-            ObjectDescriptor *descriptor = new ObjectDescriptor({ObjectType::ShootBall, sphereComponent, "Shoot Ball", false, 4.0f});
+            ObjectDescriptor *descriptor = new ObjectDescriptor({ObjectType::ShootBall, &context, sphereComponent, "Shoot Ball", false, 4.0f});
             sphereComponent->enablePhysics(PhysicsMotionType::Dynamic, ballSphereFrom, descriptor);
             sphereComponent->getPhysicsBody()->addLinearVelocity(camera.getForwardVector() * 3.0f);
+            audioSystem->playSound(soundShoot, 0.5f);
         }
 
         camera.updateViewMatrix(cameraTransform.getModelMatrix());
+        audioSystem->syncPosition(&cameraTransform);
         scene->render(renderer, &camera);
+        audioSystem->process(delta);
 
         renderer->present();
     }

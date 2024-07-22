@@ -22,6 +22,9 @@
 #include "data/inputProvider.h"
 #include "data/data3DFile.h"
 #include "data/debugEntities.h"
+#include "data/sound.h"
+#include "data/soundFile.h"
+#include "audio/audio.h"
 
 #ifdef WINDOWS_ONLY
 #include <shellscalingapi.h>
@@ -60,10 +63,13 @@ public:
 
     EXPORT static Logger *getLogger();
 
+    EXPORT static Audio *getAudio();
+
 protected:
     static MeshBuilder *meshBuilder;
     static InputProvider *globalInputProvider;
     static JobQueue *jobQueue;
     static DebugEntities *debugEntities;
     static Logger *logger;
+    static Audio *audio;
 };

@@ -5,12 +5,14 @@
 #include "red11.h"
 #include "renderer/directx9/directx9renderer.h"
 #include "window/windows/windowsWindow.h"
+#include "audio/windows/audioWindows.h"
 
 MeshBuilder *Red11::meshBuilder = nullptr;
 InputProvider *Red11::globalInputProvider = nullptr;
 JobQueue *Red11::jobQueue = nullptr;
 DebugEntities *Red11::debugEntities = nullptr;
 Logger *Red11::logger = nullptr;
+Audio *Red11::audio = nullptr;
 
 Red11::Red11()
 {
@@ -77,4 +79,11 @@ Logger *Red11::getLogger()
     if (!logger)
         logger = new Logger("log.txt");
     return logger;
+}
+
+Audio *Red11::getAudio()
+{
+    if (!audio)
+        audio = new AudioWindows();
+    return audio;
 }
