@@ -21,7 +21,7 @@ unsigned char *TextureFile::getBufferData()
     return data;
 }
 
-unsigned char *TextureFile::setBuffer(int width, int height)
+unsigned char *TextureFile::setBufferSize(int width, int height)
 {
     return nullptr;
 }
@@ -45,7 +45,7 @@ Texture *TextureFile::getFileDataAsTexture(std::string name)
     if (getBufferData() || getWidth() || getHeight())
     {
         Texture *texture = new Texture(name, TextureType::Normal);
-        texture->setBuffer(getWidth(), getHeight());
+        texture->setBufferSize(getWidth(), getHeight());
         unsigned char *copiedData = texture->getBufferData();
         memcpy(copiedData, data, getWidth() * getHeight() * 4);
         return texture;

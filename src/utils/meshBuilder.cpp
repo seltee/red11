@@ -73,6 +73,29 @@ Mesh *MeshBuilder::createCube(float size)
     return new Mesh(VertexDataType::PositionUV, verticies, 24, polygons, 12);
 }
 
+Mesh *MeshBuilder::createPlain(float size)
+{
+    return createPlain(size, size);
+}
+
+Mesh *MeshBuilder::createPlain(float width, float height)
+{
+    float halfWidth = width / 2.0f;
+    float halfHeight = height / 2.0f;
+
+    VertexDataUV verticies[4];
+    verticies[0] = VertexDataUV(16, -halfWidth, 0.0f, -halfHeight, 0.0, 0.0, 0.0f, 1.0f, 0.0f);
+    verticies[1] = VertexDataUV(17, halfWidth, 0.0f, -halfHeight, 1.0, 0.0, 0.0f, 1.0f, 0.0f);
+    verticies[2] = VertexDataUV(18, halfWidth, 0.0f, halfHeight, 1.0, 1.0, 0.0f, 1.0f, 0.0f);
+    verticies[3] = VertexDataUV(19, -halfWidth, 0.0f, halfHeight, 0.0, 1.0, 0.0f, 1.0f, 0.0f);
+
+    PolygonTriPoints polygons[2];
+    polygons[0] = PolygonTriPoints({1, 2, 0});
+    polygons[1] = PolygonTriPoints({0, 2, 3});
+
+    return new Mesh(VertexDataType::PositionUV, verticies, 4, polygons, 2);
+}
+
 Mesh *MeshBuilder::createSphere(float radius, unsigned int rings, unsigned int segments)
 {
     std::vector<VertexDataUV> verticies;

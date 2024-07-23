@@ -8,6 +8,7 @@
 #include "components/component.h"
 #include "components/componentMesh.h"
 #include "components/componentMeshGroup.h"
+#include "components/componentText.h"
 #include "components/componentLight.h"
 #include "components/componentCamera.h"
 #include "data/mesh.h"
@@ -59,6 +60,18 @@ public:
         component->setRotation(rotation);
         component->setScale(scale);
         component->setMeshList(list);
+        return component;
+    }
+
+    inline ComponentText *createComponentText(std::string text, Font *font, int size, Vector3 position = Vector3(0.0f), Vector3 rotation = Vector3(0.0f), Vector3 scale = Vector3(1.0f))
+    {
+        auto component = createComponent<ComponentText>();
+        component->setFont(font);
+        component->setText(text);
+        component->setSize(size);
+        component->setPosition(position);
+        component->setRotation(rotation);
+        component->setScale(scale);
         return component;
     }
 

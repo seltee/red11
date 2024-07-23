@@ -25,6 +25,7 @@ Matrix4 *Entity::getModelMatrix()
     {
         if (transformationParent && (transformationParent->getTIteration() != tIteration || transformationParent->isTransformationDirty()))
         {
+            tIteration++;
             mModelWithParent = *transformationParent->getModelMatrix() * mModelLocal;
             tLastParentIteration = transformationParent->getTIteration();
         }

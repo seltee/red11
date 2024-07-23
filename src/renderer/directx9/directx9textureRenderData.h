@@ -26,6 +26,7 @@ public:
 
 protected:
     void createNormalTexture(LPDIRECT3DDEVICE9 d3ddev, Texture *dataTexture);
+    void createByteMapTexture(LPDIRECT3DDEVICE9 d3ddev, Texture *dataTexture);
     void createStencilTexture(LPDIRECT3DDEVICE9 d3ddev, Texture *dataTexture);
 };
 

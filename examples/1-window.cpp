@@ -12,11 +12,14 @@ APPMAIN
     auto window = Red11::createWindow("Window Example", WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_RESIZABLE);
     auto renderer = Red11::createRenderer(window, RendererType::DirectX9);
 
+    // Meshes
     auto cubeMesh = Red11::getMeshBuilder()->createCube(0.1f);
 
+    // Scene
     auto scene = Red11::createScene();
     scene->setAmbientLight(Color(0.05f, 0.05f, 0.09f));
 
+    // Objects
     auto cube = scene->createActor<Actor>("Cube");
     auto cubeComponent = cube->createComponentMesh(cubeMesh);
     cubeComponent->setMaterial(new MaterialSimple(Color(0.2, 0.8, 0.8), Color(0.8, 0.0, 0.0)));
@@ -32,6 +35,7 @@ APPMAIN
     cubeComponent->setMaterial(new MaterialSimple(Color(0.8, 0.3, 0.2)));
     cube3->setPosition(Vector3(-0.05f, 0.1f, -0.55f));
 
+    // Lights
     auto lightSun = scene->createActor<Actor>("Light");
     auto lightSunComponent = lightSun->createComponent<ComponentLight>();
     lightSunComponent->setupDirectional(glm::normalize(Vector3(-1.0f, -1.0f, -1.0)), Color(3.4f, 3.4f, 3.0f));
@@ -43,18 +47,33 @@ APPMAIN
     lightCubeComponent->setMaterial(new MaterialSimple(Color(0.8, 0.8, 0.8), Color(0.8, 0.4, 0.2)));
     lightCubeComponent->setScale(0.12f, 0.12f, 0.12f);
 
-    Camera *camera = new Camera();
-    Entity cameraTransform;
+    // Font
+    Font *font = new Font("./data/Roboto-Medium.ttf");
+
+    // Camera
+    Actor *camera = scene->createActor<Actor>("Camera");
+    ComponentCamera *cameraComponent = camera->createComponent<ComponentCamera>();
+
+    // Simple UI to show FPS
+    auto fpsMeter = camera->createComponentText("FPS", font, 128);
+    fpsMeter->setPosition(-0.022f, 0.012f, -0.03f);
+    fpsMeter->setScale(Vector3(0.03f, 0.03f, 0.03f));
+    fpsMeter->setRotation(Vector3(CONST_PI * 0.5f, 0, 0));
 
     DeltaCounter deltaCounter;
     float wsDelta = 0.0f;
     while (!window->isCloseRequested())
     {
+        float delta = deltaCounter.getDeltaFrameCounter();
+        fpsMeter->setText(std::string("FPS: ") + std::to_string(deltaCounter.getFPS()));
+
+        wsDelta += delta;
+
         window->processWindow();
-        wsDelta += deltaCounter.getDelta();
 
         renderer->prepareToRender();
-        camera->setupAsPerspective(renderer->getViewWidth(), renderer->getViewHeight());
+
+        cameraComponent->setupAsPerspective(renderer->getViewWidth(), renderer->getViewHeight());
 
         renderer->clearBuffer(Color(0.4, 0.5, 0.8));
 
@@ -63,12 +82,10 @@ APPMAIN
         cube3->rotate(Vector3(0.0f, 0.0f, 0.01f));
 
         lightOmni->setPosition(Vector3(sin(wsDelta) * 0.2f, cos(wsDelta) * 0.2f, -0.4f));
+        camera->setPosition(Vector3(sinf(wsDelta * 0.8f) * 0.06f, 0.0f, 0.0f));
 
-        scene->process(0.01f);
-
-        cameraTransform.setPosition(Vector3(sinf(wsDelta * 0.8f) * 0.06f, 0.0f, 0.0f));
-        camera->updateViewMatrix(cameraTransform.getModelMatrix());
-        scene->render(renderer, camera);
+        scene->process(delta);
+        scene->render(renderer, cameraComponent->getCamera());
 
         renderer->present();
     }

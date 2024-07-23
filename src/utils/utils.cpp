@@ -4,6 +4,7 @@
 #include "utils/utils.h"
 #include "utils/math.h"
 #include <stdlib.h>
+#include <stdio.h>
 
 float randf()
 {
@@ -32,4 +33,11 @@ void calcTangets(const float *v1, const float *v2, const float *v3, float *out)
     out[3] = f * (-deltaUV2.x * edge1.x + deltaUV1.x * edge2.x);
     out[4] = f * (-deltaUV2.x * edge1.y + deltaUV1.x * edge2.y);
     out[5] = f * (-deltaUV2.x * edge1.z + deltaUV1.x * edge2.z);
+}
+
+int getFileByteSize(std::string path)
+{
+    struct stat stat_buf;
+    int rc = stat(path.c_str(), &stat_buf);
+    return rc == 0 ? stat_buf.st_size : -1;
 }

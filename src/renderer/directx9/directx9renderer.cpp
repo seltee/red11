@@ -356,6 +356,7 @@ void DirectX9Renderer::renderQueueDepthEqual(Vector3 &cameraPosition, Camera *ca
 
     // === Sort and Render Alpha Meshes ===
     d3ddev->SetRenderState(D3DRS_ZFUNC, D3DCMP_LESSEQUAL);
+    d3ddev->SetRenderState(D3DRS_ZWRITEENABLE, false);
     std::sort(alphaRenderMeshes.begin(), alphaRenderMeshes.end(), [](const QueuedMeshRenderData *a, const QueuedMeshRenderData *b)
               { return a->distance > b->distance; });
     for (auto &renderMesh : alphaRenderMeshes)

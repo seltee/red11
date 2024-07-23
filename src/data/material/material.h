@@ -24,6 +24,7 @@ class Material
 {
 public:
     EXPORT Material();
+    EXPORT virtual ~Material();
     virtual MaterialType getType() = 0;
     virtual MaterialDisplay getDisplay() = 0;
     virtual bool isUsingNormalMap() = 0;

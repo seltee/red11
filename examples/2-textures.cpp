@@ -66,9 +66,14 @@ APPMAIN
     cubeFileData->load();
     auto cubeTest2Mesh = cubeFileData->getAsMesh();
 
+    // Font
+    Font *font = new Font("./data/Roboto-Medium.ttf");
+
+    // Scene
     auto scene = Red11::createScene();
     scene->setAmbientLight(Color(0.4f, 0.4f, 0.7f));
 
+    // Objects
     auto cube = scene->createActor<Actor>("Cube");
     auto cubeComponent = cube->createComponentMesh(cubeTest2Mesh);
     cubeComponent->setMaterial(test2Material);
@@ -111,16 +116,26 @@ APPMAIN
     track->loop();
     animatedBoxes->setPosition(Vector3(-0.25f, 0.28f, -0.7f));
 
+    // Light
     auto lightSun = scene->createActor<Actor>("Light");
     auto lightSunComponent = lightSun->createComponent<ComponentLight>();
     lightSunComponent->setupDirectional(glm::normalize(Vector3(-1.0f, -1.0f, -1.0)), Color(6.7f, 5.9f, 5.0f));
 
-    Camera camera;
-    Entity cameraTransform;
+    // Camera
+    Actor *camera = scene->createActor<Actor>("Camera");
+    ComponentCamera *cameraComponent = camera->createComponent<ComponentCamera>();
+    camera->setPosition(0, 0.2, 0);
 
     CameraControl cameraControl;
     memset(&cameraControl, 0, sizeof(CameraControl));
 
+    // Simple UI to show FPS
+    auto fpsMeter = camera->createComponentText("FPS", font, 128);
+    fpsMeter->setPosition(-0.022f, 0.012f, -0.03f);
+    fpsMeter->setScale(Vector3(0.03f, 0.03f, 0.03f));
+    fpsMeter->setRotation(Vector3(CONST_PI * 0.5f, 0, 0));
+
+    // Input
     auto input = Red11::getGlobalInputProvider();
     InputDescriptorList forwardList;
     forwardList.addKeyboardInput(KeyboardCode::Up, 1.0f);
@@ -163,32 +178,32 @@ APPMAIN
 
     while (!window->isCloseRequested())
     {
-        float delta = deltaCounter.getDelta();
+        float delta = deltaCounter.getDeltaFrameCounter();
+        fpsMeter->setText(std::string("FPS: ") + std::to_string(deltaCounter.getFPS()));
+
         window->processWindow();
         window->setMousePosition(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2);
 
         renderer->prepareToRender();
-        camera.setupAsPerspective(renderer->getViewWidth(), renderer->getViewHeight());
+        cameraComponent->setupAsPerspective(renderer->getViewWidth(), renderer->getViewHeight());
         renderer->clearBuffer(Color(0.4, 0.5, 0.8));
 
         cube->rotate(Vector3(0.0f, 0.5f * delta, 0.0f));
         cube2->rotate(Vector3(0.5f * delta, 0.0f, 0.0f));
         cube3->rotate(Vector3(0.0f, 0.0f, 0.5f * delta));
 
-        scene->process(delta);
-
         cameraRX += cameraControl.rotateY * 0.0015f;
         cameraRY += cameraControl.rotateX * 0.0015f;
         cameraRX = glm::clamp(cameraRX, -1.2f, 1.0f);
-        cameraTransform.setRotation(Vector3(cameraRX, cameraRY, 0));
+        camera->setRotation(Vector3(cameraRX, cameraRY, 0));
 
-        auto forward = cameraTransform.getRotation() * Vector3(0, 0, 0.2f);
-        cameraTransform.translate(forward * delta * cameraControl.move);
-        auto side = cameraTransform.getRotation() * Vector3(0.2f, 0, 0);
-        cameraTransform.translate(side * delta * cameraControl.sideMove);
+        auto forward = camera->getRotation() * Vector3(0, 0, 0.2f);
+        camera->translate(forward * delta * cameraControl.move);
+        auto side = camera->getRotation() * Vector3(0.2f, 0, 0);
+        camera->translate(side * delta * cameraControl.sideMove);
 
-        camera.updateViewMatrix(cameraTransform.getModelMatrix());
-        scene->render(renderer, &camera);
+        scene->process(delta);
+        scene->render(renderer, cameraComponent->getCamera());
 
         renderer->present();
     }

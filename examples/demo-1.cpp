@@ -248,7 +248,7 @@ APPMAIN
 
     while (!window->isCloseRequested())
     {
-        float delta = deltaCounter.getDelta();
+        float delta = deltaCounter.getDeltaFrameCounter();
         accDelta += delta;
         cameraFrame += delta;
         if (cameraFrame >= cameraAnimationData->getTimeLength())
@@ -268,8 +268,6 @@ APPMAIN
         renderer->prepareToRender();
         camera.setupAsPerspective(renderer->getViewWidth(), renderer->getViewHeight());
         renderer->clearBuffer(Color(0.4, 0.5, 0.8));
-
-        scene->process(delta);
 
         if (cameraControl.freeCamera)
         {
@@ -293,6 +291,7 @@ APPMAIN
             cameraTransform.setRotation(cameraAnimationEntity.getRotation() * Quat(Vector3(0, -CONST_PI / 2, 0)));
         }
 
+        scene->process(delta);
         camera.updateViewMatrix(cameraTransform.getModelMatrix());
         scene->render(renderer, &camera);
 

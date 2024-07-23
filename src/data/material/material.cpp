@@ -11,3 +11,7 @@ Material::Material()
     lastIndex++;
     updIndex = 0;
 }
+
+Material::~Material()
+{
+}

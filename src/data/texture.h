@@ -10,6 +10,7 @@
 enum class TextureType
 {
     Normal,
+    ByteMap,
     GpuStencil
 };
 
@@ -23,9 +24,10 @@ public:
 
     EXPORT virtual unsigned char *getBufferData();
     EXPORT virtual void releaseBuffer();
-    EXPORT virtual unsigned char *setBuffer(int width, int height);
+    EXPORT virtual unsigned char *setBufferSize(int width, int height);
     EXPORT virtual int getWidth();
     EXPORT virtual int getHeight();
+    EXPORT int getBytesPerPixel();
 
     EXPORT unsigned int getColorAtPoint(int x, int y);
 

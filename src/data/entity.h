@@ -142,7 +142,15 @@ public:
     }
     inline Vector3 getScale() { return scale; };
 
-    inline bool isTransformationDirty() { return bIsTransformationDirty; }
+    inline Vector3 getForwardVector()
+    {
+        return glm::normalize(Matrix3(*getModelMatrix()) * Vector3(0.0f, 0.0f, -1.0f));
+    }
+
+    inline bool isTransformationDirty()
+    {
+        return bIsTransformationDirty || (transformationParent && (transformationParent->getTIteration() != tIteration || transformationParent->isTransformationDirty()));
+    }
 
     inline int getTIteration()
     {

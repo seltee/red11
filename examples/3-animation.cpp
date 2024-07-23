@@ -54,6 +54,9 @@ APPMAIN
         }
     }
 
+    // Font
+    Font *font = new Font("./data/Roboto-Medium.ttf");
+
     // Player actor
     auto player = scene->createActor<Actor>("Player");
     auto playerAnimComponent = player->createComponentMeshGroup(manFileData->getMeshObjectList());
@@ -70,11 +73,18 @@ APPMAIN
     auto trackStraifRight = playerAnimComponent->createAnimationTrack(manStraifRightFileData->getAnimationsList()->at(0));
     trackStraifRight->loop(2.0f, 0.5f);
 
+    // camera
     auto cameraRoot = player->createComponent<Component>();
-
     auto cameraComponent = player->createComponent<ComponentCamera>();
     cameraComponent->setPosition(Vector3(0, 0.16f, 0.4f));
     cameraComponent->setParent(cameraRoot);
+
+    // Simple UI to show FPS
+    auto fpsMeter = player->createComponentText("FPS", font, 128);
+    fpsMeter->setParent(cameraComponent);
+    fpsMeter->setPosition(-0.022f, 0.012f, -0.03);
+    fpsMeter->setScale(Vector3(0.03f, 0.03f, 0.03f));
+    fpsMeter->setRotation(Vector3(CONST_PI * 0.5f, 0, 0));
 
     // Light
     auto lightSun = scene->createActor<Actor>("Light");
@@ -126,7 +136,9 @@ APPMAIN
 
     while (!window->isCloseRequested())
     {
-        float delta = deltaCounter.getDelta();
+        float delta = deltaCounter.getDeltaFrameCounter();
+        fpsMeter->setText(std::string("FPS: ") + std::to_string(deltaCounter.getFPS()));
+
         window->processWindow();
         window->setMousePosition(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2);
 

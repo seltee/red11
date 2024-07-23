@@ -5,9 +5,8 @@
 
 std::list<Texture *> Texture::textures;
 
-Texture::Texture(TextureType textureType)
+Texture::Texture(TextureType textureType) : Texture("texture", textureType)
 {
-    Texture("texture_" + std::to_string(index + 1), textureType);
 }
 
 Texture::Texture(std::string name, TextureType textureType)
@@ -21,11 +20,11 @@ Texture::Texture(std::string name, TextureType textureType)
     textures.push_back(this);
 }
 
-Texture::Texture(std::string name, TextureType textureType, int width, int height, unsigned char *data)
+Texture::Texture(std::string name, TextureType textureType, int width, int height, unsigned char *data) : Texture(name, textureType)
 {
-    Texture(name, textureType);
-    setBuffer(width, height);
-    memcpy(this->data, data, width * height * 4);
+    this->textureType = textureType;
+    setBufferSize(width, height);
+    memcpy(this->data, data, width * height * getBytesPerPixel());
 }
 
 Texture::~Texture()
@@ -57,7 +56,7 @@ void Texture::releaseBuffer()
     updIndex++;
 }
 
-unsigned char *Texture::setBuffer(int width, int height)
+unsigned char *Texture::setBufferSize(int width, int height)
 {
     if (data)
         delete[] data;
@@ -65,7 +64,7 @@ unsigned char *Texture::setBuffer(int width, int height)
     this->width = width;
     this->height = height;
 
-    int size = width * height * 4;
+    int size = width * height * getBytesPerPixel();
     data = new unsigned char[size];
 
     memset(data, 0, size);
@@ -81,6 +80,11 @@ int Texture::getWidth()
 int Texture::getHeight()
 {
     return height;
+}
+
+int Texture::getBytesPerPixel()
+{
+    return textureType == TextureType::ByteMap ? 1 : 4;
 }
 
 unsigned int Texture::getColorAtPoint(int x, int y)

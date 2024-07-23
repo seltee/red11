@@ -143,6 +143,10 @@ APPMAIN
     auto ballSphereMesh = Red11::getMeshBuilder()->createSphere(0.041f);
     auto cubeMesh = Red11::getMeshBuilder()->createCube(0.1f);
 
+    // Font
+    Font *font = new Font("./data/Roboto-Medium.ttf");
+
+    // Scene
     auto scene = Red11::createScene();
     scene->setAmbientLight(Color(0.4f, 0.4f, 0.6f));
     PhysicsWorld *world = scene->getPhysicsWorld();
@@ -205,13 +209,21 @@ APPMAIN
     auto lightSunComponent = lightSun->createComponent<ComponentLight>();
     lightSunComponent->setupDirectional(glm::normalize(Vector3(-1.0f, -1.0f, -1.0)), Color(3.8f, 3.4f, 3.2f), true, LightShadowQuality::Maximum);
 
-    Camera camera;
-    Entity cameraTransform;
-    cameraTransform.setPosition(0, 0.2, 0);
+    // Camera
+    Actor *camera = scene->createActor<Actor>("Camera");
+    ComponentCamera *cameraComponent = camera->createComponent<ComponentCamera>();
+    camera->setPosition(0, 0.2, 0);
 
     CameraControl cameraControl;
     memset(&cameraControl, 0, sizeof(CameraControl));
 
+    // Simple UI to show FPS
+    auto fpsMeter = camera->createComponentText("FPS", font, 128);
+    fpsMeter->setPosition(-0.022f, 0.012f, -0.03f);
+    fpsMeter->setScale(Vector3(0.03f, 0.03f, 0.03f));
+    fpsMeter->setRotation(Vector3(CONST_PI * 0.5f, 0, 0));
+
+    // Input
     auto input = Red11::getGlobalInputProvider();
     InputDescriptorList forwardList;
     forwardList.addKeyboardInput(KeyboardCode::Up, 1.0f);
@@ -262,42 +274,41 @@ APPMAIN
     float cameraRX = 0, cameraRY = 0;
     while (!window->isCloseRequested())
     {
-        float delta = deltaCounter.getDelta();
+        float delta = deltaCounter.getDeltaFrameCounter();
+        fpsMeter->setText(std::string("FPS: ") + std::to_string(deltaCounter.getFPS()));
 
         window->processWindow();
         window->setMousePosition(renderer->getViewWidth() / 2, renderer->getViewHeight() / 2);
 
         renderer->prepareToRender();
-        camera.setupAsPerspective(renderer->getViewWidth(), renderer->getViewHeight());
+        cameraComponent->setupAsPerspective(renderer->getViewWidth(), renderer->getViewHeight());
         renderer->clearBuffer(Color(0.4, 0.5, 0.8));
-
-        scene->process(delta);
 
         cameraRX += cameraControl.rotateY * 0.0015f;
         cameraRY += cameraControl.rotateX * 0.0015f;
         cameraRX = glm::clamp(cameraRX, -1.2f, 1.0f);
-        cameraTransform.setRotation(Vector3(cameraRX, cameraRY, 0));
+        camera->setRotation(Vector3(cameraRX, cameraRY, 0));
 
-        auto forward = cameraTransform.getRotation() * Vector3(0, 0, 0.8f);
-        cameraTransform.translate(forward * delta * cameraControl.move);
-        auto side = cameraTransform.getRotation() * Vector3(0.8f, 0, 0);
-        cameraTransform.translate(side * delta * cameraControl.sideMove);
+        auto forward = camera->getRotation() * Vector3(0, 0, 0.8f);
+        camera->translate(forward * delta * cameraControl.move);
+        auto side = camera->getRotation() * Vector3(0.8f, 0, 0);
+        camera->translate(side * delta * cameraControl.sideMove);
 
         if (cameraControl.shoot)
         {
             cameraControl.shoot = false;
             auto sphereComponent = objectContainer->createComponentMesh(ballSphereMesh);
-            sphereComponent->setPosition(cameraTransform.getPosition() - Vector3(0, 0.05f, 0) + camera.getForwardVector() * 0.2f);
+            sphereComponent->setPosition(camera->getPosition() - Vector3(0, 0.05f, 0) + camera->getForwardVector() * 0.2f);
             sphereComponent->setMaterial(shootBallMaterial);
             ObjectDescriptor *descriptor = new ObjectDescriptor({ObjectType::ShootBall, &context, sphereComponent, "Shoot Ball", false, 4.0f});
             sphereComponent->enablePhysics(PhysicsMotionType::Dynamic, ballSphereFrom, descriptor);
-            sphereComponent->getPhysicsBody()->addLinearVelocity(camera.getForwardVector() * 3.0f);
+            sphereComponent->getPhysicsBody()->addLinearVelocity(camera->getForwardVector() * 3.0f);
             audioSystem->playSound(soundShoot, 0.5f);
         }
 
-        camera.updateViewMatrix(cameraTransform.getModelMatrix());
-        audioSystem->syncPosition(&cameraTransform);
-        scene->render(renderer, &camera);
+        scene->process(delta);
+        audioSystem->syncPosition(cameraComponent);
+        scene->render(renderer, cameraComponent->getCamera());
         audioSystem->process(delta);
 
         renderer->present();

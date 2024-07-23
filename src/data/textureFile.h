@@ -10,7 +10,7 @@ public:
     EXPORT TextureFile(std::string name, std::string filePath);
 
     EXPORT unsigned char *getBufferData() override;
-    EXPORT unsigned char *setBuffer(int width, int height) override;
+    EXPORT unsigned char *setBufferSize(int width, int height) override;
     EXPORT int getWidth() override;
     EXPORT int getHeight() override;
 

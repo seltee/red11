@@ -9,8 +9,12 @@ class DeltaCounter
 public:
     EXPORT DeltaCounter();
 
-    EXPORT float getDelta(bool clearCounter = true);
+    EXPORT float getDeltaFrameCounter(bool clearCounter = true);
+    inline int getFPS() { return fps; }
 
 protected:
     unsigned long long lastTime;
+    unsigned long long lastFPSCheck;
+    int fps = 0;
+    int frames = 0;
 };

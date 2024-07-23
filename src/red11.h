@@ -24,6 +24,7 @@
 #include "data/debugEntities.h"
 #include "data/sound.h"
 #include "data/soundFile.h"
+#include "data/font.h"
 #include "audio/audio.h"
 
 #ifdef WINDOWS_ONLY

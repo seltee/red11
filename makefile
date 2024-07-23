@@ -50,7 +50,7 @@ OBJ_FILES = ${OBJDIR}/red11.o \
 			${OBJDIR}/directx9renderer.o ${OBJDIR}/directx9meshRenderData.o ${OBJDIR}/directx9textureRenderData.o ${OBJDIR}/directx9materialRenderData.o  \
 			${OBJDIR}/directx9data.o  \
 			${OBJDIR}/mesh.o ${OBJDIR}/meshObject.o ${OBJDIR}/entity.o ${OBJDIR}/light.o ${OBJDIR}/camera.o ${OBJDIR}/texture.o ${OBJDIR}/textureFile.o ${OBJDIR}/inputProvider.o \
-			${OBJDIR}/sound.o ${OBJDIR}/soundFile.o \
+			${OBJDIR}/sound.o ${OBJDIR}/soundFile.o ${OBJDIR}/font.o \
 			${OBJDIR}/deform.o ${OBJDIR}/boneTransform.o ${OBJDIR}/animation.o ${OBJDIR}/animationTarget.o ${OBJDIR}/animator.o ${OBJDIR}/animationTrack.o \
 			${OBJDIR}/physicsWorld.o ${OBJDIR}/physicsBody.o ${OBJDIR}/physicsForm.o ${OBJDIR}/physicsUtils.o \
 			${OBJDIR}/constraint.o ${OBJDIR}/constraintAxis.o \
@@ -59,8 +59,9 @@ OBJ_FILES = ${OBJDIR}/red11.o \
 			${OBJDIR}/data3DFile.o ${OBJDIR}/debugEntities.o \
 			${OBJDIR}/material.o ${OBJDIR}/materialSimple.o \
 			${OBJDIR}/actor.o ${OBJDIR}/actorTemporary.o \
-			${OBJDIR}/component.o ${OBJDIR}/componentMesh.o ${OBJDIR}/componentLight.o ${OBJDIR}/componentMeshGroup.o ${OBJDIR}/componentCamera.o \
-			${OBJDIR}/utils.o ${OBJDIR}/color.o ${OBJDIR}/meshBuilder.o ${OBJDIR}/meshCombiner.o ${OBJDIR}/destroyable.o ${OBJDIR}/stb_image.o ${OBJDIR}/stb_vorbis.o \
+			${OBJDIR}/component.o ${OBJDIR}/componentMesh.o ${OBJDIR}/componentText.o ${OBJDIR}/componentLight.o ${OBJDIR}/componentMeshGroup.o ${OBJDIR}/componentCamera.o \
+			${OBJDIR}/utils.o ${OBJDIR}/color.o ${OBJDIR}/meshBuilder.o ${OBJDIR}/meshCombiner.o ${OBJDIR}/destroyable.o \
+			${OBJDIR}/stb_image.o ${OBJDIR}/stb_vorbis.o ${OBJDIR}/stb_truetype.o \
 			${OBJDIR}/deltaCounter.o ${OBJDIR}/jobQueue.o ${OBJDIR}/logger.o ${OBJDIR}/hullCliping.o \
 			${OBJDIR}/loaderFBX.o ${OBJDIR}/FBXNode.o ${OBJDIR}/FBXAnimationStack.o ${OBJDIR}/FBXAnimationLayer.o ${OBJDIR}/FBXAnimationCurve.o ${OBJDIR}/FBXAnimationCurveNode.o \
 			${OBJDIR}/FBXDeform.o ${OBJDIR}/FBXGeometry.o ${OBJDIR}/FBXModel.o ${OBJDIR}/FBXAttribute.o
@@ -138,6 +139,9 @@ ${OBJDIR}/sound.o: ${SRCDIR}/data/sound.cpp
 
 ${OBJDIR}/soundFile.o: ${SRCDIR}/data/soundFile.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/soundFile.o ${SRCDIR}/data/soundFile.cpp
+
+${OBJDIR}/font.o: ${SRCDIR}/data/font.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/font.o ${SRCDIR}/data/font.cpp
 
 ${OBJDIR}/deform.o: ${SRCDIR}/data/deform.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/deform.o ${SRCDIR}/data/deform.cpp
@@ -229,6 +233,9 @@ ${OBJDIR}/component.o: ${SRCDIR}/actor/components/component.cpp
 ${OBJDIR}/componentMesh.o: ${SRCDIR}/actor/components/componentMesh.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/componentMesh.o ${SRCDIR}/actor/components/componentMesh.cpp
 
+${OBJDIR}/componentText.o: ${SRCDIR}/actor/components/componentText.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/componentText.o ${SRCDIR}/actor/components/componentText.cpp
+
 ${OBJDIR}/componentLight.o: ${SRCDIR}/actor/components/componentLight.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/componentLight.o ${SRCDIR}/actor/components/componentLight.cpp
 
@@ -258,6 +265,9 @@ ${OBJDIR}/stb_image.o: ${SRCDIR}/utils/image/stb_image.cpp
 
 ${OBJDIR}/stb_vorbis.o: ${SRCDIR}/utils/sound/stb_vorbis.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/stb_vorbis.o ${SRCDIR}/utils/sound/stb_vorbis.cpp
+
+${OBJDIR}/stb_truetype.o: ${SRCDIR}/utils/font/stb_truetype.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/stb_truetype.o ${SRCDIR}/utils/font/stb_truetype.cpp
 
 ${OBJDIR}/deltaCounter.o: ${SRCDIR}/utils/deltaCounter.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/deltaCounter.o ${SRCDIR}/utils/deltaCounter.cpp
