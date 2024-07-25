@@ -1,9 +1,16 @@
 // SPDX-FileCopyrightText: 2024 Dmitrii Shashkov
 // SPDX-License-Identifier: MIT
 
+#define _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING
+#define _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS
+
 #include "font.h"
 #include "utils/font/stb_truetype.h"
 #include <stdio.h>
+#include <string>
+#include <locale>
+#include <codecvt>
 
 Font::Font(std::string path)
 {
@@ -69,6 +76,25 @@ Texture *Font::getGlyphTexture(unsigned int code, unsigned int size)
     return nullptr;
 }
 
+unsigned int Font::measureWidth(std::string string, unsigned int size)
+{
+    std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> convert;
+    std::u32string text32 = convert.from_bytes(string);
+
+    int width = 0.0f;
+    for (auto &c : text32)
+    {
+        Glyph *glyph = getGlyph(c, size);
+        width += glyph->w;
+    }
+    return width;
+}
+
+unsigned int Font::measureHeight(std::string string, unsigned int size)
+{
+    return size;
+}
+
 int Font::createGlyphInList(unsigned int code, unsigned int size)
 {
     stbtt_fontinfo *font = (stbtt_fontinfo *)fontInfo;
@@ -76,7 +102,7 @@ int Font::createGlyphInList(unsigned int code, unsigned int size)
     float scale = stbtt_ScaleForPixelHeight(font, size);
     int sw, sh, width, height;
     stbtt_GetCodepointBitmapBox(font, code, scale, scale, &sw, &sh, &width, &height);
-    width -= sw;
+    width += sw;
     height -= sh;
 
     int textureWidth = nextPowerOfTwo(width);
@@ -89,7 +115,9 @@ int Font::createGlyphInList(unsigned int code, unsigned int size)
     Texture *texture = new Texture("Glyph", TextureType::ByteMap, textureSize, textureSize, bitmap);
     delete[] bitmap;
 
-    list.push_back({texture, code, size, width, height});
+    printf("Glyph %c - %i %i %i %i\n", code, width, height, sw, sh);
+
+    list.push_back({texture, code, size, sw, sh, static_cast<unsigned int>(width <= 1 ? size / 2 : width), static_cast<unsigned int>(height)});
 
     return list.size() - 1;
 }

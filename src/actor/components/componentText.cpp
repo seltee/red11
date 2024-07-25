@@ -121,7 +121,7 @@ int ComponentText::getCacheLetterIndex(int code, int size)
     float textureSize = static_cast<float>(glyph->texture->getWidth());
     float localWidth = (static_cast<float>(glyph->w) / 128.0f) * 0.1f;
     float localHeight = (static_cast<float>(glyph->h) / 128.0f) * 0.1f;
-    float localScale = glyph->texture->getWidth() / 128.0f;
+    float localScale = textureSize / 128.0f;
 
     lettersCache.push_back({material, code, size, localWidth, localHeight, localScale});
 

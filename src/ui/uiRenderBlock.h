@@ -10,6 +10,7 @@ class UIRenderBlock
 {
 public:
     float x, y;
+    float textShiftX, textShiftY;
     int index;
     UINode *source;
     std::vector<UIRenderBlock *> children;

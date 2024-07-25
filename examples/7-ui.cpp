@@ -85,7 +85,7 @@ APPMAIN
         boxComponent->setRenderDebugPhysicsBody(true);
     }
 
-    // Floor && walls
+    // Floor
     auto floor = scene->createActor<Actor>("Floor");
     auto floorComponent = floor->createComponent<Component>();
     auto floorForm = world->createPhysicsForm(0.9f, 0.1f);
@@ -107,12 +107,14 @@ APPMAIN
     memset(&cameraControl, 0, sizeof(CameraControl));
 
     // UI
-    UI *ui = new UI(window, renderer);
+    UI *ui = new UI(window, renderer, font);
     UINode *canvas = ui->createUINodeChild<UINode>();
     canvas->width.setAsPercentage(100.0f);
     canvas->height.setAsPercentage(100.0f);
     canvas->contentDirection.set(UIContentDirection::Vertical);
-    canvas->font.set(font);
+    canvas->fontSize.set(48);
+    canvas->colorText.set(Color(1, 1, 1, 1));
+    canvas->letterSpacing.set(1.0f);
 
     UINode *topBar = canvas->createUINodeChild<UINode>();
     topBar->width.setAsPercentage(100.0f);
@@ -148,7 +150,7 @@ APPMAIN
     barMenu1->getMarginTop().setAsNumber(60);
     barMenu1->positioning.set(UIBlockPositioning::Absolute);
     barMenu1->colorBackground.set(Color(0.5f, 0.5f, 0.5f, 1.0f));
-    
+
     UINode *barMenu2 = topBar->createUINodeChild<UINode>();
     barMenu2->width.setAsNumber(140.0f);
     barMenu2->height.setAsNumber(280.0f);
@@ -156,24 +158,29 @@ APPMAIN
     barMenu2->positioning.set(UIBlockPositioning::Absolute);
     barMenu2->colorBackground.set(Color(0.8f, 0.8f, 0.8f, 1.0f));
 
-    
     UINode *barButton1 = topBar->createUINodeChild<UINode>();
-    barButton1->width.setAsNumber(50.0f);
-    barButton1->height.setAsNumber(50.0f);
-    barButton1->setMarginNumber(5.0f);
+    barButton1->height.setAsPercentage(100);
+    barButton1->setPaddingNumber(12.0f, 0.0f);
+    barButton1->minWidth.setAsNumber(120.0f);
     barButton1->colorBackground.set(Color(0.2f, 0.8f, 0.8f, 1.0f));
+    barButton1->text.set("File");
+    barButton1->textVerticalAlign.set(UIContentAlign::Middle);
 
     UINode *barButton2 = topBar->createUINodeChild<UINode>();
-    barButton2->width.setAsNumber(50.0f);
-    barButton2->height.setAsNumber(50.0f);
-    barButton2->setMarginNumber(5.0f);
+    barButton2->height.setAsPercentage(100);
+    barButton2->setPaddingNumber(12.0f, 0.0f);
+    barButton2->minWidth.setAsNumber(120.0f);
     barButton2->colorBackground.set(Color(0.8f, 0.2f, 0.8f, 1.0f));
+    barButton2->text.set("Add ball");
+    barButton2->textVerticalAlign.set(UIContentAlign::Middle);
 
     UINode *barButton3 = topBar->createUINodeChild<UINode>();
-    barButton3->width.setAsNumber(50.0f);
-    barButton3->height.setAsNumber(50.0f);
-    barButton3->setMarginNumber(5.0f);
+    barButton3->height.setAsPercentage(100);
+    barButton3->setPaddingNumber(12.0f, 0.0f);
+    barButton3->minWidth.setAsNumber(120.0f);
     barButton3->colorBackground.set(Color(0.8f, 0.8f, 0.2f, 1.0f));
+    barButton3->text.set("Help");
+    barButton3->textVerticalAlign.set(UIContentAlign::Middle);
 
     // Input
     auto input = Red11::getGlobalInputProvider();

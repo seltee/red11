@@ -11,6 +11,9 @@
 #include "uiPropertyPositioning.h"
 #include "uiPropertyColor.h"
 #include "uiPropertyFont.h"
+#include "uiPropertyText.h"
+#include "uiPropertyNumber.h"
+#include "uiPropertyFloat.h"
 #include "data/font.h"
 
 class UINodeDisplay
@@ -36,6 +39,27 @@ public:
         border[UI_TOP].setAsNumber(top);
         border[UI_RIGHT].setAsNumber(right);
         border[UI_BOTTOM].setAsNumber(bottom);
+    }
+    inline void setMarginNumber(float leftRight, float topBottom)
+    {
+        margin[UI_LEFT].setAsNumber(leftRight);
+        margin[UI_TOP].setAsNumber(topBottom);
+        margin[UI_RIGHT].setAsNumber(leftRight);
+        margin[UI_BOTTOM].setAsNumber(topBottom);
+    }
+    inline void setPaddingNumber(float leftRight, float topBottom)
+    {
+        padding[UI_LEFT].setAsNumber(leftRight);
+        padding[UI_TOP].setAsNumber(topBottom);
+        padding[UI_RIGHT].setAsNumber(leftRight);
+        padding[UI_BOTTOM].setAsNumber(topBottom);
+    }
+    inline void setBorderNumber(float leftRight, float topBottom)
+    {
+        border[UI_LEFT].setAsNumber(leftRight);
+        border[UI_TOP].setAsNumber(topBottom);
+        border[UI_RIGHT].setAsNumber(leftRight);
+        border[UI_BOTTOM].setAsNumber(topBottom);
     }
     inline void setMarginNumber(float leftTopRightBottom)
     {
@@ -76,16 +100,23 @@ public:
     UIPropertyDimension height;
     UIPropertyDimension maxWidth;
     UIPropertyDimension maxHeight;
+    UIPropertyDimension minWidth;
+    UIPropertyDimension minHeight;
     UIPropertyDimension margin[4];
     UIPropertyDimension padding[4];
     UIPropertyDimension border[4];
     UIPropertyAlign horizontalAlign;
     UIPropertyAlign verticalAlign;
+    UIPropertyAlign textHorizontalAlign;
+    UIPropertyAlign textVerticalAlign;
     UIPropertyDirection contentDirection;
     UIPropertyPositioning positioning;
+    UIPropertyText text;
     UIPropertyColor colorBackground;
     UIPropertyColor colorBorder;
     UIPropertyColor colorText;
     UIPropertyColor colorSelection;
     UIPropertyFont font;
+    UIPropertyNumber fontSize;
+    UIPropertyFloat letterSpacing;
 };

@@ -183,15 +183,49 @@ void DirectX9Renderer::renderSpriteRect(Matrix4 *mModel, Color color)
     Directx9MeshRenderData *meshData = data.getMeshRenderData(spriteMesh);
 
     // Sprite shader settings
-    // Use texture, *, *, *
     // UV add X, UV add Y, UV div x, UV div y
-    float settings[8] = {
-        0.0f, 0.0f, 0.0f, 0.0f,
-        0.0f, 0.0f, 1.0f, 1.0f};
-    d3ddev->SetVertexShaderConstantF(4, (const float *)settings, 2);
+    float vertexShaderSettings[4] = {0.0f, 0.0f, 1.0f, 1.0f};
+    d3ddev->SetVertexShaderConstantF(4, (const float *)vertexShaderSettings, 1);
 
     // Color
     d3ddev->SetPixelShaderConstantF(0, (const float *)color.getAsFloatArray(), 1);
+
+    // Pixel shader settings
+    // Use texture, As mask, *, *
+    float pixelShaderSettings[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+    d3ddev->SetPixelShaderConstantF(1, (const float *)pixelShaderSettings, 1);
+
+    // === Render Data and final render ===
+    d3ddev->SetStreamSource(0, meshData->vBuffer, 0, sizeof(DX9VertexNormalUV));
+    d3ddev->SetIndices(meshData->iBuffer);
+
+    d3ddev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, meshData->vAmount, 0, meshData->iAmount);
+}
+
+void DirectX9Renderer::renderSpriteMask(Matrix4 *mModel, Texture *texture, Color color)
+{
+    Matrix4 worldViewProjection = glm::transpose(mSpriteViewProjection * *mModel);
+    d3ddev->SetVertexShaderConstantF(0, (const float *)value_ptr(worldViewProjection), 4);
+
+    Directx9MeshRenderData *meshData = data.getMeshRenderData(spriteMesh);
+
+    // Sprite shader settings
+    // UV add X, UV add Y, UV div x, UV div y
+    float vertexShaderSettings[4] = {0.0f, 0.0f, 1.0f, 1.0f};
+    d3ddev->SetVertexShaderConstantF(4, (const float *)vertexShaderSettings, 1);
+
+    // Color
+    d3ddev->SetPixelShaderConstantF(0, (const float *)color.getAsFloatArray(), 1);
+
+    // Pixel shader settings
+    // Use texture, As mask, *, *
+    float pixelShaderSettings[4] = {1.0f, 1.0f, 0.0f, 0.0f};
+    d3ddev->SetPixelShaderConstantF(1, (const float *)pixelShaderSettings, 1);
+
+    // Mask
+    Directx9TextureRenderData *maskTextureData = data.getTextureRenderData(texture);
+    if (maskTextureData)
+        d3ddev->SetTexture(0, maskTextureData->texture);
 
     // === Render Data and final render ===
     d3ddev->SetStreamSource(0, meshData->vBuffer, 0, sizeof(DX9VertexNormalUV));

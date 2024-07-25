@@ -15,7 +15,8 @@ struct Glyph
     Texture *texture;
     unsigned int code;
     unsigned int size;
-    int w, h;
+    int shiftX, shiftY;
+    unsigned int w, h;
 };
 
 class Font
@@ -25,6 +26,9 @@ public:
 
     EXPORT Glyph *getGlyph(unsigned int code, unsigned int size);
     EXPORT Texture *getGlyphTexture(unsigned int code, unsigned int size);
+
+    EXPORT unsigned int measureWidth(std::string string, unsigned int size);
+    EXPORT unsigned int measureHeight(std::string string, unsigned int size);
 
     inline bool isReady() { return bIsReady; }
 

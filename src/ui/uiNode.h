@@ -45,6 +45,10 @@ public:
     inline float getCalculatedPaddingTop() { return calculatedPadding[UI_TOP]; }
     inline float getCalculatedPaddingRight() { return calculatedPadding[UI_RIGHT]; }
     inline float getCalculatedPaddingBottom() { return calculatedPadding[UI_BOTTOM]; }
+    inline float getCalculatedBorderLeft() { return calculatedBorder[UI_LEFT]; }
+    inline float getCalculatedBorderTop() { return calculatedBorder[UI_TOP]; }
+    inline float getCalculatedBorderRight() { return calculatedBorder[UI_RIGHT]; }
+    inline float getCalculatedBorderBottom() { return calculatedBorder[UI_BOTTOM]; }
     inline float getCalculatedFullWidth()
     {
         return calculatedWidth + calculatedMargin[UI_LEFT] + calculatedMargin[UI_RIGHT] + calculatedPadding[UI_LEFT] + calculatedPadding[UI_RIGHT] + calculatedMargin[UI_RIGHT] + calculatedBorder[UI_LEFT] + calculatedBorder[UI_RIGHT];
@@ -62,10 +66,26 @@ public:
     inline UIContentAlign getCalculatedAlignH() { return calculatedAlignH; }
     inline UIContentAlign getCalculatedAlignV() { return calculatedAlignV; }
     inline UIContentDirection getCalculatedDirection() { return calculatedDirection; }
+    inline bool hasCalculatedText() { return text.isSet() && text.getValue().size() > 0; }
+    inline std::string &getCalculatedText() { return text.getValue(); }
+    inline Font *getCalculatedFont() { return calculatedFont; }
+    inline unsigned int getCalcualtedFontSize() { return calculatedFontSize; }
+    inline float getCalculatedLetterSpacing() { return calculatedLetterSpacing; }
+
+    // based on display data content
+    EXPORT virtual float getTextWidth();
+    EXPORT virtual float getTextHeight();
 
     // only static content dimensions excluding percentage type content
     EXPORT float getFreeWidth();
     EXPORT float getFreeHeight();
+
+    // parent propagated properties:
+    EXPORT Font *getFont();
+    EXPORT unsigned int getFontHeight();
+    EXPORT Color getColorText();
+    EXPORT Color getColorSelection();
+    EXPORT float getLetterSpacing();
 
 protected:
     EXPORT void prepareNewNode(UINode *node);
@@ -95,4 +115,9 @@ protected:
     UIContentAlign calculatedAlignV = UIContentAlign::Start;
     UIContentDirection calculatedDirection = UIContentDirection::Horizontal;
     UIBlockPositioning calculatedPositioning = UIBlockPositioning::Inline;
+    Font *calculatedFont = nullptr;
+    unsigned int calculatedFontSize = 0;
+    float calculatedLetterSpacing = 0.0f;
+    UIContentAlign calculatedTextHorizontalAlign = UIContentAlign::Start;
+    UIContentAlign calculatedTextVerticalAlign = UIContentAlign::Start;
 };

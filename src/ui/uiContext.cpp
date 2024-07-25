@@ -10,10 +10,11 @@ bool compareByIndex(const UIRenderBlock &a, const UIRenderBlock &b)
     return a.index < b.index;
 }
 
-UIContext::UIContext(Window *window, Renderer *renderer)
+UIContext::UIContext(Window *window, Renderer *renderer, Font *defaultFont)
 {
     this->window = window;
     this->renderer = renderer;
+    this->defaultFont = defaultFont;
 
     memset(blocks, 0, sizeof(UIRenderBlock) * MAX_UI_RENDER_BLOCKS);
 }

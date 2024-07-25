@@ -71,15 +71,26 @@ void UINode::collectRenderBlock(UIContext *uiContext)
 
     bool createBlock = hasDisplayableData() || calculatedPositioning != UIBlockPositioning::Inline;
 
-    if (hasDisplayableData() || calculatedPositioning != UIBlockPositioning::Inline)
+    UIRenderBlock *renderBlock = nullptr;
+    if (createBlock)
     {
-        UIRenderBlock *block = uiContext->getBlock();
-        attachTo->children.push_back(block);
-        attachTo = block;
-        block->index = index;
-        block->x = xStartPosition;
-        block->y = yStartPosition;
-        block->source = this;
+        renderBlock = uiContext->getBlock();
+        attachTo->children.push_back(renderBlock);
+        attachTo = renderBlock;
+        renderBlock->index = index;
+        renderBlock->x = xStartPosition;
+        renderBlock->y = yStartPosition;
+        renderBlock->textShiftX = 0.0f;
+        renderBlock->textShiftY = 0.0f;
+        if (calculatedTextHorizontalAlign == UIContentAlign::Middle)
+            renderBlock->textShiftX = (calculatedWidth - getTextWidth()) * 0.5f;
+        if (calculatedTextHorizontalAlign == UIContentAlign::End)
+            renderBlock->textShiftX = (calculatedWidth - getTextWidth());
+        if (calculatedTextVerticalAlign == UIContentAlign::Middle)
+            renderBlock->textShiftY = (calculatedHeight - getTextHeight()) * 0.5f;
+        if (calculatedTextVerticalAlign == UIContentAlign::End)
+            renderBlock->textShiftY = (calculatedHeight - getTextHeight());
+        renderBlock->source = this;
     }
 
     float childrenWidth = 0.0f;
@@ -163,7 +174,27 @@ bool UINode::hasDisplayableData()
 {
     if (calculatedColorBackground.a != 0.0f || calculatedColorBorder.a != 0.0f)
         return true;
+    if (text.isSet() && text.getValue().size() > 0)
+        return true;
     return false;
+}
+
+float UINode::getTextWidth()
+{
+    if (text.isSet())
+    {
+        Font *font = getFont();
+        float letterSpacingValue = getLetterSpacing();
+        return font->measureWidth(text.getValue(), getFontHeight()) + letterSpacingValue * (text.getValue().size() - 1);
+    }
+    return 0.0f;
+}
+
+float UINode::getTextHeight()
+{
+    if (text.isSet())
+        return getFontHeight();
+    return 0.0f;
 }
 
 float UINode::getFreeWidth()
@@ -252,6 +283,51 @@ float UINode::getFreeHeight()
     return fmaxf(assumedHeight - occupied, 0.0f);
 }
 
+Font *UINode::getFont()
+{
+    if (font.isSet())
+        return font.getValue();
+    if (parent)
+        return parent->getFont();
+    return nullptr;
+}
+
+unsigned int UINode::getFontHeight()
+{
+    if (fontSize.isSet())
+        return fontSize.getValue();
+    if (parent)
+        return parent->getFontHeight();
+    return 24;
+}
+
+Color UINode::getColorText()
+{
+    if (colorText.isSet())
+        return colorText.getValue();
+    if (parent)
+        return parent->getColorText();
+    return Color(0, 0, 0, 1);
+}
+
+Color UINode::getColorSelection()
+{
+    if (colorSelection.isSet())
+        return colorSelection.getValue();
+    if (parent)
+        return parent->getColorSelection();
+    return Color(0, 0, 0, 1);
+}
+
+float UINode::getLetterSpacing()
+{
+    if (letterSpacing.isSet())
+        return letterSpacing.getValue();
+    if (parent)
+        return parent->getLetterSpacing();
+    return 0.0f;
+}
+
 void UINode::prepareNewNode(UINode *node)
 {
     children.push_back(node);
@@ -270,6 +346,15 @@ float UINode::getContentWidth()
         for (auto &child : children)
             width = fmaxf(width, child->getCalculatedFullWidth());
     }
+    if (text.isSet())
+    {
+        Font *font = getFont();
+        if (font)
+        {
+            float letterSpacingValue = getLetterSpacing();
+            width = fmaxf(width, static_cast<float>(font->measureWidth(text.getValue(), getFontHeight())) + letterSpacingValue * (text.getValue().size() - 1));
+        }
+    }
     return width;
 }
 
@@ -285,6 +370,12 @@ float UINode::getContentHeight()
     {
         for (auto &child : children)
             height = fmaxf(height, child->getCalculatedFullHeight());
+    }
+    if (text.isSet())
+    {
+        Font *font = getFont();
+        if (font)
+            height = fmaxf(height, static_cast<float>(font->measureHeight(text.getValue(), getFontHeight())));
     }
     return height;
 }
@@ -361,11 +452,15 @@ void UINode::rebuild()
     }
     else
         calculatedWidth = contentWidth;
-
     if (maxWidth.isSet())
     {
         float maxWidthFinal = maxWidth.isUsingPercentage() ? maxWidth.getValue() * 0.01f * parentFreeWidth : maxWidth.getValue();
         calculatedWidth = fminf(calculatedWidth, maxWidthFinal);
+    }
+    if (minWidth.isSet())
+    {
+        float minWidthFinal = minWidth.isUsingPercentage() ? minWidth.getValue() * 0.01f * parentFreeWidth : minWidth.getValue();
+        calculatedWidth = fmaxf(calculatedWidth, minWidthFinal);
     }
 
     // Height
@@ -378,11 +473,15 @@ void UINode::rebuild()
     }
     else
         calculatedHeight = contentHeight;
-
     if (maxHeight.isSet())
     {
         float maxHeightFinal = maxHeight.isUsingPercentage() ? maxHeight.getValue() * 0.01f * parentFreeHeight : maxHeight.getValue();
         calculatedHeight = fminf(calculatedHeight, maxHeightFinal);
+    }
+    if (minHeight.isSet())
+    {
+        float minHeightFinal = minHeight.isUsingPercentage() ? minHeight.getValue() * 0.01f * parentFreeHeight : minHeight.getValue();
+        calculatedHeight = fmaxf(calculatedHeight, minHeightFinal);
     }
 
     // Properties
@@ -391,9 +490,20 @@ void UINode::rebuild()
     calculatedDirection = contentDirection.getValue();
     calculatedPositioning = positioning.getValue();
 
-    // Colors
+    // Element View
     calculatedColorBackground = colorBackground.isSet() ? colorBackground.getValue() : Color(0, 0, 0, 0);
     calculatedColorBorder = colorBorder.isSet() ? colorBorder.getValue() : Color(0, 0, 0, 0);
-    calculatedColorText = colorText.isSet() ? colorText.getValue() : Color(0, 0, 0, 0);
-    calculatedColorSelection = colorSelection.isSet() ? colorSelection.getValue() : Color(0, 0, 0, 0);
+
+    // Font / Text
+    calculatedFont = getFont();
+    calculatedFontSize = getFontHeight();
+    calculatedColorText = getColorText();
+    calculatedColorSelection = getColorSelection();
+    calculatedLetterSpacing = getLetterSpacing();
+    calculatedTextHorizontalAlign = textHorizontalAlign.isSet() ? textHorizontalAlign.getValue() : UIContentAlign::Start;
+    if (calculatedTextHorizontalAlign == UIContentAlign::SpaceAround || calculatedTextHorizontalAlign == UIContentAlign::SpaceBetween)
+        calculatedTextHorizontalAlign = UIContentAlign::Middle;
+    calculatedTextVerticalAlign = textVerticalAlign.isSet() ? textVerticalAlign.getValue() : UIContentAlign::Start;
+    if (calculatedTextVerticalAlign == UIContentAlign::SpaceAround || calculatedTextVerticalAlign == UIContentAlign::SpaceBetween)
+        calculatedTextVerticalAlign = UIContentAlign::Middle;
 }

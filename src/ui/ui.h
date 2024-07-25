@@ -11,7 +11,7 @@
 class UI
 {
 public:
-    EXPORT UI(Window *window, Renderer *renderer);
+    EXPORT UI(Window *window, Renderer *renderer, Font *defaultFont);
     EXPORT ~UI();
 
     template <class T, typename std::enable_if<std::is_base_of<UINode, T>::value>::type * = nullptr>

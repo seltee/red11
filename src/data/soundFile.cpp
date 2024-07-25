@@ -1,6 +1,8 @@
 // SPDX-FileCopyrightText: 2024 Dmitrii Shashkov
 // SPDX-License-Identifier: MIT
 
+#define _CRT_SECURE_NO_WARNINGS
+
 #include "soundFile.h"
 #include "utils/sound/stb_vorbis.h"
 

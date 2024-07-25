@@ -52,6 +52,7 @@ public:
     virtual void present() = 0;
     virtual void setupSpriteRendering(Matrix4 &mView, Matrix4 &mProjection) = 0;
     virtual void renderSpriteRect(Matrix4 *mModel, Color color) = 0;
+    virtual void renderSpriteMask(Matrix4 *mModel, Texture *texture, Color color) = 0;
     virtual void renderSpriteImage(Matrix4 *mModel, Texture *texture) = 0;
 
     inline int getViewWidth() { return viewWidth; }

@@ -59,6 +59,7 @@ public:
 
     void setupSpriteRendering(Matrix4 &mView, Matrix4 &mProjection) override final;
     void renderSpriteRect(Matrix4 *mModel, Color color) override final;
+    void renderSpriteMask(Matrix4 *mModel, Texture *texture, Color color) override final;
     void renderSpriteImage(Matrix4 *mModel, Texture *texture) override final;
 
     void setAmbientLight(Color &ambientColor) override final;

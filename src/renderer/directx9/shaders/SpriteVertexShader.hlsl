@@ -17,9 +17,6 @@ struct VS_Output
 
 struct InputSettings
 {
-    // use texture, r1, r2, r3
-    float4 usage;
-
     // addX, addY, mulX, mulY
     float4 uvData;
 };
