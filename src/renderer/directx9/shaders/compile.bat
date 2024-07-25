@@ -15,6 +15,8 @@ fxc.exe .\UVShadowFragmentShader.hlsl /Fo /Tps_3_0
 fxc.exe .\UVShadowMaskVertexShader.hlsl /Fo /Tvs_3_0
 fxc.exe .\UVShadowMaskFragmentShader.hlsl /Fo /Tps_3_0
 fxc.exe .\UVShadowSkinnedVertexShader.hlsl /Fo /Tvs_3_0
+fxc.exe .\SpriteVertexShader.hlsl /Fo /Tvs_3_0
+fxc.exe .\SpriteFragmentShader.hlsl /Fo /Tps_3_0
 bin2header.exe .\UVSimpleVertexShader.vso
 bin2header.exe .\UVSimpleFragmentShader.pso
 bin2header.exe .\UVSimpleMaskVertexShader.vso
@@ -32,3 +34,5 @@ bin2header.exe .\UVShadowFragmentShader.pso
 bin2header.exe .\UVShadowMaskVertexShader.vso
 bin2header.exe .\UVShadowMaskFragmentShader.pso
 bin2header.exe .\UVShadowSkinnedVertexShader.vso
+bin2header.exe .\SpriteVertexShader.vso
+bin2header.exe .\SpriteFragmentShader.pso

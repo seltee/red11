@@ -84,10 +84,25 @@ Mesh *MeshBuilder::createPlain(float width, float height)
     float halfHeight = height / 2.0f;
 
     VertexDataUV verticies[4];
-    verticies[0] = VertexDataUV(16, -halfWidth, 0.0f, -halfHeight, 0.0, 0.0, 0.0f, 1.0f, 0.0f);
-    verticies[1] = VertexDataUV(17, halfWidth, 0.0f, -halfHeight, 1.0, 0.0, 0.0f, 1.0f, 0.0f);
-    verticies[2] = VertexDataUV(18, halfWidth, 0.0f, halfHeight, 1.0, 1.0, 0.0f, 1.0f, 0.0f);
-    verticies[3] = VertexDataUV(19, -halfWidth, 0.0f, halfHeight, 0.0, 1.0, 0.0f, 1.0f, 0.0f);
+    verticies[0] = VertexDataUV(0, -halfWidth, 0.0f, -halfHeight, 0.0, 0.0, 0.0f, 1.0f, 0.0f);
+    verticies[1] = VertexDataUV(1, halfWidth, 0.0f, -halfHeight, 1.0, 0.0, 0.0f, 1.0f, 0.0f);
+    verticies[2] = VertexDataUV(2, halfWidth, 0.0f, halfHeight, 1.0, 1.0, 0.0f, 1.0f, 0.0f);
+    verticies[3] = VertexDataUV(3, -halfWidth, 0.0f, halfHeight, 0.0, 1.0, 0.0f, 1.0f, 0.0f);
+
+    PolygonTriPoints polygons[2];
+    polygons[0] = PolygonTriPoints({1, 2, 0});
+    polygons[1] = PolygonTriPoints({0, 2, 3});
+
+    return new Mesh(VertexDataType::PositionUV, verticies, 4, polygons, 2);
+}
+
+Mesh *MeshBuilder::createSprite(float size)
+{
+    VertexDataUV verticies[4];
+    verticies[0] = VertexDataUV(0, 0.0f, 0.0f, 0.0f, 0.0, 0.0, 0.0f, 0.0f, 1.0f);
+    verticies[1] = VertexDataUV(1, size, 0.0f, 0.0f, 1.0, 0.0, 0.0f, 0.0f, 1.0f);
+    verticies[2] = VertexDataUV(2, size, size, 0.0f, 1.0, 1.0, 0.0f, 0.0f, 1.0f);
+    verticies[3] = VertexDataUV(3, 0.0f, size, 0.0f, 0.0, 1.0, 0.0f, 0.0f, 1.0f);
 
     PolygonTriPoints polygons[2];
     polygons[0] = PolygonTriPoints({1, 2, 0});

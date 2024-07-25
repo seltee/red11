@@ -32,6 +32,9 @@ public:
 
     EXPORT void setIsFocused(bool state);
 
+    EXPORT float getAdditionalWindowWidth();
+    EXPORT float getAdditionalWindowHeight();
+
 protected:
     HWND hWnd;
     HINSTANCE hInstance;

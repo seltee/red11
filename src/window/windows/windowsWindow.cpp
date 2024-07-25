@@ -171,7 +171,7 @@ WindowsWindow::WindowsWindow(const char *windowName, int width, int height, int 
         wideTitle.c_str(), // Window text
         style,             // Window style
         // position and size
-        positionX, positionY, state.realWidth, state.realHeight,
+        positionX, positionY, state.realWidth + getAdditionalWindowWidth(), state.realHeight + getAdditionalWindowHeight(),
         NULL,      // Parent window
         NULL,      // Menu
         hInstance, // Instance handle
@@ -220,8 +220,8 @@ void WindowsWindow::setFullscreen(bool fullscreenState)
         int displayHeight = GetSystemMetrics(SM_CYSCREEN);
         int positionX = fullscreenState ? 0 : (displayWidth - state.requesedWidth) / 2;
         int positionY = fullscreenState ? 0 : (displayHeight - state.requesedHeight) / 2;
-        int newRealWidth = state.bIsFullscreen ? displayWidth : state.requesedWidth;
-        int newRealHeight = state.bIsFullscreen ? displayHeight : state.requesedHeight;
+        int newRealWidth = state.bIsFullscreen ? displayWidth : state.requesedWidth + getAdditionalWindowWidth();
+        int newRealHeight = state.bIsFullscreen ? displayHeight : state.requesedHeight + getAdditionalWindowHeight();
 
         SetWindowPos(hWnd, HWND_TOP, positionX, positionY, newRealWidth, newRealHeight, SWP_FRAMECHANGED | SWP_SHOWWINDOW);
 
@@ -239,8 +239,8 @@ void WindowsWindow::setResolution(int width, int height)
     int displayHeight = GetSystemMetrics(SM_CYSCREEN);
     int positionX = state.bIsFullscreen ? 0 : (displayWidth - state.requesedWidth) / 2;
     int positionY = state.bIsFullscreen ? 0 : (displayHeight - state.requesedHeight) / 2;
-    int newRealWidth = state.bIsFullscreen ? displayWidth : state.requesedWidth;
-    int newRealHeight = state.bIsFullscreen ? displayHeight : state.requesedHeight;
+    int newRealWidth = state.bIsFullscreen ? displayWidth : state.requesedWidth + getAdditionalWindowWidth();
+    int newRealHeight = state.bIsFullscreen ? displayHeight : state.requesedHeight + getAdditionalWindowHeight();
 
     SetWindowPos(hWnd, HWND_TOP, positionX, positionY, newRealWidth, newRealHeight, SWP_FRAMECHANGED | SWP_SHOWWINDOW);
 
@@ -292,6 +292,18 @@ int WindowsWindow::getStyleForState(WindowState &state)
 void WindowsWindow::setIsFocused(bool bState)
 {
     bIsFocused = bState;
+}
+
+float WindowsWindow::getAdditionalWindowWidth()
+{
+    int additionalWindowWidth = GetSystemMetrics(SM_CYFRAME) * 2 + 16;
+    return static_cast<float>(additionalWindowWidth);
+}
+
+float WindowsWindow::getAdditionalWindowHeight()
+{
+    int additionalWindowHeight = GetSystemMetrics(SM_CYFRAME) * 2 + GetSystemMetrics(SM_CYCAPTION) + 16;
+    return static_cast<float>(additionalWindowHeight);
 }
 
 #endif

@@ -28,6 +28,8 @@
 #include "shaders/UVShadowMaskVertexShader.vso.h"
 #include "shaders/UVShadowMaskFragmentShader.pso.h"
 #include "shaders/UVShadowSkinnedVertexShader.vso.h"
+#include "shaders/SpriteVertexShader.vso.h"
+#include "shaders/SpriteFragmentShader.pso.h"
 #include "directx9meshRenderData.h"
 #include "directx9materialRenderData.h"
 #include "directx9textureRenderData.h"
@@ -41,21 +43,27 @@ class DirectX9Renderer : public Renderer
 public:
     DirectX9Renderer(Window *window);
 
-    RendererType getType();
+    RendererType getType() override final;
 
-    void prepareToRender();
-    void clearBuffer(Color color);
-    void queueMesh(Mesh *mesh, Material *material, Matrix4 *model);
-    void queueMeshSkinned(Mesh *mesh, Material *material, Matrix4 *model, std::vector<BoneTransform> *bones);
-    void queueLine(Vector3 vFrom, Vector3 vTo, Color color);
-    void queueLight(Light *light);
-    void renderQueue(Camera *camera);
-    void clearQueue();
-    void renderMesh(Camera *camera, Vector3 *cameraPosition, Mesh *mesh, Matrix4 *model);
-    void renderMeshSkinned(Camera *camera, Vector3 *cameraPosition, Mesh *mesh, Matrix4 *model, std::vector<BoneTransform> *bones);
+    void prepareToRender() override final;
+    void clearBuffer(Color color) override final;
+    void queueMesh(Mesh *mesh, Material *material, Matrix4 *model) override final;
+    void queueMeshSkinned(Mesh *mesh, Material *material, Matrix4 *model, std::vector<BoneTransform> *bones) override final;
+    void queueLine(Vector3 vFrom, Vector3 vTo, Color color) override final;
+    void queueLight(Light *light) override final;
+    void renderQueue(Camera *camera) override final;
+    void clearQueue() override final;
+    void renderMesh(Camera *camera, Vector3 *cameraPosition, Mesh *mesh, Matrix4 *model) override final;
+    void renderMeshSkinned(Camera *camera, Vector3 *cameraPosition, Mesh *mesh, Matrix4 *model, std::vector<BoneTransform> *bones) override final;
     void renderLine(Camera *camera, Vector3 vFrom, Vector3 vTo);
-    void setAmbientLight(Color &ambientColor);
-    void present();
+
+    void setupSpriteRendering(Matrix4 &mView, Matrix4 &mProjection) override final;
+    void renderSpriteRect(Matrix4 *mModel, Color color) override final;
+    void renderSpriteImage(Matrix4 *mModel, Texture *texture) override final;
+
+    void setAmbientLight(Color &ambientColor) override final;
+
+    void present() override final;
 
 protected:
     void initD3D(HWND hWnd, bool bIsFullscreen, int width, int height); // sets up and initializes Direct3D
@@ -96,6 +104,7 @@ protected:
     LPDIRECT3DDEVICE9 d3ddev = nullptr; // the pointer to the device class
 
     Mesh *cubeMesh = nullptr;
+    Mesh *spriteMesh = nullptr;
     Material *lineMaterial = nullptr;
 
     // Common textures
@@ -137,12 +146,18 @@ protected:
     // Shadow skinned without mask, uses shadow fragment shader
     IDirect3DVertexShader9 *pUVShadowSkinnedVertexShader = nullptr;
 
+    // Sprite shader
+    IDirect3DVertexShader9 *pSpriteVertexShader = nullptr;
+    IDirect3DPixelShader9 *pSpriteFragmentShader = nullptr;
+
     LPDIRECT3DVERTEXDECLARATION9 pVertexDeclNormalUV = nullptr;
     LPDIRECT3DVERTEXDECLARATION9 pVertexDeclNormalUVSkinned = nullptr;
 
     Material *defaultMaterial;
 
     Directx9data data;
+
+    Matrix4 mSpriteViewProjection;
 };
 
 #endif

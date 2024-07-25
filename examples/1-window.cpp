@@ -56,7 +56,7 @@ APPMAIN
 
     // Simple UI to show FPS
     auto fpsMeter = camera->createComponentText("FPS", font, 128);
-    fpsMeter->setPosition(-0.022f, 0.012f, -0.03f);
+    fpsMeter->setPosition(-0.0215f, 0.014f, -0.03f);
     fpsMeter->setScale(Vector3(0.03f, 0.03f, 0.03f));
     fpsMeter->setRotation(Vector3(CONST_PI * 0.5f, 0, 0));
 

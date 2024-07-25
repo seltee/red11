@@ -158,6 +158,52 @@ void DirectX9Renderer::renderLine(Camera *camera, Vector3 vFrom, Vector3 vTo)
     renderMesh(camera, &camPosition, cubeMesh, entity.getModelMatrix());
 }
 
+void DirectX9Renderer::setupSpriteRendering(Matrix4 &mView, Matrix4 &mProjection)
+{
+    mSpriteViewProjection = mProjection * mView;
+
+    d3ddev->SetRenderState(D3DRS_ZENABLE, false);
+    d3ddev->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_BLUE | D3DCOLORWRITEENABLE_ALPHA);
+    d3ddev->SetRenderState(D3DRS_ZWRITEENABLE, false);
+
+    d3ddev->SetRenderState(D3DRS_ALPHABLENDENABLE, true);
+    d3ddev->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
+    d3ddev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+
+    d3ddev->SetVertexShader(pSpriteVertexShader);
+    d3ddev->SetPixelShader(pSpriteFragmentShader);
+    d3ddev->SetVertexDeclaration(pVertexDeclNormalUV);
+}
+
+void DirectX9Renderer::renderSpriteRect(Matrix4 *mModel, Color color)
+{
+    Matrix4 worldViewProjection = glm::transpose(mSpriteViewProjection * *mModel);
+    d3ddev->SetVertexShaderConstantF(0, (const float *)value_ptr(worldViewProjection), 4);
+
+    Directx9MeshRenderData *meshData = data.getMeshRenderData(spriteMesh);
+
+    // Sprite shader settings
+    // Use texture, *, *, *
+    // UV add X, UV add Y, UV div x, UV div y
+    float settings[8] = {
+        0.0f, 0.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 1.0f, 1.0f};
+    d3ddev->SetVertexShaderConstantF(4, (const float *)settings, 2);
+
+    // Color
+    d3ddev->SetPixelShaderConstantF(0, (const float *)color.getAsFloatArray(), 1);
+
+    // === Render Data and final render ===
+    d3ddev->SetStreamSource(0, meshData->vBuffer, 0, sizeof(DX9VertexNormalUV));
+    d3ddev->SetIndices(meshData->iBuffer);
+
+    d3ddev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, meshData->vAmount, 0, meshData->iAmount);
+}
+
+void DirectX9Renderer::renderSpriteImage(Matrix4 *mModel, Texture *texture)
+{
+}
+
 void DirectX9Renderer::setAmbientLight(Color &ambientColor)
 {
     this->ambientColor = ambientColor;
@@ -196,6 +242,7 @@ void DirectX9Renderer::initD3D(HWND hWnd, bool bIsFullscreen, int width, int hei
     data.d3ddev = d3ddev;
 
     cubeMesh = Red11::getMeshBuilder()->createCube(1.0f);
+    spriteMesh = Red11::getMeshBuilder()->createSprite(1.0f);
     lineMaterial = new MaterialSimple(Color(0.0, 0.0, 0.0), Color(0.2, 1.0, 0.2));
 
     if (d3ddev->CreateVertexShader((const DWORD *)UVSimpleVertexShader_vso, &pUVSimpleVertexShader) != D3D_OK)
@@ -232,6 +279,10 @@ void DirectX9Renderer::initD3D(HWND hWnd, bool bIsFullscreen, int width, int hei
         printf("Shader compilation failed\n");
     if (d3ddev->CreateVertexShader((const DWORD *)UVShadowSkinnedVertexShader_vso, &pUVShadowSkinnedVertexShader) != D3D_OK)
         printf("Shader compilation failed\n");
+    if (d3ddev->CreateVertexShader((const DWORD *)SpriteVertexShader_vso, &pSpriteVertexShader) != D3D_OK)
+        printf("Sprite vertex shader compilation failed\n");
+    if (d3ddev->CreatePixelShader((const DWORD *)SpriteFragmentShader_pso, &pSpriteFragmentShader) != D3D_OK)
+        printf("Sprite fragment shader compilation failed\n");
 
     D3DVERTEXELEMENT9 VertexElementsNormalUV[] = {
         {0, offsetof(DX9VertexNormalUV, x), D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0},

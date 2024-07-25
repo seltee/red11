@@ -11,6 +11,7 @@
 #include "utils/glm/glm.hpp"
 #include "utils/glm/gtx/vector_angle.inl"
 #include "scene/scene.h"
+#include "ui/ui.h"
 #include "actor/actor.h"
 #include "window/window.h"
 #include "renderer/renderer.h"

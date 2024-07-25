@@ -1,0 +1,399 @@
+// SPDX-FileCopyrightText: 2024 Dmitrii Shashkov
+// SPDX-License-Identifier: MIT
+
+#include "uiNode.h"
+
+UINode::UINode(UINode *parent)
+{
+    this->parent = parent;
+}
+
+UINode::~UINode()
+{
+}
+
+void UINode::destroyAllChildren()
+{
+    for (auto &node : children)
+        node->destroy();
+}
+
+void UINode::process(float delta)
+{
+    rebuild();
+    subProcess(delta);
+    rebuild();
+
+    if (isDestroyed())
+    {
+        for (auto &node : children)
+            node->destroy();
+    }
+    for (auto &node : children)
+        node->process(delta);
+
+    auto it = children.begin();
+    while (it != children.end())
+    {
+        if ((*it)->isDestroyed())
+        {
+            delete (*it);
+            it = children.erase(it);
+        }
+        else
+            ++it;
+    }
+}
+
+void UINode::subProcess(float delta)
+{
+}
+
+void UINode::collectRenderBlock(UIContext *uiContext)
+{
+    float xStartPosition = uiContext->xPosition;
+    float yStartPosition = uiContext->yPosition;
+    int index = (calculatedPositioning == UIBlockPositioning::Absolute) ? uiContext->index + 100 : uiContext->index + 1;
+
+    // printf("Block %i\n", index);
+    // printf("size %f %f margin %f %f %f %f\n", calculatedWidth, calculatedHeight, calculatedMargin[0], calculatedMargin[1], calculatedMargin[2], calculatedMargin[3]);
+    // printf("%f %f\n", getFreeWidth(), getFreeHeight());
+
+    UIRenderBlock *attachTo = nullptr;
+    if (calculatedPositioning == UIBlockPositioning::Inline || calculatedPositioning == UIBlockPositioning::Relative)
+        attachTo = uiContext->parentBlock ? uiContext->parentBlock : uiContext->initialBlock;
+    else
+    {
+        attachTo = uiContext->rootBlock;
+        xStartPosition = attachTo->x;
+        yStartPosition = attachTo->y;
+    }
+
+    bool createBlock = hasDisplayableData() || calculatedPositioning != UIBlockPositioning::Inline;
+
+    if (hasDisplayableData() || calculatedPositioning != UIBlockPositioning::Inline)
+    {
+        UIRenderBlock *block = uiContext->getBlock();
+        attachTo->children.push_back(block);
+        attachTo = block;
+        block->index = index;
+        block->x = xStartPosition;
+        block->y = yStartPosition;
+        block->source = this;
+    }
+
+    float childrenWidth = 0.0f;
+    float childrenHeight = 0.0f;
+    for (auto &node : children)
+    {
+        if (calculatedDirection == UIContentDirection::Horizontal)
+        {
+            childrenWidth += node->getCalculatedFullWidth();
+            childrenHeight = fmaxf(childrenHeight, node->getCalculatedFullHeight());
+        }
+        else
+        {
+            childrenWidth = fmaxf(childrenWidth, node->getCalculatedFullWidth());
+            childrenHeight += node->getCalculatedFullHeight();
+        }
+    }
+
+    UIContentAlign alignH = calculatedAlignH;
+    UIContentAlign alignV = calculatedAlignV;
+    if ((alignH == UIContentAlign::SpaceBetween || alignH == UIContentAlign::SpaceAround) && calculatedDirection == UIContentDirection::Vertical)
+        alignH = UIContentAlign::Middle;
+    if ((alignV == UIContentAlign::SpaceBetween || alignV == UIContentAlign::SpaceAround) && calculatedDirection == UIContentDirection::Horizontal)
+        alignV = UIContentAlign::Middle;
+
+    float initialX = 0.0f;
+    float initialY = 0.0f;
+    float betweenX = 0.0f;
+    float betweenY = 0.0f;
+    if (alignH == UIContentAlign::End)
+        initialX = calculatedWidth - childrenWidth;
+    if (alignV == UIContentAlign::End)
+        initialY = calculatedHeight - childrenHeight;
+    if (alignH == UIContentAlign::Middle)
+        initialX = (calculatedWidth - childrenWidth) * 0.5f;
+    if (alignV == UIContentAlign::Middle)
+        initialY = (calculatedHeight - childrenHeight) * 0.5f;
+    if (alignH == UIContentAlign::SpaceBetween)
+        betweenX = (calculatedWidth - childrenWidth) / static_cast<float>(children.size() - 1);
+    if (alignV == UIContentAlign::SpaceBetween)
+        betweenY = (calculatedHeight - childrenHeight) / static_cast<float>(children.size() - 1);
+    if (alignH == UIContentAlign::SpaceAround)
+    {
+        betweenX = (calculatedWidth - childrenWidth) / static_cast<float>(children.size() + 1);
+        initialX = betweenX;
+    }
+    if (alignV == UIContentAlign::SpaceAround)
+    {
+        betweenY = (calculatedHeight - childrenHeight) / static_cast<float>(children.size() + 1);
+        initialY = betweenY;
+    }
+
+    // printf("CH %f %f\n", childrenWidth, childrenHeight);
+
+    float posX = xStartPosition + initialX + calculatedMargin[UI_LEFT] + calculatedPadding[UI_LEFT] + calculatedBorder[UI_LEFT];
+    float posY = yStartPosition + initialY + calculatedMargin[UI_TOP] + calculatedPadding[UI_TOP] + calculatedBorder[UI_TOP];
+
+    for (auto &node : children)
+    {
+        float childX = posX;
+        float childY = posY;
+        if (alignH == UIContentAlign::Middle && calculatedDirection == UIContentDirection::Vertical)
+            childX += (childrenWidth - node->getCalculatedFullWidth()) * 0.5f;
+        if (alignV == UIContentAlign::Middle && calculatedDirection == UIContentDirection::Horizontal)
+            childY += (childrenHeight - node->getCalculatedFullHeight()) * 0.5f;
+
+        uiContext->setParentData(childX, childY, attachTo, index);
+        node->collectRenderBlock(uiContext);
+
+        if (node->positioning.getValue() != UIBlockPositioning::Absolute)
+        {
+            if (calculatedDirection == UIContentDirection::Horizontal)
+                posX += node->getCalculatedFullWidth() + betweenX;
+            else
+                posY += node->getCalculatedFullHeight() + betweenY;
+        }
+    }
+}
+
+bool UINode::hasDisplayableData()
+{
+    if (calculatedColorBackground.a != 0.0f || calculatedColorBorder.a != 0.0f)
+        return true;
+    return false;
+}
+
+float UINode::getFreeWidth()
+{
+    float occupied = 0.0f;
+    if (contentDirection.getValue() == UIContentDirection::Horizontal)
+    {
+        for (auto &child : children)
+        {
+            if (!child->width.isUsingPercentage())
+            {
+                // todo deal if maxWidth is using percantage
+                occupied += child->maxWidth.isSet() ? fminf(child->width.getValue(), child->maxWidth.getValue()) : child->width.getValue();
+                if (child->getMarginLeft().isUsingNumber())
+                    occupied += child->getMarginLeft().getValue();
+                if (child->getMarginRight().isUsingNumber())
+                    occupied += child->getMarginRight().getValue();
+                if (child->getPaddingLeft().isUsingNumber())
+                    occupied += child->getPaddingLeft().getValue();
+                if (child->getPaddingRight().isUsingNumber())
+                    occupied += child->getPaddingRight().getValue();
+                if (child->getBorderLeft().isUsingNumber())
+                    occupied += child->getBorderLeft().getValue();
+                if (child->getBorderRight().isUsingNumber())
+                    occupied += child->getBorderRight().getValue();
+            }
+        }
+    }
+
+    float assumedWidth = 0.0f;
+    if (width.isSet())
+    {
+        if (width.isUsingPercentage())
+            assumedWidth = (width.getValue() * 0.01f) * getParentFreeWidth() - getMarginPaddingBorderWidth();
+        else
+            assumedWidth = width.getValue();
+    }
+    if (maxWidth.isSet())
+    {
+        float maxWidthFinal = maxWidth.isUsingPercentage() ? maxWidth.getValue() * 0.01f * getParentFreeWidth() : maxWidth.getValue();
+        assumedWidth = fminf(assumedWidth, maxWidthFinal);
+    }
+    return fmaxf(assumedWidth - occupied, 0.0f);
+}
+
+float UINode::getFreeHeight()
+{
+    float occupied = 0.0f;
+    if (contentDirection.getValue() == UIContentDirection::Vertical)
+    {
+        for (auto &child : children)
+        {
+            if (!child->height.isUsingPercentage())
+            {
+                // todo deal if maxWidth is using percantage
+                occupied += child->maxHeight.isSet() ? fminf(child->height.getValue(), child->maxHeight.getValue()) : child->height.getValue();
+                if (child->getMarginTop().isUsingNumber())
+                    occupied += child->getMarginTop().getValue();
+                if (child->getMarginBottom().isUsingNumber())
+                    occupied += child->getMarginBottom().getValue();
+                if (child->getPaddingTop().isUsingNumber())
+                    occupied += child->getPaddingTop().getValue();
+                if (child->getPaddingBottom().isUsingNumber())
+                    occupied += child->getPaddingBottom().getValue();
+                if (child->getBorderTop().isUsingNumber())
+                    occupied += child->getBorderTop().getValue();
+                if (child->getBorderBottom().isUsingNumber())
+                    occupied += child->getBorderBottom().getValue();
+            }
+        }
+    }
+
+    float assumedHeight = 0.0f;
+    if (height.isSet())
+    {
+        if (height.isUsingPercentage())
+            assumedHeight = (height.getValue() * 0.01f) * getParentFreeHeight() - getMarginPaddingBorderHeight();
+        else
+            assumedHeight = height.getValue();
+    }
+    if (maxHeight.isSet())
+    {
+        float maxHeightFinal = maxHeight.isUsingPercentage() ? maxHeight.getValue() * 0.01f * getParentFreeHeight() : maxHeight.getValue();
+        assumedHeight = fminf(assumedHeight, maxHeightFinal);
+    }
+    return fmaxf(assumedHeight - occupied, 0.0f);
+}
+
+void UINode::prepareNewNode(UINode *node)
+{
+    children.push_back(node);
+}
+
+float UINode::getContentWidth()
+{
+    float width = 0.0f;
+    if (contentDirection.getValue() == UIContentDirection::Horizontal)
+    {
+        for (auto &child : children)
+            width += child->getCalculatedFullWidth();
+    }
+    else
+    {
+        for (auto &child : children)
+            width = fmaxf(width, child->getCalculatedFullWidth());
+    }
+    return width;
+}
+
+float UINode::getContentHeight()
+{
+    float height = 0.0f;
+    if (contentDirection.getValue() == UIContentDirection::Vertical)
+    {
+        for (auto &child : children)
+            height += child->getCalculatedFullHeight();
+    }
+    else
+    {
+        for (auto &child : children)
+            height = fmaxf(height, child->getCalculatedFullHeight());
+    }
+    return height;
+}
+
+float UINode::getMarginPaddingBorderWidth()
+{
+    return calculatedMargin[UI_LEFT] + calculatedMargin[UI_RIGHT] +
+           calculatedPadding[UI_LEFT] + calculatedPadding[UI_RIGHT] +
+           calculatedBorder[UI_BOTTOM] + calculatedBorder[UI_RIGHT];
+}
+
+float UINode::getMarginPaddingBorderHeight()
+{
+    return calculatedMargin[UI_TOP] + calculatedMargin[UI_BOTTOM] +
+           calculatedPadding[UI_TOP] + calculatedPadding[UI_BOTTOM] +
+           calculatedBorder[UI_TOP] + calculatedBorder[UI_BOTTOM];
+}
+
+float UINode::getParentFreeWidth()
+{
+    if (parent)
+        return parent->getFreeWidth();
+    return 0.0f;
+}
+
+float UINode::getParentFreeHeight()
+{
+    if (parent)
+        return parent->getFreeHeight();
+    return 0.0f;
+}
+
+void UINode::rebuild()
+{
+    float contentWidth = getContentWidth();
+    float contentHeight = getContentHeight();
+    float parentFreeWidth = getParentFreeWidth();
+    float parentFreeHeight = getParentFreeHeight();
+
+    // Calculate basic dimensions
+    // Margin, padding and border
+    for (int i = 0; i < 4; i++)
+    {
+        calculatedMargin[i] = 0.0f;
+        if (margin[i].isSet())
+        {
+            calculatedMargin[i] = margin[i].isUsingPercentage()
+                                      ? ((i == UI_LEFT || i == UI_RIGHT) ? parentFreeWidth : parentFreeHeight) * 0.01f * margin[i].getValue()
+                                      : margin[i].getValue();
+        }
+        calculatedPadding[i] = 0.0f;
+        if (padding[i].isSet())
+        {
+            calculatedPadding[i] = padding[i].isUsingPercentage()
+                                       ? ((i == UI_LEFT || i == UI_RIGHT) ? parentFreeWidth : parentFreeHeight) * 0.01f * padding[i].getValue()
+                                       : padding[i].getValue();
+        }
+        calculatedBorder[i] = 0.0f;
+        if (border[i].isSet())
+        {
+            calculatedBorder[i] = border[i].isUsingPercentage()
+                                      ? ((i == UI_LEFT || i == UI_RIGHT) ? parentFreeWidth : parentFreeHeight) * 0.01f * border[i].getValue()
+                                      : border[i].getValue();
+        }
+    }
+
+    // Width
+    if (width.isSet())
+    {
+        if (width.isUsingPercentage())
+            calculatedWidth = (width.getValue() * 0.01f) * parentFreeWidth - getMarginPaddingBorderWidth();
+        else
+            calculatedWidth = width.getValue();
+    }
+    else
+        calculatedWidth = contentWidth;
+
+    if (maxWidth.isSet())
+    {
+        float maxWidthFinal = maxWidth.isUsingPercentage() ? maxWidth.getValue() * 0.01f * parentFreeWidth : maxWidth.getValue();
+        calculatedWidth = fminf(calculatedWidth, maxWidthFinal);
+    }
+
+    // Height
+    if (height.isSet())
+    {
+        if (height.isUsingPercentage())
+            calculatedHeight = (height.getValue() * 0.01f) * parentFreeHeight - getMarginPaddingBorderHeight();
+        else
+            calculatedHeight = height.getValue();
+    }
+    else
+        calculatedHeight = contentHeight;
+
+    if (maxHeight.isSet())
+    {
+        float maxHeightFinal = maxHeight.isUsingPercentage() ? maxHeight.getValue() * 0.01f * parentFreeHeight : maxHeight.getValue();
+        calculatedHeight = fminf(calculatedHeight, maxHeightFinal);
+    }
+
+    // Properties
+    calculatedAlignH = horizontalAlign.getValue();
+    calculatedAlignV = verticalAlign.getValue();
+    calculatedDirection = contentDirection.getValue();
+    calculatedPositioning = positioning.getValue();
+
+    // Colors
+    calculatedColorBackground = colorBackground.isSet() ? colorBackground.getValue() : Color(0, 0, 0, 0);
+    calculatedColorBorder = colorBorder.isSet() ? colorBorder.getValue() : Color(0, 0, 0, 0);
+    calculatedColorText = colorText.isSet() ? colorText.getValue() : Color(0, 0, 0, 0);
+    calculatedColorSelection = colorSelection.isSet() ? colorSelection.getValue() : Color(0, 0, 0, 0);
+}

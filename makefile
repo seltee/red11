@@ -46,6 +46,7 @@ OBJ_FILES = ${OBJDIR}/red11.o \
 			${OBJDIR}/window.o ${OBJDIR}/windowsWindow.o \
 			${OBJDIR}/audio.o ${OBJDIR}/audioSource.o ${OBJDIR}/audioWindows.o \
 			${OBJDIR}/scene.o \
+			${OBJDIR}/ui.o ${OBJDIR}/uiContext.o ${OBJDIR}/uiNode.o \
 			${OBJDIR}/renderer.o \
 			${OBJDIR}/directx9renderer.o ${OBJDIR}/directx9meshRenderData.o ${OBJDIR}/directx9textureRenderData.o ${OBJDIR}/directx9materialRenderData.o  \
 			${OBJDIR}/directx9data.o  \
@@ -66,7 +67,7 @@ OBJ_FILES = ${OBJDIR}/red11.o \
 			${OBJDIR}/loaderFBX.o ${OBJDIR}/FBXNode.o ${OBJDIR}/FBXAnimationStack.o ${OBJDIR}/FBXAnimationLayer.o ${OBJDIR}/FBXAnimationCurve.o ${OBJDIR}/FBXAnimationCurveNode.o \
 			${OBJDIR}/FBXDeform.o ${OBJDIR}/FBXGeometry.o ${OBJDIR}/FBXModel.o ${OBJDIR}/FBXAttribute.o
 
-EXAMPLES = 1-window${EXT} 2-textures${EXT} 3-animation${EXT} 4-bones${EXT} 5-physics${EXT} 6-collisionEvents${EXT} demo-1${EXT}
+EXAMPLES = 1-window${EXT} 2-textures${EXT} 3-animation${EXT} 4-bones${EXT} 5-physics${EXT} 6-collisionEvents${EXT} 7-ui${EXT} demo-1${EXT}
 
 all: engine examples
 
@@ -91,6 +92,15 @@ ${OBJDIR}/audioWindows.o: ${SRCDIR}/audio/windows/audioWindows.cpp
 
 ${OBJDIR}/scene.o: ${SRCDIR}/scene/scene.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/scene.o ${SRCDIR}/scene/scene.cpp
+
+${OBJDIR}/ui.o: ${SRCDIR}/ui/ui.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/ui.o ${SRCDIR}/ui/ui.cpp
+
+${OBJDIR}/uiContext.o: ${SRCDIR}/ui/uiContext.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/uiContext.o ${SRCDIR}/ui/uiContext.cpp
+
+${OBJDIR}/uiNode.o: ${SRCDIR}/ui/uiNode.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/uiNode.o ${SRCDIR}/ui/uiNode.cpp
 
 ${OBJDIR}/renderer.o: ${SRCDIR}/renderer/renderer.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/renderer.o ${SRCDIR}/renderer/renderer.cpp
@@ -357,6 +367,13 @@ ${OBJDIR}/6-collisionEvents.o: ${EXMDIR}/6-collisionEvents.cpp
 6-collisionEvents${EXT}: ${OBJDIR}/6-collisionEvents.o
 	$(LD) ${EFLAGS} ${OBJDIR}/6-collisionEvents.o -o 6-collisionEvents${EXT}
 	${MOVE} 6-collisionEvents${EXT} ${BINDIR}/6-collisionEvents${EXT}
+
+${OBJDIR}/7-ui.o: ${EXMDIR}/7-ui.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/7-ui.o ${EXMDIR}/7-ui.cpp
+
+7-ui${EXT}: ${OBJDIR}/7-ui.o
+	$(LD) ${EFLAGS} ${OBJDIR}/7-ui.o -o 7-ui${EXT}
+	${MOVE} 7-ui${EXT} ${BINDIR}/7-ui${EXT}
 
 ${OBJDIR}/demo-1.o: ${EXMDIR}/demo-1.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/demo-1.o ${EXMDIR}/demo-1.cpp
