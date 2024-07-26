@@ -115,7 +115,7 @@ int Font::createGlyphInList(unsigned int code, unsigned int size)
     Texture *texture = new Texture("Glyph", TextureType::ByteMap, textureSize, textureSize, bitmap);
     delete[] bitmap;
 
-    printf("Glyph %c - %i %i %i %i\n", code, width, height, sw, sh);
+    // printf("Glyph %c - %i %i %i %i\n", code, width, height, sw, sh);
 
     list.push_back({texture, code, size, sw, sh, static_cast<unsigned int>(width <= 1 ? size / 2 : width), static_cast<unsigned int>(height)});
 

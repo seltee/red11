@@ -108,6 +108,18 @@ void UI::render()
                     }
                 }
             }
+            if (node->hasCalculatedImage())
+            {
+                Texture *image = node->getCalculatedImage();
+                bool useMask = node->isCalculatedImageUsingMask();
+                entity.setPosition(posX + node->getCalculatedPaddingLeft() + block.imageShiftX, posY + node->getCalculatedPaddingTop() + block.imageShiftY, 0.0f);
+                entity.setScale(image->getWidth(), image->getHeight());
+
+                if (useMask)
+                    renderer->renderSpriteMask(entity.getModelMatrix(), image, node->getCalculatedColorImageMask());
+                else
+                    renderer->renderSpriteImage(entity.getModelMatrix(), image);
+            }
         }
     }
 }

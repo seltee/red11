@@ -63,6 +63,7 @@ public:
     inline Color &getCalculatedColorBorder() { return calculatedColorBorder; }
     inline Color &getCalculatedColorText() { return calculatedColorText; }
     inline Color &getCalculatedColorSelection() { return calculatedColorSelection; }
+    inline Color &getCalculatedColorImageMask() { return calculatedColorImageMask; }
     inline UIContentAlign getCalculatedAlignH() { return calculatedAlignH; }
     inline UIContentAlign getCalculatedAlignV() { return calculatedAlignV; }
     inline UIContentDirection getCalculatedDirection() { return calculatedDirection; }
@@ -71,10 +72,15 @@ public:
     inline Font *getCalculatedFont() { return calculatedFont; }
     inline unsigned int getCalcualtedFontSize() { return calculatedFontSize; }
     inline float getCalculatedLetterSpacing() { return calculatedLetterSpacing; }
+    inline bool hasCalculatedImage() { return image.isSet() && image.getValue() != nullptr; }
+    inline Texture *getCalculatedImage() { return calculatedImage; }
+    inline bool isCalculatedImageUsingMask() { return calculatedUseImageMask; }
 
     // based on display data content
     EXPORT virtual float getTextWidth();
     EXPORT virtual float getTextHeight();
+    EXPORT virtual float getImageWidth();
+    EXPORT virtual float getImageHeight();
 
     // only static content dimensions excluding percentage type content
     EXPORT float getFreeWidth();
@@ -111,6 +117,7 @@ protected:
     Color calculatedColorBorder = Color(0, 0, 0, 1);
     Color calculatedColorText = Color(0, 0, 0, 1);
     Color calculatedColorSelection = Color(0.4, 0.4, 0.9f, 1);
+    Color calculatedColorImageMask = Color(0.4, 0.4, 0.9f, 1);
     UIContentAlign calculatedAlignH = UIContentAlign::Start;
     UIContentAlign calculatedAlignV = UIContentAlign::Start;
     UIContentDirection calculatedDirection = UIContentDirection::Horizontal;
@@ -120,4 +127,8 @@ protected:
     float calculatedLetterSpacing = 0.0f;
     UIContentAlign calculatedTextHorizontalAlign = UIContentAlign::Start;
     UIContentAlign calculatedTextVerticalAlign = UIContentAlign::Start;
+    bool calculatedUseImageMask = false;
+    Texture *calculatedImage = nullptr;
+    UIContentAlign calculatedImageHorizontalAlign = UIContentAlign::Start;
+    UIContentAlign calculatedImageVerticalAlign = UIContentAlign::Start;
 };

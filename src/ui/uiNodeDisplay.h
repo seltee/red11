@@ -14,6 +14,7 @@
 #include "uiPropertyText.h"
 #include "uiPropertyNumber.h"
 #include "uiPropertyFloat.h"
+#include "uiPropertyTexture.h"
 #include "data/font.h"
 
 class UINodeDisplay
@@ -116,7 +117,11 @@ public:
     UIPropertyColor colorBorder;
     UIPropertyColor colorText;
     UIPropertyColor colorSelection;
+    UIPropertyColor colorImageMask;
     UIPropertyFont font;
     UIPropertyNumber fontSize;
     UIPropertyFloat letterSpacing;
+    UIPropertyTexture image;
+    UIPropertyAlign imageHorizontalAlign;
+    UIPropertyAlign imageVerticalAlign;
 };

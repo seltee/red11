@@ -16,6 +16,43 @@ struct CameraControl
     bool shoot;
 };
 
+const unsigned char F = 255;
+unsigned char arrowMaskRight[] = {
+    0, 0, 0, F, F, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, F, F, F, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, F, F, F, F, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, F, F, F, F, F, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, F, F, F, F, F, F, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, F, F, F, F, F, F, F, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, F, F, F, F, F, F, F, F, 0, 0, 0, 0, 0,
+    0, 0, 0, F, F, F, F, F, F, F, F, F, 0, 0, 0, 0,
+    0, 0, 0, F, F, F, F, F, F, F, F, F, 0, 0, 0, 0,
+    0, 0, 0, F, F, F, F, F, F, F, F, 0, 0, 0, 0, 0,
+    0, 0, 0, F, F, F, F, F, F, F, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, F, F, F, F, F, F, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, F, F, F, F, F, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, F, F, F, F, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, F, F, F, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, F, F, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
+unsigned char arrowMaskDown[] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F,
+    F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F,
+    0, F, F, F, F, F, F, F, F, F, F, F, F, F, F, 0,
+    0, 0, F, F, F, F, F, F, F, F, F, F, F, F, 0, 0,
+    0, 0, 0, F, F, F, F, F, F, F, F, F, F, 0, 0, 0,
+    0, 0, 0, 0, F, F, F, F, F, F, F, F, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, F, F, F, F, F, F, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, F, F, F, F, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, F, F, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
 APPMAIN
 {
     Red11::openConsole();
@@ -35,6 +72,9 @@ APPMAIN
     auto crateMaterial = new MaterialSimple(crateTexture);
     crateMaterial->setRoughness(0.7f);
     crateMaterial->setMetallic(0.2f);
+
+    auto arrowRightTexture = new Texture("ArrowRight", TextureType::ByteMap, 16, 16, arrowMaskRight);
+    auto arrowDownTexture = new Texture("ArrowDown", TextureType::ByteMap, 16, 16, arrowMaskDown);
 
     // Meshes
     auto cubeMesh = Red11::getMeshBuilder()->createCube(0.1f);
@@ -113,7 +153,7 @@ APPMAIN
     canvas->height.setAsPercentage(100.0f);
     canvas->contentDirection.set(UIContentDirection::Vertical);
     canvas->fontSize.set(48);
-    canvas->colorText.set(Color(1, 1, 1, 1));
+    canvas->colorText.set(Color(0.9f, 0.9f, 0.9f, 1.0f));
     canvas->letterSpacing.set(1.0f);
 
     UINode *topBar = canvas->createUINodeChild<UINode>();
@@ -163,8 +203,13 @@ APPMAIN
     barButton1->setPaddingNumber(12.0f, 0.0f);
     barButton1->minWidth.setAsNumber(120.0f);
     barButton1->colorBackground.set(Color(0.2f, 0.8f, 0.8f, 1.0f));
-    barButton1->text.set("File");
-    barButton1->textVerticalAlign.set(UIContentAlign::Middle);
+    barButton1->verticalAlign.set(UIContentAlign::Middle);
+    UINode *barButton1Text = barButton1->createUINodeChild<UINode>();
+    barButton1Text->text.set("File");
+    UINode *barButton1Image = barButton1->createUINodeChild<UINode>();
+    barButton1Image->image.set(arrowRightTexture);
+    barButton1Image->setMarginNumber(8.0f, 0, 0, 0);
+    barButton1Image->colorImageMask.set(Color(0.9f, 0.9f, 0.9f, 1));
 
     UINode *barButton2 = topBar->createUINodeChild<UINode>();
     barButton2->height.setAsPercentage(100);

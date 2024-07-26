@@ -80,6 +80,7 @@ void UINode::collectRenderBlock(UIContext *uiContext)
         renderBlock->index = index;
         renderBlock->x = xStartPosition;
         renderBlock->y = yStartPosition;
+
         renderBlock->textShiftX = 0.0f;
         renderBlock->textShiftY = 0.0f;
         if (calculatedTextHorizontalAlign == UIContentAlign::Middle)
@@ -90,6 +91,18 @@ void UINode::collectRenderBlock(UIContext *uiContext)
             renderBlock->textShiftY = (calculatedHeight - getTextHeight()) * 0.5f;
         if (calculatedTextVerticalAlign == UIContentAlign::End)
             renderBlock->textShiftY = (calculatedHeight - getTextHeight());
+
+        renderBlock->imageShiftX = 0.0f;
+        renderBlock->imageShiftY = 0.0f;
+        if (calculatedImageHorizontalAlign == UIContentAlign::Middle)
+            renderBlock->imageShiftX = (calculatedWidth - getImageWidth()) * 0.5f;
+        if (calculatedImageHorizontalAlign == UIContentAlign::End)
+            renderBlock->imageShiftX = (calculatedWidth - getImageWidth());
+        if (calculatedImageVerticalAlign == UIContentAlign::Middle)
+            renderBlock->imageShiftY = (calculatedHeight - getImageHeight()) * 0.5f;
+        if (calculatedImageVerticalAlign == UIContentAlign::End)
+            renderBlock->imageShiftY = (calculatedHeight - getImageHeight());
+
         renderBlock->source = this;
     }
 
@@ -176,6 +189,8 @@ bool UINode::hasDisplayableData()
         return true;
     if (text.isSet() && text.getValue().size() > 0)
         return true;
+    if (image.isSet() && image.getValue())
+        return true;
     return false;
 }
 
@@ -194,6 +209,20 @@ float UINode::getTextHeight()
 {
     if (text.isSet())
         return getFontHeight();
+    return 0.0f;
+}
+
+float UINode::getImageWidth()
+{
+    if (image.isSet() && image.getValue())
+        return image.getValue()->getWidth();
+    return 0.0f;
+}
+
+float UINode::getImageHeight()
+{
+    if (image.isSet() && image.getValue())
+        return image.getValue()->getHeight();
     return 0.0f;
 }
 
@@ -355,6 +384,10 @@ float UINode::getContentWidth()
             width = fmaxf(width, static_cast<float>(font->measureWidth(text.getValue(), getFontHeight())) + letterSpacingValue * (text.getValue().size() - 1));
         }
     }
+    if (image.isSet() && image.getValue())
+    {
+        width = fmaxf(width, static_cast<float>(image.getValue()->getWidth()));
+    }
     return width;
 }
 
@@ -376,6 +409,10 @@ float UINode::getContentHeight()
         Font *font = getFont();
         if (font)
             height = fmaxf(height, static_cast<float>(font->measureHeight(text.getValue(), getFontHeight())));
+    }
+    if (image.isSet() && image.getValue())
+    {
+        height = fmaxf(height, static_cast<float>(image.getValue()->getHeight()));
     }
     return height;
 }
@@ -500,10 +537,23 @@ void UINode::rebuild()
     calculatedColorText = getColorText();
     calculatedColorSelection = getColorSelection();
     calculatedLetterSpacing = getLetterSpacing();
+
     calculatedTextHorizontalAlign = textHorizontalAlign.isSet() ? textHorizontalAlign.getValue() : UIContentAlign::Start;
     if (calculatedTextHorizontalAlign == UIContentAlign::SpaceAround || calculatedTextHorizontalAlign == UIContentAlign::SpaceBetween)
         calculatedTextHorizontalAlign = UIContentAlign::Middle;
     calculatedTextVerticalAlign = textVerticalAlign.isSet() ? textVerticalAlign.getValue() : UIContentAlign::Start;
     if (calculatedTextVerticalAlign == UIContentAlign::SpaceAround || calculatedTextVerticalAlign == UIContentAlign::SpaceBetween)
         calculatedTextVerticalAlign = UIContentAlign::Middle;
+
+    calculatedImageHorizontalAlign = imageHorizontalAlign.isSet() ? imageHorizontalAlign.getValue() : UIContentAlign::Start;
+    if (calculatedImageHorizontalAlign == UIContentAlign::SpaceAround || calculatedImageHorizontalAlign == UIContentAlign::SpaceBetween)
+        calculatedImageHorizontalAlign = UIContentAlign::Middle;
+    calculatedImageVerticalAlign = imageVerticalAlign.isSet() ? imageVerticalAlign.getValue() : UIContentAlign::Start;
+    if (calculatedImageVerticalAlign == UIContentAlign::SpaceAround || calculatedImageVerticalAlign == UIContentAlign::SpaceBetween)
+        calculatedImageVerticalAlign = UIContentAlign::Middle;
+
+    // Image
+    calculatedColorImageMask = colorImageMask.isSet() ? colorImageMask.getValue() : Color(0, 0, 0, 0);
+    calculatedUseImageMask = colorImageMask.isSet();
+    calculatedImage = image.isSet() ? image.getValue() : nullptr;
 }
