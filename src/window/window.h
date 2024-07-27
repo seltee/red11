@@ -3,6 +3,7 @@
 
 #pragma once
 #include "utils/utils.h"
+#include "utils/primitives.h"
 
 #define WINDOW_FULLSCREEN 1
 #define WINDOW_RESIZABLE 2
@@ -20,6 +21,16 @@ struct WindowState
     bool bIsCloseRequested;
     bool bIsBorderless;
     bool bIsResizable;
+};
+
+enum class MouseCursorIcon
+{
+    Default,
+    Hand,
+    Wait,
+    Cross,
+    IBeam,
+    Help
 };
 
 class Window
@@ -42,8 +53,12 @@ public:
     EXPORT void udpateRealSize(int width, int height);
 
     virtual void setMousePosition(int x, int y, bool generateMoveEvents = false) = 0;
+    virtual void setMousePosition(MousePosition position, bool generateMoveEvents = false) = 0;
+    virtual MousePosition getMousePosition() = 0;
     virtual void setCursorVisibility(bool bState) = 0;
     virtual bool isFocused() = 0;
+    virtual bool isCursorOverWindow() = 0;
+    virtual void setCursorIcon(MouseCursorIcon icon, bool bForce = false) = 0;
 
 protected:
     WindowState state;

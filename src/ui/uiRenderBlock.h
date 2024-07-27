@@ -12,6 +12,9 @@ public:
     float x, y;
     float textShiftX, textShiftY;
     float imageShiftX, imageShiftY;
+    float hoverShiftX, hoverShiftY;
+    float hoverWidth;
+    float hoverHeight;
     int index;
     UINode *source;
     std::vector<UIRenderBlock *> children;

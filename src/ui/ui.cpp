@@ -38,7 +38,40 @@ void UI::process(float delta)
     root->font.set(uiContext->getDefaultFont());
     root->fontSize.set(24);
     root->positioning.set(UIBlockPositioning::Absolute);
+
+    root->processStyle();
     root->process(delta);
+    root->clearHover();
+
+    uiContext->cleanForNewRender();
+    root->collectRenderBlock(uiContext);
+    uiContext->sortBlocks();
+
+    MousePosition p = window->getMousePosition();
+    int blocksCount = uiContext->getBlocksCount();
+
+    if (window->isCursorOverWindow())
+    {
+        MouseCursorIcon cursor = MouseCursorIcon::Default;
+        for (int i = 0; i < blocksCount; i++)
+        {
+            UIRenderBlock &block = uiContext->getBlock(i);
+            UINode *node = block.source;
+            float hoverX = block.x + block.hoverShiftX;
+            float hoverY = block.y + block.hoverShiftY;
+
+            if (p.x >= hoverX && p.x < hoverX + block.hoverWidth && p.y >= hoverY && p.y < hoverY + block.hoverHeight)
+            {
+                if (node->getStyleFinal()->cursorIcon.isSet())
+                    cursor = node->getStyleFinal()->cursorIcon.getValue();
+                node->setHovered();
+                if (node->getStyleFinal()->propagateHover.isSet() && node->getStyleFinal()->propagateHover.getValue())
+                    node->propagateHoverToChildren();
+            }
+        }
+
+        window->setCursorIcon(cursor);
+    }
 }
 
 void UI::render()
@@ -47,12 +80,6 @@ void UI::render()
     Renderer *renderer = uiContext->getRenderer();
 
     // printf("\nRender UI start\n");
-    uiContext->cleanForNewRender();
-
-    root->collectRenderBlock(uiContext);
-
-    uiContext->sortBlocks();
-
     Matrix4 projectionMatrix = glm::ortho(0.0f, (float)window->getWidth(), (float)window->getHeight(), 0.0f, -1.0f, 1.0f);
     Matrix4 viewMatrix = Matrix4(1.0f);
 

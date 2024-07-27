@@ -14,6 +14,7 @@ struct CameraControl
     float rotateX;
     float rotateY;
     bool shoot;
+    bool controlCamera;
 };
 
 const unsigned char F = 255;
@@ -57,8 +58,7 @@ APPMAIN
 {
     Red11::openConsole();
 
-    auto window = Red11::createWindow("physics Example", WINDOW_WIDTH, WINDOW_HEIGHT, 0);
-    window->setCursorVisibility(false);
+    auto window = Red11::createWindow("UI Example", WINDOW_WIDTH, WINDOW_HEIGHT, 0);
     auto renderer = Red11::createRenderer(window, RendererType::DirectX9);
 
     // Textures & Materials
@@ -169,63 +169,31 @@ APPMAIN
     screen->horizontalAlign.set(UIContentAlign::SpaceAround);
     screen->verticalAlign.set(UIContentAlign::SpaceAround);
 
-    UINode *F = screen->createUINodeChild<UINode>();
-    F->width.setAsNumber(120.0f);
-    F->height.setAsNumber(120.0f);
-    F->colorBackground.set(Color(0.8f, 0.2f, 0.2f, 0.8f));
+    auto createMenuButton = [&](std::string text, bool hasArrow)
+    {
+        UINode *barButton = topBar->createUINodeChild<UINode>();
+        barButton->height.setAsPercentage(100);
+        barButton->setPaddingNumber(16.0f, 0.0f);
+        barButton->getStyleHover()->colorBackground.set(Color(0.4, 0.4, 0.4));
+        barButton->verticalAlign.set(UIContentAlign::Middle);
+        barButton->propagateHover.set(true);
+        barButton->cursorIcon.set(MouseCursorIcon::Hand);
 
-    F = screen->createUINodeChild<UINode>();
-    F->width.setAsNumber(100.0f);
-    F->height.setAsNumber(100.0f);
-    F->colorBackground.set(Color(0.2f, 0.8f, 0.2f, 0.8f));
+        UINode *barButtonText = barButton->createUINodeChild<UINode>();
+        barButtonText->text.set(text);
+        if (hasArrow)
+        {
+            UINode *barButtonImage = barButton->createUINodeChild<UINode>();
+            barButtonImage->image.set(arrowRightTexture);
+            barButtonImage->setMarginNumber(8.0f, 0, 0, 0);
+            barButtonImage->colorImageMask.set(Color(0.9f, 0.9f, 0.9f, 1));
+            barButtonImage->getStyleHover()->image.set(arrowDownTexture);
+        }
+    };
 
-    F = screen->createUINodeChild<UINode>();
-    F->width.setAsNumber(140.0f);
-    F->height.setAsNumber(140.0f);
-    F->colorBackground.set(Color(0.2f, 0.2f, 0.8f, 0.8f));
-
-    UINode *barMenu1 = topBar->createUINodeChild<UINode>();
-    barMenu1->width.setAsNumber(160.0f);
-    barMenu1->height.setAsNumber(300.0f);
-    barMenu1->getMarginTop().setAsNumber(60);
-    barMenu1->positioning.set(UIBlockPositioning::Absolute);
-    barMenu1->colorBackground.set(Color(0.5f, 0.5f, 0.5f, 1.0f));
-
-    UINode *barMenu2 = topBar->createUINodeChild<UINode>();
-    barMenu2->width.setAsNumber(140.0f);
-    barMenu2->height.setAsNumber(280.0f);
-    barMenu2->getMarginTop().setAsNumber(60);
-    barMenu2->positioning.set(UIBlockPositioning::Absolute);
-    barMenu2->colorBackground.set(Color(0.8f, 0.8f, 0.8f, 1.0f));
-
-    UINode *barButton1 = topBar->createUINodeChild<UINode>();
-    barButton1->height.setAsPercentage(100);
-    barButton1->setPaddingNumber(12.0f, 0.0f);
-    barButton1->minWidth.setAsNumber(120.0f);
-    barButton1->colorBackground.set(Color(0.2f, 0.8f, 0.8f, 1.0f));
-    barButton1->verticalAlign.set(UIContentAlign::Middle);
-    UINode *barButton1Text = barButton1->createUINodeChild<UINode>();
-    barButton1Text->text.set("File");
-    UINode *barButton1Image = barButton1->createUINodeChild<UINode>();
-    barButton1Image->image.set(arrowRightTexture);
-    barButton1Image->setMarginNumber(8.0f, 0, 0, 0);
-    barButton1Image->colorImageMask.set(Color(0.9f, 0.9f, 0.9f, 1));
-
-    UINode *barButton2 = topBar->createUINodeChild<UINode>();
-    barButton2->height.setAsPercentage(100);
-    barButton2->setPaddingNumber(12.0f, 0.0f);
-    barButton2->minWidth.setAsNumber(120.0f);
-    barButton2->colorBackground.set(Color(0.8f, 0.2f, 0.8f, 1.0f));
-    barButton2->text.set("Add ball");
-    barButton2->textVerticalAlign.set(UIContentAlign::Middle);
-
-    UINode *barButton3 = topBar->createUINodeChild<UINode>();
-    barButton3->height.setAsPercentage(100);
-    barButton3->setPaddingNumber(12.0f, 0.0f);
-    barButton3->minWidth.setAsNumber(120.0f);
-    barButton3->colorBackground.set(Color(0.8f, 0.8f, 0.2f, 1.0f));
-    barButton3->text.set("Help");
-    barButton3->textVerticalAlign.set(UIContentAlign::Middle);
+    createMenuButton("File", true);
+    createMenuButton("Add ball", false);
+    createMenuButton("Help", false);
 
     // Input
     auto input = Red11::getGlobalInputProvider();
@@ -264,6 +232,14 @@ APPMAIN
                             ((CameraControl *)userData)->shoot = true;
                         } });
 
+    InputDescriptorList controlCameraList;
+    controlCameraList.addMouseInput(InputMouseType::RightButton, 1.0f);
+    input->addInput(controlCameraList, &cameraControl, [](InputType type, InputData *data, float value, void *userData)
+                    { 
+                        ((CameraControl *)userData)->controlCamera = value > 0.5f; 
+                        ((CameraControl *)userData)->rotateX = 0.0f;
+                        ((CameraControl *)userData)->rotateY = 0.0f; });
+
     InputDescriptorList toggleFullscreen;
     toggleFullscreen.addKeyboardInput(KeyboardCode::KeyF, 1.0f);
     input->addInput(toggleFullscreen, window, [](InputType type, InputData *data, float value, void *userData)
@@ -280,16 +256,28 @@ APPMAIN
     {
         float delta = deltaCounter.getDeltaFrameCounter();
 
+        if (cameraControl.controlCamera)
+        {
+            window->setCursorVisibility(false);
+            window->setMousePosition(renderer->getViewWidth() / 2, renderer->getViewHeight() / 2);
+        }
+        else
+        {
+            window->setCursorVisibility(true);
+        }
+
         window->processWindow();
-        window->setMousePosition(renderer->getViewWidth() / 2, renderer->getViewHeight() / 2);
         renderer->prepareToRender();
         cameraComponent->setupAsPerspective(renderer->getViewWidth(), renderer->getViewHeight());
         renderer->clearBuffer(Color(0.4, 0.5, 0.8));
 
-        cameraRX += cameraControl.rotateY * 0.0015f;
-        cameraRY += cameraControl.rotateX * 0.0015f;
-        cameraRX = glm::clamp(cameraRX, -1.2f, 1.0f);
-        camera->setRotation(Vector3(cameraRX, cameraRY, 0));
+        if (cameraControl.controlCamera)
+        {
+            cameraRX += cameraControl.rotateY * 0.0015f;
+            cameraRY += cameraControl.rotateX * 0.0015f;
+            cameraRX = glm::clamp(cameraRX, -1.2f, 1.0f);
+            camera->setRotation(Vector3(cameraRX, cameraRY, 0));
+        }
 
         auto forward = camera->getRotation() * Vector3(0, 0, 0.8f);
         camera->translate(forward * delta * cameraControl.move);

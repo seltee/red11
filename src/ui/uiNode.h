@@ -27,9 +27,9 @@ public:
     }
 
     EXPORT void destroyAllChildren();
+    EXPORT void processStyle();
     EXPORT void process(float delta);
-    EXPORT virtual void subProcess(float delta);
-
+    EXPORT void clearHover();
     EXPORT void collectRenderBlock(UIContext *uiContext);
 
     EXPORT bool hasDisplayableData();
@@ -93,6 +93,13 @@ public:
     EXPORT Color getColorSelection();
     EXPORT float getLetterSpacing();
 
+    inline UINodeDisplay *getStyleHover() { return &hover; }
+    inline UINodeDisplay *getStyleFinal() { return &style; }
+
+    inline bool isHovered() { return bHovered; }
+    inline void setHovered() { this->bHovered = true; }
+    EXPORT void propagateHoverToChildren();
+
 protected:
     EXPORT void prepareNewNode(UINode *node);
     EXPORT virtual float getContentWidth();
@@ -106,6 +113,7 @@ protected:
     // Control data
     UINode *parent = nullptr;
     std::vector<UINode *> children;
+    bool bHovered = false;
 
     // Calculated data
     float calculatedWidth = 0.0f;
@@ -131,4 +139,9 @@ protected:
     Texture *calculatedImage = nullptr;
     UIContentAlign calculatedImageHorizontalAlign = UIContentAlign::Start;
     UIContentAlign calculatedImageVerticalAlign = UIContentAlign::Start;
+
+    // style applied if hover
+    UINodeDisplay hover;
+    // final style that will be calculated and shown
+    UINodeDisplay style;
 };

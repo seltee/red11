@@ -100,3 +100,8 @@ struct SoundStream
     void *fileReader;
     int numChannels;
 };
+
+struct MousePosition
+{
+    int x, y;
+};

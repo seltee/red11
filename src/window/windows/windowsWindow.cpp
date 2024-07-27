@@ -49,6 +49,14 @@ LRESULT CALLBACK WindowProcedure(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
         InputProvider::provideNewInput(InputType::Keyboard, inputData);
         break;
 
+    case WM_SETCURSOR:
+    {
+        // Check if the cursor is within the client area
+        if (LOWORD(lParam) == HTCLIENT)
+            window->resetCursorIcon();
+        break;
+    }
+
     case WM_MOUSEMOVE:
         inputData.mouse.type = InputMouseType::PositionX;
         inputData.mouse.value = (int)(lParam & 0xffff);
@@ -56,6 +64,7 @@ LRESULT CALLBACK WindowProcedure(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
         inputData.mouse.type = InputMouseType::PositionY;
         inputData.mouse.value = (int)(lParam >> 16);
         InputProvider::provideNewInput(InputType::Mouse, inputData);
+        window->updateMousePosition((int)(lParam & 0xffff), (int)(lParam >> 16));
         break;
 
     case WM_LBUTTONDOWN:
@@ -97,6 +106,14 @@ LRESULT CALLBACK WindowProcedure(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
     case WM_WINDOWPOSCHANGED:
         GetClientRect(hWnd, &rect);
         window->udpateRealSize(rect.right, rect.bottom);
+        break;
+
+    case WM_MOUSEHOVER:
+        window->updateMouseOverWindow(true);
+        break;
+
+    case WM_MOUSELEAVE:
+        window->updateMouseOverWindow(false);
         break;
 
     default:
@@ -184,12 +201,28 @@ WindowsWindow::WindowsWindow(const char *windowName, int width, int height, int 
         return;
     }
 
+    hCursorDefault = LoadCursor(NULL, IDC_ARROW);
+    hCursorHand = LoadCursor(NULL, IDC_HAND);
+    hCursorWait = LoadCursor(NULL, IDC_WAIT);
+    hCursorCross = LoadCursor(NULL, IDC_CROSS);
+    hCursorIBeam = LoadCursor(NULL, IDC_IBEAM);
+    hCursorHelp = LoadCursor(NULL, IDC_HELP);
+
     ShowWindow(hWnd, true);
     UpdateWindow(hWnd);
+
+    setCursorIcon(MouseCursorIcon::Default);
 }
 
 void WindowsWindow::processWindow()
 {
+    bCursorOverWindow = true;
+
+    TRACKMOUSEEVENT tme = {sizeof(tme)};
+    tme.dwFlags = TME_LEAVE;
+    tme.hwndTrack = hWnd;
+    TrackMouseEvent(&tme);
+
     if (state.bIsValid && !state.bIsCloseRequested)
     {
 
@@ -250,20 +283,48 @@ void WindowsWindow::setResolution(int width, int height)
 
 void WindowsWindow::setMousePosition(int x, int y, bool generateMoveEvents)
 {
-    if (bIsFocused)
+    if (bIsFocused && (mousePositionX != x || mousePositionY != y))
     {
         POINT p = {x, y};
         ClientToScreen(hWnd, &p);
         if (SetCursorPos(p.x, p.y))
         {
             InputProvider::setMousePosition(x, y, generateMoveEvents);
+
+            this->mousePositionX = p.x;
+            this->mousePositionY = p.y;
         }
     }
 }
 
+void WindowsWindow::setMousePosition(MousePosition position, bool generateMoveEvents)
+{
+    setMousePosition(position.x, position.y);
+}
+
+void WindowsWindow::updateMousePosition(int x, int y)
+{
+    mousePositionX = x;
+    mousePositionY = y;
+}
+
+void WindowsWindow::updateMouseOverWindow(bool bState)
+{
+    this->bCursorOverWindow = bState;
+}
+
+MousePosition WindowsWindow::getMousePosition()
+{
+    return MousePosition({mousePositionX, mousePositionY});
+}
+
 void WindowsWindow::setCursorVisibility(bool state)
 {
-    ShowCursor(state);
+    if (bCursorShown != state)
+    {
+        bCursorShown = state;
+        ShowCursor(state);
+    }
 }
 
 bool WindowsWindow::isFocused()
@@ -304,6 +365,45 @@ float WindowsWindow::getAdditionalWindowHeight()
 {
     int additionalWindowHeight = GetSystemMetrics(SM_CYFRAME) * 2 + GetSystemMetrics(SM_CYCAPTION) + 16;
     return static_cast<float>(additionalWindowHeight);
+}
+
+bool WindowsWindow::isCursorOverWindow()
+{
+    return bCursorOverWindow;
+}
+
+void WindowsWindow::setCursorIcon(MouseCursorIcon icon, bool bForce)
+{
+    if (mouseIcon != icon || bForce)
+    {
+        mouseIcon = icon;
+        switch (icon)
+        {
+        case MouseCursorIcon::Default:
+            SetCursor(hCursorDefault);
+            break;
+        case MouseCursorIcon::Hand:
+            SetCursor(hCursorHand);
+            break;
+        case MouseCursorIcon::Wait:
+            SetCursor(hCursorWait);
+            break;
+        case MouseCursorIcon::Cross:
+            SetCursor(hCursorCross);
+            break;
+        case MouseCursorIcon::IBeam:
+            SetCursor(hCursorIBeam);
+            break;
+        case MouseCursorIcon::Help:
+            SetCursor(hCursorHelp);
+            break;
+        }
+    }
+}
+
+void WindowsWindow::resetCursorIcon()
+{
+    setCursorIcon(mouseIcon, true);
 }
 
 #endif

@@ -15,11 +15,17 @@
 #include "uiPropertyNumber.h"
 #include "uiPropertyFloat.h"
 #include "uiPropertyTexture.h"
+#include "uiPropertyToggle.h"
+#include "uiPropertyCursorIcon.h"
 #include "data/font.h"
 
 class UINodeDisplay
 {
 public:
+    void copyFrom(UINodeDisplay *nodeDisplay);
+    bool insertFrom(UINodeDisplay *nodeDisplay);
+    void clear();
+
     inline void setMarginNumber(float left, float top, float right, float bottom)
     {
         margin[UI_LEFT].setAsNumber(left);
@@ -124,4 +130,6 @@ public:
     UIPropertyTexture image;
     UIPropertyAlign imageHorizontalAlign;
     UIPropertyAlign imageVerticalAlign;
+    UIPropertyToggle propagateHover;
+    UIPropertyCursorIcon cursorIcon;
 };

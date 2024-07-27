@@ -18,10 +18,18 @@ void UINode::destroyAllChildren()
         node->destroy();
 }
 
+void UINode::processStyle()
+{
+    style.clear();
+    style.copyFrom(this);
+    if (bHovered)
+        style.insertFrom(&hover);
+    for (auto &node : children)
+        node->processStyle();
+}
+
 void UINode::process(float delta)
 {
-    rebuild();
-    subProcess(delta);
     rebuild();
 
     if (isDestroyed())
@@ -45,8 +53,11 @@ void UINode::process(float delta)
     }
 }
 
-void UINode::subProcess(float delta)
+void UINode::clearHover()
 {
+    bHovered = false;
+    for (auto &node : children)
+        node->clearHover();
 }
 
 void UINode::collectRenderBlock(UIContext *uiContext)
@@ -102,6 +113,11 @@ void UINode::collectRenderBlock(UIContext *uiContext)
             renderBlock->imageShiftY = (calculatedHeight - getImageHeight()) * 0.5f;
         if (calculatedImageVerticalAlign == UIContentAlign::End)
             renderBlock->imageShiftY = (calculatedHeight - getImageHeight());
+
+        renderBlock->hoverWidth = calculatedWidth + calculatedPadding[UI_LEFT] + calculatedPadding[UI_RIGHT] + calculatedBorder[UI_LEFT] + calculatedBorder[UI_RIGHT];
+        renderBlock->hoverHeight = calculatedHeight + calculatedPadding[UI_TOP] + calculatedPadding[UI_BOTTOM] + calculatedBorder[UI_TOP] + calculatedBorder[UI_BOTTOM];
+        renderBlock->hoverShiftX = getCalculatedMarginLeft();
+        renderBlock->hoverShiftY = getCalculatedMarginTop();
 
         renderBlock->source = this;
     }
@@ -185,6 +201,8 @@ void UINode::collectRenderBlock(UIContext *uiContext)
 
 bool UINode::hasDisplayableData()
 {
+    if (calculatedWidth != 0.0f && calculatedHeight != 0.0f && children.size() > 0)
+        return true;
     if (calculatedColorBackground.a != 0.0f || calculatedColorBorder.a != 0.0f)
         return true;
     if (text.isSet() && text.getValue().size() > 0)
@@ -314,8 +332,8 @@ float UINode::getFreeHeight()
 
 Font *UINode::getFont()
 {
-    if (font.isSet())
-        return font.getValue();
+    if (style.font.isSet())
+        return style.font.getValue();
     if (parent)
         return parent->getFont();
     return nullptr;
@@ -323,8 +341,8 @@ Font *UINode::getFont()
 
 unsigned int UINode::getFontHeight()
 {
-    if (fontSize.isSet())
-        return fontSize.getValue();
+    if (style.fontSize.isSet())
+        return style.fontSize.getValue();
     if (parent)
         return parent->getFontHeight();
     return 24;
@@ -332,8 +350,8 @@ unsigned int UINode::getFontHeight()
 
 Color UINode::getColorText()
 {
-    if (colorText.isSet())
-        return colorText.getValue();
+    if (style.colorText.isSet())
+        return style.colorText.getValue();
     if (parent)
         return parent->getColorText();
     return Color(0, 0, 0, 1);
@@ -341,8 +359,8 @@ Color UINode::getColorText()
 
 Color UINode::getColorSelection()
 {
-    if (colorSelection.isSet())
-        return colorSelection.getValue();
+    if (style.colorSelection.isSet())
+        return style.colorSelection.getValue();
     if (parent)
         return parent->getColorSelection();
     return Color(0, 0, 0, 1);
@@ -350,11 +368,18 @@ Color UINode::getColorSelection()
 
 float UINode::getLetterSpacing()
 {
-    if (letterSpacing.isSet())
-        return letterSpacing.getValue();
+    if (style.letterSpacing.isSet())
+        return style.letterSpacing.getValue();
     if (parent)
         return parent->getLetterSpacing();
     return 0.0f;
+}
+
+void UINode::propagateHoverToChildren()
+{
+    bHovered = true;
+    for (auto &node : children)
+        node->propagateHoverToChildren();
 }
 
 void UINode::prepareNewNode(UINode *node)
@@ -457,56 +482,56 @@ void UINode::rebuild()
     for (int i = 0; i < 4; i++)
     {
         calculatedMargin[i] = 0.0f;
-        if (margin[i].isSet())
+        if (style.margin[i].isSet())
         {
-            calculatedMargin[i] = margin[i].isUsingPercentage()
-                                      ? ((i == UI_LEFT || i == UI_RIGHT) ? parentFreeWidth : parentFreeHeight) * 0.01f * margin[i].getValue()
-                                      : margin[i].getValue();
+            calculatedMargin[i] = style.margin[i].isUsingPercentage()
+                                      ? ((i == UI_LEFT || i == UI_RIGHT) ? parentFreeWidth : parentFreeHeight) * 0.01f * style.margin[i].getValue()
+                                      : style.margin[i].getValue();
         }
         calculatedPadding[i] = 0.0f;
-        if (padding[i].isSet())
+        if (style.padding[i].isSet())
         {
-            calculatedPadding[i] = padding[i].isUsingPercentage()
-                                       ? ((i == UI_LEFT || i == UI_RIGHT) ? parentFreeWidth : parentFreeHeight) * 0.01f * padding[i].getValue()
-                                       : padding[i].getValue();
+            calculatedPadding[i] = style.padding[i].isUsingPercentage()
+                                       ? ((i == UI_LEFT || i == UI_RIGHT) ? parentFreeWidth : parentFreeHeight) * 0.01f * style.padding[i].getValue()
+                                       : style.padding[i].getValue();
         }
         calculatedBorder[i] = 0.0f;
-        if (border[i].isSet())
+        if (style.border[i].isSet())
         {
-            calculatedBorder[i] = border[i].isUsingPercentage()
-                                      ? ((i == UI_LEFT || i == UI_RIGHT) ? parentFreeWidth : parentFreeHeight) * 0.01f * border[i].getValue()
-                                      : border[i].getValue();
+            calculatedBorder[i] = style.border[i].isUsingPercentage()
+                                      ? ((i == UI_LEFT || i == UI_RIGHT) ? parentFreeWidth : parentFreeHeight) * 0.01f * style.border[i].getValue()
+                                      : style.border[i].getValue();
         }
     }
 
     // Width
-    if (width.isSet())
+    if (style.width.isSet())
     {
-        if (width.isUsingPercentage())
-            calculatedWidth = (width.getValue() * 0.01f) * parentFreeWidth - getMarginPaddingBorderWidth();
+        if (style.width.isUsingPercentage())
+            calculatedWidth = (style.width.getValue() * 0.01f) * parentFreeWidth - getMarginPaddingBorderWidth();
         else
-            calculatedWidth = width.getValue();
+            calculatedWidth = style.width.getValue();
     }
     else
         calculatedWidth = contentWidth;
-    if (maxWidth.isSet())
+    if (style.maxWidth.isSet())
     {
-        float maxWidthFinal = maxWidth.isUsingPercentage() ? maxWidth.getValue() * 0.01f * parentFreeWidth : maxWidth.getValue();
+        float maxWidthFinal = style.maxWidth.isUsingPercentage() ? style.maxWidth.getValue() * 0.01f * parentFreeWidth : style.maxWidth.getValue();
         calculatedWidth = fminf(calculatedWidth, maxWidthFinal);
     }
-    if (minWidth.isSet())
+    if (style.minWidth.isSet())
     {
-        float minWidthFinal = minWidth.isUsingPercentage() ? minWidth.getValue() * 0.01f * parentFreeWidth : minWidth.getValue();
+        float minWidthFinal = style.minWidth.isUsingPercentage() ? style.minWidth.getValue() * 0.01f * parentFreeWidth : style.minWidth.getValue();
         calculatedWidth = fmaxf(calculatedWidth, minWidthFinal);
     }
 
     // Height
-    if (height.isSet())
+    if (style.height.isSet())
     {
-        if (height.isUsingPercentage())
-            calculatedHeight = (height.getValue() * 0.01f) * parentFreeHeight - getMarginPaddingBorderHeight();
+        if (style.height.isUsingPercentage())
+            calculatedHeight = (style.height.getValue() * 0.01f) * parentFreeHeight - getMarginPaddingBorderHeight();
         else
-            calculatedHeight = height.getValue();
+            calculatedHeight = style.height.getValue();
     }
     else
         calculatedHeight = contentHeight;
@@ -528,8 +553,8 @@ void UINode::rebuild()
     calculatedPositioning = positioning.getValue();
 
     // Element View
-    calculatedColorBackground = colorBackground.isSet() ? colorBackground.getValue() : Color(0, 0, 0, 0);
-    calculatedColorBorder = colorBorder.isSet() ? colorBorder.getValue() : Color(0, 0, 0, 0);
+    calculatedColorBackground = style.colorBackground.isSet() ? style.colorBackground.getValue() : Color(0, 0, 0, 0);
+    calculatedColorBorder = style.colorBorder.isSet() ? style.colorBorder.getValue() : Color(0, 0, 0, 0);
 
     // Font / Text
     calculatedFont = getFont();
@@ -538,22 +563,22 @@ void UINode::rebuild()
     calculatedColorSelection = getColorSelection();
     calculatedLetterSpacing = getLetterSpacing();
 
-    calculatedTextHorizontalAlign = textHorizontalAlign.isSet() ? textHorizontalAlign.getValue() : UIContentAlign::Start;
+    calculatedTextHorizontalAlign = style.textHorizontalAlign.isSet() ? style.textHorizontalAlign.getValue() : UIContentAlign::Start;
     if (calculatedTextHorizontalAlign == UIContentAlign::SpaceAround || calculatedTextHorizontalAlign == UIContentAlign::SpaceBetween)
         calculatedTextHorizontalAlign = UIContentAlign::Middle;
-    calculatedTextVerticalAlign = textVerticalAlign.isSet() ? textVerticalAlign.getValue() : UIContentAlign::Start;
+    calculatedTextVerticalAlign = style.textVerticalAlign.isSet() ? style.textVerticalAlign.getValue() : UIContentAlign::Start;
     if (calculatedTextVerticalAlign == UIContentAlign::SpaceAround || calculatedTextVerticalAlign == UIContentAlign::SpaceBetween)
         calculatedTextVerticalAlign = UIContentAlign::Middle;
 
-    calculatedImageHorizontalAlign = imageHorizontalAlign.isSet() ? imageHorizontalAlign.getValue() : UIContentAlign::Start;
+    calculatedImageHorizontalAlign = style.imageHorizontalAlign.isSet() ? style.imageHorizontalAlign.getValue() : UIContentAlign::Start;
     if (calculatedImageHorizontalAlign == UIContentAlign::SpaceAround || calculatedImageHorizontalAlign == UIContentAlign::SpaceBetween)
         calculatedImageHorizontalAlign = UIContentAlign::Middle;
-    calculatedImageVerticalAlign = imageVerticalAlign.isSet() ? imageVerticalAlign.getValue() : UIContentAlign::Start;
+    calculatedImageVerticalAlign = style.imageVerticalAlign.isSet() ? style.imageVerticalAlign.getValue() : UIContentAlign::Start;
     if (calculatedImageVerticalAlign == UIContentAlign::SpaceAround || calculatedImageVerticalAlign == UIContentAlign::SpaceBetween)
         calculatedImageVerticalAlign = UIContentAlign::Middle;
 
     // Image
-    calculatedColorImageMask = colorImageMask.isSet() ? colorImageMask.getValue() : Color(0, 0, 0, 0);
-    calculatedUseImageMask = colorImageMask.isSet();
-    calculatedImage = image.isSet() ? image.getValue() : nullptr;
+    calculatedColorImageMask = style.colorImageMask.isSet() ? style.colorImageMask.getValue() : Color(0, 0, 0, 0);
+    calculatedUseImageMask = style.colorImageMask.isSet();
+    calculatedImage = style.image.isSet() ? style.image.getValue() : nullptr;
 }

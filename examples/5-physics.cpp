@@ -21,7 +21,7 @@ APPMAIN
 {
     Red11::openConsole();
 
-    auto window = Red11::createWindow("physics Example", WINDOW_WIDTH, WINDOW_HEIGHT, 0);
+    auto window = Red11::createWindow("Physics Example", WINDOW_WIDTH, WINDOW_HEIGHT, 0);
     window->setCursorVisibility(false);
     auto renderer = Red11::createRenderer(window, RendererType::DirectX9);
 

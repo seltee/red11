@@ -46,7 +46,7 @@ OBJ_FILES = ${OBJDIR}/red11.o \
 			${OBJDIR}/window.o ${OBJDIR}/windowsWindow.o \
 			${OBJDIR}/audio.o ${OBJDIR}/audioSource.o ${OBJDIR}/audioWindows.o \
 			${OBJDIR}/scene.o \
-			${OBJDIR}/ui.o ${OBJDIR}/uiContext.o ${OBJDIR}/uiNode.o \
+			${OBJDIR}/ui.o ${OBJDIR}/uiContext.o ${OBJDIR}/uiNode.o ${OBJDIR}/uiNodeDisplay.o \
 			${OBJDIR}/renderer.o \
 			${OBJDIR}/directx9renderer.o ${OBJDIR}/directx9meshRenderData.o ${OBJDIR}/directx9textureRenderData.o ${OBJDIR}/directx9materialRenderData.o  \
 			${OBJDIR}/directx9data.o  \
@@ -101,6 +101,9 @@ ${OBJDIR}/uiContext.o: ${SRCDIR}/ui/uiContext.cpp
 
 ${OBJDIR}/uiNode.o: ${SRCDIR}/ui/uiNode.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/uiNode.o ${SRCDIR}/ui/uiNode.cpp
+
+${OBJDIR}/uiNodeDisplay.o: ${SRCDIR}/ui/uiNodeDisplay.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/uiNodeDisplay.o ${SRCDIR}/ui/uiNodeDisplay.cpp
 
 ${OBJDIR}/renderer.o: ${SRCDIR}/renderer/renderer.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/renderer.o ${SRCDIR}/renderer/renderer.cpp
