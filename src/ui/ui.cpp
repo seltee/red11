@@ -52,25 +52,28 @@ void UI::process(float delta)
 
     if (window->isCursorOverWindow())
     {
-        MouseCursorIcon cursor = MouseCursorIcon::Default;
+        UIRenderBlock *hoveredBlock = nullptr;
         for (int i = 0; i < blocksCount; i++)
         {
             UIRenderBlock &block = uiContext->getBlock(i);
-            UINode *node = block.source;
             float hoverX = block.x + block.hoverShiftX;
             float hoverY = block.y + block.hoverShiftY;
 
-            if (p.x >= hoverX && p.x < hoverX + block.hoverWidth && p.y >= hoverY && p.y < hoverY + block.hoverHeight)
+            if (block.source && p.x >= hoverX && p.x < hoverX + block.hoverWidth && p.y >= hoverY && p.y < hoverY + block.hoverHeight)
             {
-                if (node->getStyleFinal()->cursorIcon.isSet())
-                    cursor = node->getStyleFinal()->cursorIcon.getValue();
-                node->setHovered();
-                if (node->getStyleFinal()->propagateHover.isSet() && node->getStyleFinal()->propagateHover.getValue())
-                    node->propagateHoverToChildren();
+                if (!hoveredBlock || block.index > hoveredBlock->index)
+                    hoveredBlock = &block;
             }
         }
 
-        window->setCursorIcon(cursor);
+        if (hoveredBlock && hoveredBlock->source)
+        {
+            hoveredBlock->source->propagateHoverToParents();
+            MouseCursorIcon icon = hoveredBlock->source->getNearestCursorIcon();
+            window->setCursorIcon(icon != MouseCursorIcon::None ? icon : MouseCursorIcon::Default);
+        }
+
+        root->processStyle();
     }
 }
 

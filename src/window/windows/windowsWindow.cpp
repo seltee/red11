@@ -379,6 +379,7 @@ void WindowsWindow::setCursorIcon(MouseCursorIcon icon, bool bForce)
         mouseIcon = icon;
         switch (icon)
         {
+        case MouseCursorIcon::None:
         case MouseCursorIcon::Default:
             SetCursor(hCursorDefault);
             break;

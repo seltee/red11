@@ -26,12 +26,11 @@ void UINode::processStyle()
         style.insertFrom(&hover);
     for (auto &node : children)
         node->processStyle();
+    rebuild();
 }
 
 void UINode::process(float delta)
 {
-    rebuild();
-
     if (isDestroyed())
     {
         for (auto &node : children)
@@ -380,6 +379,24 @@ void UINode::propagateHoverToChildren()
     bHovered = true;
     for (auto &node : children)
         node->propagateHoverToChildren();
+}
+
+void UINode::propagateHoverToParents()
+{
+    bHovered = true;
+    if (style.propagateHover.isSet() && style.propagateHover.getValue())
+        propagateHoverToChildren();
+    if (parent)
+        parent->propagateHoverToParents();
+}
+
+MouseCursorIcon UINode::getNearestCursorIcon()
+{
+    if (style.cursorIcon.isSet())
+        return style.cursorIcon.getValue();
+    if (parent)
+        return parent->getNearestCursorIcon();
+    return MouseCursorIcon::None;
 }
 
 void UINode::prepareNewNode(UINode *node)

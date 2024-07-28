@@ -25,6 +25,7 @@ struct WindowState
 
 enum class MouseCursorIcon
 {
+    None,
     Default,
     Hand,
     Wait,

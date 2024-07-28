@@ -99,6 +99,8 @@ public:
     inline bool isHovered() { return bHovered; }
     inline void setHovered() { this->bHovered = true; }
     EXPORT void propagateHoverToChildren();
+    EXPORT void propagateHoverToParents();
+    EXPORT MouseCursorIcon getNearestCursorIcon();
 
 protected:
     EXPORT void prepareNewNode(UINode *node);
