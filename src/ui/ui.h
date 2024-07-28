@@ -26,6 +26,8 @@ public:
     EXPORT void process(float delta);
     EXPORT void render();
 
+    float interfaceZoom = 1.0f;
+
 protected:
     UIContext *uiContext;
     UINode *root;

@@ -148,6 +148,7 @@ APPMAIN
 
     // UI
     UI *ui = new UI(window, renderer, font);
+    ui->interfaceZoom = 1.0f;
     UINode *canvas = ui->createUINodeChild<UINode>();
     canvas->width.setAsPercentage(100.0f);
     canvas->height.setAsPercentage(100.0f);
@@ -231,6 +232,13 @@ APPMAIN
                         if (value > 0.5f){
                             ((CameraControl *)userData)->shoot = true;
                         } });
+
+    InputDescriptorList zoomInterfaceIn;
+    zoomInterfaceIn.addMouseInput(InputMouseType::Wheel, 1.0f);
+    input->addInput(zoomInterfaceIn, ui, [](InputType type, InputData *data, float value, void *userData)
+                    { 
+                        ((UI *)userData)->interfaceZoom += value * 0.25f;
+                        ((UI *)userData)->interfaceZoom = fminf(fmaxf(((UI *)userData)->interfaceZoom, 0.5f), 3.0f); });
 
     InputDescriptorList controlCameraList;
     controlCameraList.addMouseInput(InputMouseType::RightButton, 1.0f);

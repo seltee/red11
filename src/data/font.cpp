@@ -105,19 +105,32 @@ int Font::createGlyphInList(unsigned int code, unsigned int size)
     width += sw;
     height -= sh;
 
-    int textureWidth = nextPowerOfTwo(width);
-    int textureHeight = nextPowerOfTwo(height);
+    int textureWidth = nextPowerOfTwo(width + 2);
+    int textureHeight = nextPowerOfTwo(height + 2);
 
     int textureSize = textureWidth > textureHeight ? textureWidth : textureHeight;
 
     unsigned char *bitmap = new unsigned char[textureSize * textureSize];
+    memset(bitmap, 0, textureSize * textureSize);
     stbtt_MakeCodepointBitmap(font, bitmap, textureSize, textureSize, textureSize, scale, scale, code);
+    for (int iy = textureSize - 1; iy >= 0; iy--)
+    {
+        int shiftY = iy * textureSize;
+        for (int ix = textureSize - 1; ix >= 0; ix--)
+        {
+            int shift = shiftY + ix;
+            if (ix == 0 || iy == 0)
+                bitmap[shift] = 0;
+            else
+                bitmap[shift] = bitmap[shift - 1 - textureSize];
+        }
+    }
     Texture *texture = new Texture("Glyph", TextureType::ByteMap, textureSize, textureSize, bitmap);
     delete[] bitmap;
 
     // printf("Glyph %c - %i %i %i %i\n", code, width, height, sw, sh);
 
-    list.push_back({texture, code, size, sw, sh, static_cast<unsigned int>(width <= 1 ? size / 2 : width), static_cast<unsigned int>(height)});
+    list.push_back({texture, code, size, sw - 1, sh - 1, static_cast<unsigned int>(width <= 1 ? size * 2 / 5 : width), static_cast<unsigned int>(height)});
 
     return list.size() - 1;
 }

@@ -103,6 +103,12 @@ LRESULT CALLBACK WindowProcedure(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
         InputProvider::provideNewInput(InputType::Mouse, inputData);
         break;
 
+    case WM_MOUSEWHEEL:
+        inputData.mouse.type = InputMouseType::Wheel;
+        inputData.mouse.value = static_cast<float>(GET_WHEEL_DELTA_WPARAM(wParam)) / 120.0f;
+        InputProvider::provideNewInput(InputType::Mouse, inputData);
+        break;
+
     case WM_WINDOWPOSCHANGED:
         GetClientRect(hWnd, &rect);
         window->udpateRealSize(rect.right, rect.bottom);

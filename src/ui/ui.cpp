@@ -33,8 +33,8 @@ void UI::destroyAllChildren()
 void UI::process(float delta)
 {
     Window *window = uiContext->getWindow();
-    root->width.setAsNumber(window->getWidth());
-    root->height.setAsNumber(window->getHeight());
+    root->width.setAsNumber(window->getWidth() / interfaceZoom);
+    root->height.setAsNumber(window->getHeight() / interfaceZoom);
     root->font.set(uiContext->getDefaultFont());
     root->fontSize.set(24);
     root->positioning.set(UIBlockPositioning::Absolute);
@@ -48,6 +48,8 @@ void UI::process(float delta)
     uiContext->sortBlocks();
 
     MousePosition p = window->getMousePosition();
+    p.x = static_cast<int>(static_cast<float>(p.x) / interfaceZoom);
+    p.y = static_cast<int>(static_cast<float>(p.y) / interfaceZoom);
     int blocksCount = uiContext->getBlocksCount();
 
     if (window->isCursorOverWindow())
@@ -83,7 +85,7 @@ void UI::render()
     Renderer *renderer = uiContext->getRenderer();
 
     // printf("\nRender UI start\n");
-    Matrix4 projectionMatrix = glm::ortho(0.0f, (float)window->getWidth(), (float)window->getHeight(), 0.0f, -1.0f, 1.0f);
+    Matrix4 projectionMatrix = glm::ortho(0.0f, (float)window->getWidth() / interfaceZoom, (float)window->getHeight() / interfaceZoom, 0.0f, -1.0f, 1.0f);
     Matrix4 viewMatrix = Matrix4(1.0f);
 
     renderer->setupSpriteRendering(viewMatrix, projectionMatrix);
@@ -113,8 +115,9 @@ void UI::render()
                 std::string &text = node->getCalculatedText();
                 Font *font = node->getCalculatedFont();
                 unsigned int fontSize = node->getCalcualtedFontSize();
+                unsigned int fontSizeGlyph = static_cast<unsigned int>(static_cast<float>(fontSize) * interfaceZoom);
                 Color &textColor = node->getCalculatedColorText();
-                float letterSpacing = node->getCalculatedLetterSpacing();
+                float letterSpacing = node->getCalculatedLetterSpacing() / interfaceZoom;
 
                 float xPosIterator = posX + node->getCalculatedPaddingLeft() + block.textShiftX;
                 float yPosIterator = posY + node->getCalculatedPaddingTop() + block.textShiftY;
@@ -126,14 +129,17 @@ void UI::render()
                 {
                     for (auto &c : text32)
                     {
-                        Glyph *glyph = font->getGlyph(c, fontSize);
+                        Glyph *glyph = font->getGlyph(c, fontSizeGlyph);
                         if (glyph && glyph->texture)
                         {
-                            float localScale = glyph->texture->getWidth();
-                            entity.setPosition(xPosIterator + glyph->shiftX, yPosIterator + glyph->shiftY + fontSize * 4 / 5, 0.0f);
+                            float localScale = static_cast<float>(glyph->texture->getWidth()) / interfaceZoom;
+                            entity.setPosition(
+                                xPosIterator + static_cast<float>(glyph->shiftX) / interfaceZoom,
+                                yPosIterator + static_cast<float>(glyph->shiftY) / interfaceZoom + static_cast<float>(fontSize) * 0.8f,
+                                0.0f);
                             entity.setScale(localScale, localScale);
                             renderer->renderSpriteMask(entity.getModelMatrix(), glyph->texture, textColor);
-                            xPosIterator += glyph->w + letterSpacing;
+                            xPosIterator += static_cast<float>(glyph->w) / interfaceZoom + letterSpacing;
                         }
                     }
                 }
