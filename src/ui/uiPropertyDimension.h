@@ -14,8 +14,8 @@ public:
     inline bool isNotSet() { return !bIsSet; }
     inline void unSet()
     {
-        bIsUsingPercentage = false;
         value = 0.0f;
+        bIsUsingPercentage = false;
         bIsSet = false;
     }
     inline void setAsNumber(float value)

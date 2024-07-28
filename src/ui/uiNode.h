@@ -19,9 +19,10 @@ public:
     EXPORT virtual ~UINode();
 
     template <class T, typename std::enable_if<std::is_base_of<UINode, T>::value>::type * = nullptr>
-    EXPORT T *createUINodeChild()
+    inline T *createUINodeChild(void *userData = nullptr)
     {
         auto newNode = new T(this);
+        newNode->userData = userData;
         prepareNewNode(newNode);
         return newNode;
     }
@@ -75,6 +76,7 @@ public:
     inline bool hasCalculatedImage() { return image.isSet() && image.getValue() != nullptr; }
     inline Texture *getCalculatedImage() { return calculatedImage; }
     inline bool isCalculatedImageUsingMask() { return calculatedUseImageMask; }
+    inline bool isVisible() { return visibility.isNotSet() || visibility.getValue(); }
 
     // based on display data content
     EXPORT virtual float getTextWidth();
@@ -100,7 +102,20 @@ public:
     inline void setHovered() { this->bHovered = true; }
     EXPORT void propagateHoverToChildren();
     EXPORT void propagateHoverToParents();
+    EXPORT void propagateClickToParents();
     EXPORT MouseCursorIcon getNearestCursorIcon();
+
+    EXPORT void gatherNotHovered(std::vector<UINode *> *notHoveredList);
+
+    inline UINode *getParent() { return parent; }
+
+    void *userData = nullptr;
+    bool triggersEventClick = false;
+    bool triggersEventClickOutside = false;
+    bool triggersEventRelease = false;
+    bool triggersEventReleaseOutside = false;
+    bool triggersEventEnter = false;
+    bool triggersEventLeave = false;
 
 protected:
     EXPORT void prepareNewNode(UINode *node);

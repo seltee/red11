@@ -21,12 +21,15 @@ void UINode::destroyAllChildren()
 void UINode::processStyle()
 {
     style.clear();
-    style.copyFrom(this);
+    style.insertFrom(this);
     if (bHovered)
         style.insertFrom(&hover);
-    for (auto &node : children)
-        node->processStyle();
-    rebuild();
+    if (isVisible())
+    {
+        rebuild();
+        for (auto &node : children)
+            node->processStyle();
+    }
 }
 
 void UINode::process(float delta)
@@ -61,13 +64,12 @@ void UINode::clearHover()
 
 void UINode::collectRenderBlock(UIContext *uiContext)
 {
+    if (!isVisible())
+        return;
+
     float xStartPosition = uiContext->xPosition;
     float yStartPosition = uiContext->yPosition;
     int index = (calculatedPositioning == UIBlockPositioning::Absolute) ? uiContext->index + 100 : uiContext->index + 1;
-
-    // printf("Block %i\n", index);
-    // printf("size %f %f margin %f %f %f %f\n", calculatedWidth, calculatedHeight, calculatedMargin[0], calculatedMargin[1], calculatedMargin[2], calculatedMargin[3]);
-    // printf("%f %f\n", getFreeWidth(), getFreeHeight());
 
     UIRenderBlock *attachTo = nullptr;
     if (calculatedPositioning == UIBlockPositioning::Inline || calculatedPositioning == UIBlockPositioning::Relative)
@@ -79,7 +81,7 @@ void UINode::collectRenderBlock(UIContext *uiContext)
         yStartPosition = attachTo->y;
     }
 
-    bool createBlock = hasDisplayableData() || calculatedPositioning != UIBlockPositioning::Inline;
+    bool createBlock = hasDisplayableData() || (calculatedPositioning != UIBlockPositioning::Inline);
 
     UIRenderBlock *renderBlock = nullptr;
     if (createBlock)
@@ -119,6 +121,9 @@ void UINode::collectRenderBlock(UIContext *uiContext)
         renderBlock->hoverShiftY = getCalculatedMarginTop();
 
         renderBlock->source = this;
+
+        if (calculatedPositioning == UIBlockPositioning::Absolute || calculatedPositioning == UIBlockPositioning::Relative)
+            uiContext->rootBlock = renderBlock;
     }
 
     float childrenWidth = 0.0f;
@@ -171,8 +176,6 @@ void UINode::collectRenderBlock(UIContext *uiContext)
         initialY = betweenY;
     }
 
-    // printf("CH %f %f\n", childrenWidth, childrenHeight);
-
     float posX = xStartPosition + initialX + calculatedMargin[UI_LEFT] + calculatedPadding[UI_LEFT] + calculatedBorder[UI_LEFT];
     float posY = yStartPosition + initialY + calculatedMargin[UI_TOP] + calculatedPadding[UI_TOP] + calculatedBorder[UI_TOP];
 
@@ -200,6 +203,8 @@ void UINode::collectRenderBlock(UIContext *uiContext)
 
 bool UINode::hasDisplayableData()
 {
+    if (!isVisible())
+        return false;
     if (calculatedWidth != 0.0f && calculatedHeight != 0.0f && children.size() > 0)
         return true;
     if (calculatedColorBackground.a != 0.0f || calculatedColorBorder.a != 0.0f)
@@ -271,16 +276,16 @@ float UINode::getFreeWidth()
     }
 
     float assumedWidth = 0.0f;
-    if (width.isSet())
+    if (style.width.isSet())
     {
-        if (width.isUsingPercentage())
-            assumedWidth = (width.getValue() * 0.01f) * getParentFreeWidth() - getMarginPaddingBorderWidth();
+        if (style.width.isUsingPercentage())
+            assumedWidth = (style.width.getValue() * 0.01f) * getParentFreeWidth() - getMarginPaddingBorderWidth();
         else
-            assumedWidth = width.getValue();
+            assumedWidth = style.width.getValue();
     }
-    if (maxWidth.isSet())
+    if (style.maxWidth.isSet())
     {
-        float maxWidthFinal = maxWidth.isUsingPercentage() ? maxWidth.getValue() * 0.01f * getParentFreeWidth() : maxWidth.getValue();
+        float maxWidthFinal = style.maxWidth.isUsingPercentage() ? style.maxWidth.getValue() * 0.01f * getParentFreeWidth() : style.maxWidth.getValue();
         assumedWidth = fminf(assumedWidth, maxWidthFinal);
     }
     return fmaxf(assumedWidth - occupied, 0.0f);
@@ -378,7 +383,10 @@ void UINode::propagateHoverToChildren()
 {
     bHovered = true;
     for (auto &node : children)
-        node->propagateHoverToChildren();
+    {
+        if (node->getStyleFinal()->positioning.isNotSet() || node->getStyleFinal()->positioning.getValue() != UIBlockPositioning::Absolute)
+            node->propagateHoverToChildren();
+    }
 }
 
 void UINode::propagateHoverToParents()
@@ -386,7 +394,7 @@ void UINode::propagateHoverToParents()
     bHovered = true;
     if (style.propagateHover.isSet() && style.propagateHover.getValue())
         propagateHoverToChildren();
-    if (parent)
+    if (parent && (style.positioning.isNotSet() || style.positioning.getValue() != UIBlockPositioning::Absolute))
         parent->propagateHoverToParents();
 }
 
@@ -397,6 +405,16 @@ MouseCursorIcon UINode::getNearestCursorIcon()
     if (parent)
         return parent->getNearestCursorIcon();
     return MouseCursorIcon::None;
+}
+
+void UINode::gatherNotHovered(std::vector<UINode *> *notHoveredList)
+{
+    if (bHovered == false && triggersEventClickOutside && isVisible())
+    {
+        notHoveredList->push_back(this);
+        for (auto &child : children)
+            child->gatherNotHovered(notHoveredList);
+    }
 }
 
 void UINode::prepareNewNode(UINode *node)

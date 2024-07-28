@@ -5,6 +5,7 @@
 #define _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS
 
 #include "ui.h"
+#include "red11.h"
 #include <string>
 #include <locale>
 #include <codecvt>
@@ -13,10 +14,21 @@ UI::UI(Window *window, Renderer *renderer, Font *defaultFont)
 {
     uiContext = new UIContext(window, renderer, defaultFont);
     root = new UINode(nullptr);
+
+    inputProvider = Red11::getGlobalInputProvider();
+    InputDescriptorList mouseClickList;
+    mouseClickList.addMouseInput(InputMouseType::LeftButton, 1.0f);
+    inputProvider->addInput(mouseClickList, this, [](InputType type, InputData *data, float value, void *userData)
+                            {
+                                if (value > 0.5)
+                                    ((UI *)userData)->triggerClick();
+                                else
+                                    ((UI *)userData)->triggerRelease(); });
 }
 
 UI::~UI()
 {
+    inputProvider->removeInput(clickInputIndex);
     delete uiContext;
 }
 
@@ -54,7 +66,7 @@ void UI::process(float delta)
 
     if (window->isCursorOverWindow())
     {
-        UIRenderBlock *hoveredBlock = nullptr;
+        hoveredBlock = nullptr;
         for (int i = 0; i < blocksCount; i++)
         {
             UIRenderBlock &block = uiContext->getBlock(i);
@@ -84,7 +96,6 @@ void UI::render()
     Window *window = uiContext->getWindow();
     Renderer *renderer = uiContext->getRenderer();
 
-    // printf("\nRender UI start\n");
     Matrix4 projectionMatrix = glm::ortho(0.0f, (float)window->getWidth() / interfaceZoom, (float)window->getHeight() / interfaceZoom, 0.0f, -1.0f, 1.0f);
     Matrix4 viewMatrix = Matrix4(1.0f);
 
@@ -158,4 +169,63 @@ void UI::render()
             }
         }
     }
+}
+
+void UI::triggerClick()
+{
+    // Click
+    if (hoveredBlock)
+    {
+        UINode *node = hoveredBlock->source;
+        while (node)
+        {
+            if (node->triggersEventClick)
+            {
+                triggerEvent(UIEvent::Click, node);
+            }
+            node = node->getParent();
+        }
+    }
+
+    // Click outside
+    std::vector<UINode *> notHoveredList;
+    root->gatherNotHovered(&notHoveredList);
+    for (auto &node : notHoveredList)
+        triggerEvent(UIEvent::ClickOutside, node);
+}
+
+void UI::triggerRelease()
+{
+    // Release
+    if (hoveredBlock)
+    {
+        UINode *node = hoveredBlock->source;
+        while (node)
+        {
+            if (node->triggersEventClick)
+            {
+                triggerEvent(UIEvent::Release, node);
+            }
+            node = node->getParent();
+        }
+    }
+
+    // Release outside
+    std::vector<UINode *> notHoveredList;
+    root->gatherNotHovered(&notHoveredList);
+    for (auto &node : notHoveredList)
+        triggerEvent(UIEvent::ReleaseOutside, node);
+}
+
+void UI::triggerEvent(UIEvent ev, UINode *node)
+{
+    for (auto &controller : eventControllers)
+    {
+        controller->processEvent(ev, node);
+    }
+}
+
+void UI::prepareNewEventController(UIEventController *eventController)
+{
+    this->eventControllers.push_back(eventController);
 }

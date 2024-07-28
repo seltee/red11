@@ -16,7 +16,7 @@ public:
     Scene(DebugEntities *debugEntities);
 
     template <class T, typename std::enable_if<std::is_base_of<Actor, T>::value>::type * = nullptr>
-    EXPORT T *createActor(std::string name)
+    inline T *createActor(std::string name)
     {
         auto newActor = new T(name);
         prepareNewActor(newActor);
@@ -36,7 +36,7 @@ public:
     }
 
     template <class T, typename std::enable_if<std::is_base_of<CollisionHandler, T>::value>::type * = nullptr>
-    EXPORT T *createCollisionHandler()
+    inline T *createCollisionHandler()
     {
         return physicsWorld.createCollisionHandler<T>();
     }

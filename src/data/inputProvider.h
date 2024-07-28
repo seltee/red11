@@ -77,6 +77,7 @@ struct InputDescriptor
 
 struct InputDescriptorCallbackData
 {
+    unsigned int index;
     std::vector<InputDescriptor> descriptors;
     void *userData;
     void (*callback)(InputType type, InputData *data, float value, void *userData);
@@ -131,7 +132,8 @@ public:
     EXPORT InputProvider();
     EXPORT ~InputProvider();
 
-    EXPORT void addInput(InputDescriptorList &list, void *userData, void (*callback)(InputType type, InputData *data, float value, void *userData));
+    EXPORT unsigned int addInput(InputDescriptorList &list, void *userData, void (*callback)(InputType type, InputData *data, float value, void *userData));
+    EXPORT void removeInput(int index);
     EXPORT void removeAllInputs();
 
     EXPORT void addInputDetect(void (*callback)(InputType type));

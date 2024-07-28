@@ -28,9 +28,28 @@ InputProvider::~InputProvider()
     }
 }
 
-void InputProvider::addInput(InputDescriptorList &list, void *userData, void (*callback)(InputType type, InputData *data, float value, void *userData))
+// Returns Id of the input
+// Remove later this input by this Id if needed
+unsigned int InputProvider::addInput(InputDescriptorList &list, void *userData, void (*callback)(InputType type, InputData *data, float value, void *userData))
 {
-    descriptorCallbacks.push_back({list.descriptors, userData, callback});
+    static unsigned int lastIndex = 0;
+    unsigned int index = lastIndex;
+    lastIndex++;
+
+    descriptorCallbacks.push_back({index, list.descriptors, userData, callback});
+    return index;
+}
+
+void InputProvider::removeInput(int index)
+{
+    for (auto it = descriptorCallbacks.begin(); it != descriptorCallbacks.end(); it++)
+    {
+        if (it->index == index)
+        {
+            descriptorCallbacks.erase(it);
+            return;
+        }
+    }
 }
 
 void InputProvider::removeAllInputs()

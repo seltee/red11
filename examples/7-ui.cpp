@@ -7,7 +7,7 @@
 #define WINDOW_WIDTH 2560
 #define WINDOW_HEIGHT 1440
 
-struct CameraControl
+struct InputControl
 {
     float move;
     float sideMove;
@@ -15,6 +15,7 @@ struct CameraControl
     float rotateY;
     bool shoot;
     bool controlCamera;
+    bool helpShown;
 };
 
 const unsigned char F = 255;
@@ -53,6 +54,50 @@ unsigned char arrowMaskDown[] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
+enum class UIButtonID
+{
+    Help,
+    AddBall,
+    File,
+    Modal
+};
+class UIUserData
+{
+public:
+    UIUserData(UIButtonID button)
+    {
+        this->button = button;
+    }
+    UIButtonID button;
+};
+
+class UIUserEventController : public UIEventController
+{
+public:
+    void setup(InputControl *inputControl)
+    {
+        this->inputControl = inputControl;
+    }
+
+    void processEvent(UIEvent ev, UINode *node) override final
+    {
+        UIUserData *data = (UIUserData *)node->userData;
+        if (!data)
+            return;
+
+        if (ev == UIEvent::Click)
+        {
+            if (data->button == UIButtonID::AddBall)
+                inputControl->shoot = true;
+
+            if (data->button == UIButtonID::Help || data->button == UIButtonID::Modal)
+                inputControl->helpShown = !inputControl->helpShown;
+        }
+    }
+
+    InputControl *inputControl = nullptr;
+};
 
 APPMAIN
 {
@@ -143,12 +188,14 @@ APPMAIN
     ComponentCamera *cameraComponent = camera->createComponent<ComponentCamera>();
     camera->setPosition(0, 0.2, 0);
 
-    CameraControl cameraControl;
-    memset(&cameraControl, 0, sizeof(CameraControl));
+    InputControl inputControl;
+    memset(&inputControl, 0, sizeof(InputControl));
 
     // UI
     UI *ui = new UI(window, renderer, font);
-    ui->interfaceZoom = 1.0f;
+    UIUserEventController *uiController = ui->createEventController<UIUserEventController>();
+    uiController->setup(&inputControl);
+
     UINode *canvas = ui->createUINodeChild<UINode>();
     canvas->width.setAsPercentage(100.0f);
     canvas->height.setAsPercentage(100.0f);
@@ -165,20 +212,55 @@ APPMAIN
     UINode *screen = canvas->createUINodeChild<UINode>();
     screen->width.setAsPercentage(100.0f);
     screen->height.setAsPercentage(100.0f);
-    screen->setMarginNumber(10.0f, 10.0f, 10.0f, 10.0f);
     screen->contentDirection.set(UIContentDirection::Horizontal);
     screen->horizontalAlign.set(UIContentAlign::SpaceAround);
     screen->verticalAlign.set(UIContentAlign::SpaceAround);
+    screen->positioning.set(UIBlockPositioning::Relative);
 
-    auto createMenuButton = [&](std::string text, bool hasArrow)
+    UINode *helpContainer = screen->createUINodeChild<UINode>();
+    helpContainer->colorBackground.set(Color(0, 0, 0, 0.6));
+    helpContainer->positioning.set(UIBlockPositioning::Absolute);
+    helpContainer->width.setAsPercentage(100);
+    helpContainer->height.setAsPercentage(100);
+    helpContainer->horizontalAlign.set(UIContentAlign::Middle);
+    helpContainer->verticalAlign.set(UIContentAlign::Middle);
+    helpContainer->triggersEventClick = true;
+    helpContainer->visibility.set(false);
+    helpContainer->userData = new UIUserData(UIButtonID::Modal);
+
+    UINode *helpModal = helpContainer->createUINodeChild<UINode>();
+    helpModal->setPaddingNumber(48.0f, 72.0f);
+    helpModal->colorBackground.set(Color(0.25, 0.25, 0.25, 1));
+    helpModal->horizontalAlign.set(UIContentAlign::Middle);
+    helpModal->verticalAlign.set(UIContentAlign::Middle);
+    helpModal->contentDirection.set(UIContentDirection::Vertical);
+
+    UINode *title = helpModal->createUINodeChild<UINode>();
+    title->text.set("Title");
+    title->getMarginBottom().setAsNumber(8);
+    title->fontSize.set(72);
+
+    UINode *line1 = helpModal->createUINodeChild<UINode>();
+    line1->text.set("Help information about this example");
+
+    UINode *line2 = helpModal->createUINodeChild<UINode>();
+    line2->text.set("has no information");
+
+    auto createMenuButton = [&](std::string text, UIButtonID button, std::vector<std::string> *menu = nullptr)
     {
-        UINode *barButton = topBar->createUINodeChild<UINode>();
+        bool hasArrow = menu && menu->size() > 0;
+
+        UIUserData *data = new UIUserData(button);
+
+        UINode *barButton = topBar->createUINodeChild<UINode>(data);
         barButton->height.setAsPercentage(100);
         barButton->setPaddingNumber(16.0f, 0.0f);
         barButton->getStyleHover()->colorBackground.set(Color(0.4, 0.4, 0.4));
         barButton->verticalAlign.set(UIContentAlign::Middle);
         barButton->propagateHover.set(true);
         barButton->cursorIcon.set(MouseCursorIcon::Hand);
+        barButton->triggersEventClick = true;
+        barButton->positioning.set(UIBlockPositioning::Relative);
 
         UINode *barButtonText = barButton->createUINodeChild<UINode>();
         barButtonText->text.set(text);
@@ -190,11 +272,30 @@ APPMAIN
             barButtonImage->colorImageMask.set(Color(0.9f, 0.9f, 0.9f, 1));
             barButtonImage->getStyleHover()->image.set(arrowDownTexture);
         }
-    };
 
-    createMenuButton("File", true);
-    createMenuButton("Add ball", false);
-    createMenuButton("Help", false);
+        if (menu && menu->size() > 0)
+        {
+            UINode *dropDownMenu = barButton->createUINodeChild<UINode>(data);
+            dropDownMenu->colorBackground.set(Color(0.2f, 0.2f, 0.2f, 1.0f));
+            dropDownMenu->positioning.set(UIBlockPositioning::Absolute);
+            dropDownMenu->getMarginTop().setAsNumber(60.0f);
+            dropDownMenu->contentDirection.set(UIContentDirection::Vertical);
+            dropDownMenu->fontSize.set(36);
+
+            for (auto &item : *menu)
+            {
+                UINode *dropDownMenuItem = dropDownMenu->createUINodeChild<UINode>(data);
+                dropDownMenuItem->width.setAsNumber(120);
+                dropDownMenuItem->height.setAsNumber(32.0f);
+                dropDownMenuItem->setPaddingNumber(12.0f, 16.0f);
+                dropDownMenuItem->text.set(item);
+                dropDownMenuItem->getStyleHover()->colorBackground.set(Color(0.4, 0.4, 0.4));
+            }
+        }
+    };
+    createMenuButton("File", UIButtonID::File);
+    createMenuButton("Add ball", UIButtonID::AddBall);
+    createMenuButton("Help", UIButtonID::Help);
 
     // Input
     auto input = Red11::getGlobalInputProvider();
@@ -203,35 +304,26 @@ APPMAIN
     forwardList.addKeyboardInput(KeyboardCode::Down, -1.0f);
     forwardList.addKeyboardInput(KeyboardCode::KeyW, 1.0f);
     forwardList.addKeyboardInput(KeyboardCode::KeyS, -1.0f);
-    input->addInput(forwardList, &cameraControl, [](InputType type, InputData *data, float value, void *userData)
-                    { ((CameraControl *)userData)->move = -value; });
+    input->addInput(forwardList, &inputControl, [](InputType type, InputData *data, float value, void *userData)
+                    { ((InputControl *)userData)->move = -value; });
 
     InputDescriptorList sideList;
     sideList.addKeyboardInput(KeyboardCode::Left, 1.0f);
     sideList.addKeyboardInput(KeyboardCode::Right, -1.0f);
     sideList.addKeyboardInput(KeyboardCode::KeyA, 1.0f);
     sideList.addKeyboardInput(KeyboardCode::KeyD, -1.0f);
-    input->addInput(sideList, &cameraControl, [](InputType type, InputData *data, float value, void *userData)
-                    { ((CameraControl *)userData)->sideMove = -value; });
+    input->addInput(sideList, &inputControl, [](InputType type, InputData *data, float value, void *userData)
+                    { ((InputControl *)userData)->sideMove = -value; });
 
     InputDescriptorList rotateCameraXList;
     rotateCameraXList.addMouseInput(InputMouseType::MoveX, 1.0f);
-    input->addInput(rotateCameraXList, &cameraControl, [](InputType type, InputData *data, float value, void *userData)
-                    { ((CameraControl *)userData)->rotateX = glm::clamp(-value, -64.0f, 64.0f); });
+    input->addInput(rotateCameraXList, &inputControl, [](InputType type, InputData *data, float value, void *userData)
+                    { ((InputControl *)userData)->rotateX = glm::clamp(-value, -64.0f, 64.0f); });
 
     InputDescriptorList rotateCameraYList;
     rotateCameraYList.addMouseInput(InputMouseType::MoveY, 1.0f);
-    input->addInput(rotateCameraYList, &cameraControl, [](InputType type, InputData *data, float value, void *userData)
-                    { ((CameraControl *)userData)->rotateY = glm::clamp(-value, -64.0f, 64.0f); });
-
-    InputDescriptorList shootBallList;
-    shootBallList.addMouseInput(InputMouseType::LeftButton, 1.0f);
-    shootBallList.addKeyboardInput(KeyboardCode::KeyQ, 1.0f);
-    input->addInput(shootBallList, &cameraControl, [](InputType type, InputData *data, float value, void *userData)
-                    {
-                        if (value > 0.5f){
-                            ((CameraControl *)userData)->shoot = true;
-                        } });
+    input->addInput(rotateCameraYList, &inputControl, [](InputType type, InputData *data, float value, void *userData)
+                    { ((InputControl *)userData)->rotateY = glm::clamp(-value, -64.0f, 64.0f); });
 
     InputDescriptorList zoomInterfaceIn;
     zoomInterfaceIn.addMouseInput(InputMouseType::Wheel, 1.0f);
@@ -242,11 +334,11 @@ APPMAIN
 
     InputDescriptorList controlCameraList;
     controlCameraList.addMouseInput(InputMouseType::RightButton, 1.0f);
-    input->addInput(controlCameraList, &cameraControl, [](InputType type, InputData *data, float value, void *userData)
+    input->addInput(controlCameraList, &inputControl, [](InputType type, InputData *data, float value, void *userData)
                     { 
-                        ((CameraControl *)userData)->controlCamera = value > 0.5f; 
-                        ((CameraControl *)userData)->rotateX = 0.0f;
-                        ((CameraControl *)userData)->rotateY = 0.0f; });
+                        ((InputControl *)userData)->controlCamera = value > 0.5f; 
+                        ((InputControl *)userData)->rotateX = 0.0f;
+                        ((InputControl *)userData)->rotateY = 0.0f; });
 
     InputDescriptorList toggleFullscreen;
     toggleFullscreen.addKeyboardInput(KeyboardCode::KeyF, 1.0f);
@@ -263,44 +355,44 @@ APPMAIN
     while (!window->isCloseRequested())
     {
         float delta = deltaCounter.getDeltaFrameCounter();
+        window->processWindow();
 
-        if (cameraControl.controlCamera)
+        if (inputControl.controlCamera)
         {
             window->setCursorVisibility(false);
             window->setMousePosition(renderer->getViewWidth() / 2, renderer->getViewHeight() / 2);
         }
         else
-        {
             window->setCursorVisibility(true);
-        }
 
-        window->processWindow();
         renderer->prepareToRender();
         cameraComponent->setupAsPerspective(renderer->getViewWidth(), renderer->getViewHeight());
         renderer->clearBuffer(Color(0.4, 0.5, 0.8));
 
-        if (cameraControl.controlCamera)
+        if (inputControl.controlCamera)
         {
-            cameraRX += cameraControl.rotateY * 0.0015f;
-            cameraRY += cameraControl.rotateX * 0.0015f;
+            cameraRX += inputControl.rotateY * 0.0015f;
+            cameraRY += inputControl.rotateX * 0.0015f;
             cameraRX = glm::clamp(cameraRX, -1.2f, 1.0f);
             camera->setRotation(Vector3(cameraRX, cameraRY, 0));
         }
 
         auto forward = camera->getRotation() * Vector3(0, 0, 0.8f);
-        camera->translate(forward * delta * cameraControl.move);
+        camera->translate(forward * delta * inputControl.move);
         auto side = camera->getRotation() * Vector3(0.8f, 0, 0);
-        camera->translate(side * delta * cameraControl.sideMove);
+        camera->translate(side * delta * inputControl.sideMove);
 
-        if (cameraControl.shoot)
+        if (inputControl.shoot)
         {
-            cameraControl.shoot = false;
+            inputControl.shoot = false;
             auto sphereComponent = objectContainer->createComponentMesh(ballSphereMesh);
             sphereComponent->setPosition(camera->getPosition() - Vector3(0, 0.05f, 0) + camera->getForwardVector() * 0.2f);
             sphereComponent->setMaterial(redBallMaterial);
             sphereComponent->enablePhysics(PhysicsMotionType::Dynamic, ballSphereFrom, sphereComponent);
             sphereComponent->getPhysicsBody()->addLinearVelocity(camera->getForwardVector() * 3.0f);
         }
+
+        helpContainer->visibility.set(inputControl.helpShown);
 
         scene->process(delta);
         scene->render(renderer, cameraComponent->getCamera());

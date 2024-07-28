@@ -32,7 +32,7 @@ public:
     EXPORT void assignPhysicsWorld(PhysicsWorld *physicsWorld);
 
     template <class T, typename std::enable_if<std::is_base_of<Component, T>::value>::type * = nullptr>
-    EXPORT T *createComponent()
+    inline T *createComponent()
     {
         auto newComonent = new T();
         prepareNewComponent(newComonent);

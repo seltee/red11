@@ -4,10 +4,13 @@
 #pragma once
 #include "renderer/renderer.h"
 #include "window/window.h"
+#include "data/entity.h"
+#include "data/inputProvider.h"
 #include "uiContext.h"
 #include "uiNode.h"
-#include "data/entity.h"
+#include "uiEventController.h"
 #include <vector>
+
 class UI
 {
 public:
@@ -26,9 +29,29 @@ public:
     EXPORT void process(float delta);
     EXPORT void render();
 
+    template <class T, typename std::enable_if<std::is_base_of<UIEventController, T>::value>::type * = nullptr>
+    EXPORT T *createEventController()
+    {
+        auto newEventController = new T();
+        prepareNewEventController(newEventController);
+        return newEventController;
+    }
+
+    EXPORT void triggerClick();
+    EXPORT void triggerRelease();
+    
+    EXPORT void triggerEvent(UIEvent ev, UINode *node);
+
     float interfaceZoom = 1.0f;
 
 protected:
+     EXPORT void prepareNewEventController(UIEventController *eventController);
+
     UIContext *uiContext;
     UINode *root;
+    InputProvider *inputProvider;
+    std::vector<UIEventController *> eventControllers;
+
+    UIRenderBlock *hoveredBlock = nullptr;
+    unsigned int clickInputIndex = 0;
 };

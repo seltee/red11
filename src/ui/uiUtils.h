@@ -30,3 +30,13 @@ enum class UIBlockPositioning
     // Plays a role of root block for children absolute blocks
     Absolute
 };
+
+enum class UIEvent
+{
+    Click,
+    Release,
+    ClickOutside,
+    ReleaseOutside,
+    Enter,
+    Leave
+};

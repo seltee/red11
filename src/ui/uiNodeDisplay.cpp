@@ -3,11 +3,6 @@
 
 #include "uiNodeDisplay.h"
 
-void UINodeDisplay::copyFrom(UINodeDisplay *nodeDisplay)
-{
-    memcpy(&width, &nodeDisplay->width, sizeof(UINodeDisplay));
-}
-
 bool UINodeDisplay::insertFrom(UINodeDisplay *nodeDisplay)
 {
     bool out = false;
@@ -16,7 +11,7 @@ bool UINodeDisplay::insertFrom(UINodeDisplay *nodeDisplay)
         if (nodeDisplay->width.isUsingNumber())
             width.setAsNumber(nodeDisplay->width.getValue());
         else
-            width.setAsPercentage(nodeDisplay->height.getValue());
+            width.setAsPercentage(nodeDisplay->width.getValue());
         out = true;
     }
 
@@ -183,9 +178,19 @@ bool UINodeDisplay::insertFrom(UINodeDisplay *nodeDisplay)
         propagateHover.set(nodeDisplay->propagateHover.getValue());
         out = true;
     }
-    if (cursorIcon.isSet())
+    if (nodeDisplay->visibility.isSet())
     {
-        cursorIcon.set(cursorIcon.getValue());
+        visibility.set(nodeDisplay->visibility.getValue());
+        out = true;
+    }
+    if (nodeDisplay->imageHorizontalAlign.isSet())
+    {
+        imageHorizontalAlign.set(nodeDisplay->imageHorizontalAlign.getValue());
+        out = true;
+    }
+    if (nodeDisplay->cursorIcon.isSet())
+    {
+        cursorIcon.set(nodeDisplay->cursorIcon.getValue());
         out = true;
     }
     return out;
@@ -224,5 +229,6 @@ void UINodeDisplay::clear()
     imageHorizontalAlign.unSet();
     imageVerticalAlign.unSet();
     propagateHover.unSet();
+    visibility.unSet();
     cursorIcon.unSet();
 }

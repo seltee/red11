@@ -22,8 +22,9 @@
 class UINodeDisplay
 {
 public:
-    void copyFrom(UINodeDisplay *nodeDisplay);
+    // Returns true if foreign node display changed something
     bool insertFrom(UINodeDisplay *nodeDisplay);
+    // Unsets all values
     void clear();
 
     inline void setMarginNumber(float left, float top, float right, float bottom)
@@ -131,5 +132,6 @@ public:
     UIPropertyAlign imageHorizontalAlign;
     UIPropertyAlign imageVerticalAlign;
     UIPropertyToggle propagateHover;
+    UIPropertyToggle visibility;
     UIPropertyCursorIcon cursorIcon;
 };

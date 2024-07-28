@@ -41,7 +41,7 @@ public:
     EXPORT std::vector<PhysicsBodyPoint> castPointCollision(const Vector3 &p, Channel channel);
 
     template <class T, typename std::enable_if<std::is_base_of<CollisionHandler, T>::value>::type * = nullptr>
-    EXPORT T *createCollisionHandler()
+    inline T *createCollisionHandler()
     {
         auto newCollisionHandler = new T();
         prepareNewCollisionHandler(newCollisionHandler);
