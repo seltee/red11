@@ -4,8 +4,8 @@
 #include "red11.h"
 #include <string>
 
-#define WINDOW_WIDTH 2200 / 2
-#define WINDOW_HEIGHT 1400 / 2
+#define WINDOW_WIDTH 1920 
+#define WINDOW_HEIGHT 1080 
 
 struct CameraControl
 {
@@ -104,7 +104,7 @@ APPMAIN
     lightShadowComponent->setScale(Vector3(4.0f, 4.0f, 4.0f));
 
     // rotating lights
-    const int omniLightsAmount = 7;
+    const int omniLightsAmount = 15;
     Actor *omniActors[omniLightsAmount];
     for (int i = 0; i < omniLightsAmount; i++)
     {

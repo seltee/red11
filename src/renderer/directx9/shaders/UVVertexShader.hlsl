@@ -20,7 +20,7 @@ matrix World : register(c0);
 matrix WorldViewProj : register(c4);
 matrix WorldInverseTranspose : register(c8);
 
-matrix LightsShadowMatricies[4] : register(c52);
+matrix LightsShadowMatricies[4] : register(c16);
 
 VS_Output main(VS_Input vin)
 {

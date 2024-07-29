@@ -74,8 +74,8 @@ protected:
     void renderQueueDepthEqual(Vector3 &cameraPosition, Camera *camera);
     void cleanD3D(void);
 
-    // Bonned meshed limited to 2 shadows per mesh, usual 4 shadows per mesh
-    void setupLights(Vector3 objectPosition, float objectRadius, bool hasBones);
+    // Bonned meshed limited to 4 shadows per mesh
+    void setupLights(Vector3 objectPosition, float objectRadius);
 
     inline void setupMaterialColorRender(Material *material)
     {

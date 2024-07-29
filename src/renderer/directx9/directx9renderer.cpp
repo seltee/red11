@@ -113,13 +113,15 @@ void DirectX9Renderer::renderMeshSkinned(Camera *camera, Vector3 *cameraPosition
         return;
     Directx9MeshRenderData *meshData = data.getMeshRenderData(mesh);
 
-    // set bone matrices, base register is 60, so, 49 bone is availalbe
+    // set bone matrices, base register is 32, so, 56 bone is availalbe
     for (auto &bone : *bones)
     {
         Deform *deform = mesh->getDeformByName(*bone.name);
         if (deform)
         {
-            int reg = 60 + deform->index * 4;
+            int reg = 32 + deform->index * 4;
+            if (reg >= 256)
+                break;
             Matrix4 boneMatrix = *bone.model * deform->getInvBindMatrix();
             boneMatrix = glm::transpose(boneMatrix);
             d3ddev->SetVertexShaderConstantF(reg, (const float *)value_ptr(boneMatrix), 4);
@@ -508,11 +510,11 @@ void DirectX9Renderer::cleanD3D(void)
     }
 }
 
-void DirectX9Renderer::setupLights(Vector3 objectPosition, float objectRadius, bool hasBones)
+void DirectX9Renderer::setupLights(Vector3 objectPosition, float objectRadius)
 {
     // registers for lights:
-    // 20 - 52 - light data
-    // 52 - 60 - light matricies
+    // 20 - 84 - light data
+    // 16 - 32 - vertex shadow light matricies
     // type, typeData, typeData, typeData
     // positionv3, xxx
     // normalv3, power
@@ -533,10 +535,10 @@ void DirectX9Renderer::setupLights(Vector3 objectPosition, float objectRadius, b
     if (affectingLights.size() > MAX_LIGHTS_PER_MESH_COUNT)
         affectingLights.resize(MAX_LIGHTS_PER_MESH_COUNT);
 
-    // Bonned meshed limited to 2 shadows per mesh, usual 4 shadows per mesh
+    // Bonned meshed limited to 4 shadows per mesh
     int baseReg = 20;
-    int shadowMatrixBaseReg = 52;
-    int shaodwMatrixMaxReg = hasBones ? 60 : 68;
+    int shadowMatrixBaseReg = 16;
+    int shadowMatrixMaxReg = 32;
     int shadowTextureBaseReg = 8;
     DX9LightShaderStruct dxLight;
     memset(&dxLight, 0, sizeof(DX9LightShaderStruct));
@@ -554,7 +556,7 @@ void DirectX9Renderer::setupLights(Vector3 objectPosition, float objectRadius, b
         {
             Color lightColor = light->getColor();
             Vector3 lightDirection = light->getNormal();
-            bool castShadow = light->isShadowsEnabled() && (shadowMatrixBaseReg < shaodwMatrixMaxReg);
+            bool castShadow = light->isShadowsEnabled() && (shadowMatrixBaseReg < shadowMatrixMaxReg);
 
             dxLight.type = 1.0f;
             dxLight.castShadow = castShadow ? 1.0f : 0.0f;
@@ -615,7 +617,7 @@ void DirectX9Renderer::setupLights(Vector3 objectPosition, float objectRadius, b
             Color lightColor = light->getColor();
             Vector3 lightDirection = light->getNormal();
             Vector3 lightPosition = light->getPosition();
-            bool castShadow = light->isShadowsEnabled() && (shadowMatrixBaseReg < shaodwMatrixMaxReg);
+            bool castShadow = light->isShadowsEnabled() && (shadowMatrixBaseReg < shadowMatrixMaxReg);
 
             dxLight.type = 3.0f;
             dxLight.castShadow = castShadow ? 1.0f : 0.0f;
@@ -663,7 +665,7 @@ void DirectX9Renderer::setupLights(Vector3 objectPosition, float objectRadius, b
 
 void DirectX9Renderer::renderMeshColorData(Camera *camera, Vector3 &cameraPosition, QueuedMeshRenderData *mesh)
 {
-    setupLights(Vector3(*mesh->model * Vector4(mesh->centroid, 1.0f)), 1.0f, mesh->bones ? true : false);
+    setupLights(Vector3(*mesh->model * Vector4(mesh->centroid, 1.0f)), 1.0f);
     setupMaterialColorRender(mesh->material);
 
     if (mesh->bones)
