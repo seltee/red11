@@ -82,7 +82,10 @@ protected:
                     descA->component->destroy();
                     descA->component = nullptr;
                     if (!descA->bIsSharedDescriptor)
+                    {
                         delete descA;
+                        data->bodyA->setUserData(nullptr);
+                    }
                 }
             }
             if (data->bodyB->getMotionType() == PhysicsMotionType::Dynamic && descB->component)
@@ -94,7 +97,10 @@ protected:
                     descB->component->destroy();
                     descB->component = nullptr;
                     if (!descB->bIsSharedDescriptor)
+                    {
                         delete descB;
+                        data->bodyB->setUserData(nullptr);
+                    }
                 }
             }
         }
