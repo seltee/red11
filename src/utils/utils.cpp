@@ -1,10 +1,16 @@
 // SPDX-FileCopyrightText: 2024 Dmitrii Shashkov
 // SPDX-License-Identifier: MIT
 
+#define _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING
+#define _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS
+
 #include "utils/utils.h"
 #include "utils/math.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <string>
+#include <locale>
+#include <codecvt>
 
 float randf()
 {
@@ -40,4 +46,16 @@ int getFileByteSize(std::string path)
     struct stat stat_buf;
     int rc = stat(path.c_str(), &stat_buf);
     return rc == 0 ? stat_buf.st_size : -1;
+}
+
+std::string convertWCharToString(const wchar_t *wcharStr)
+{
+    if (!wcharStr)
+        return "";
+
+    // Use wstring_convert to convert wstring (wide string) to string
+    std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
+    std::string str = converter.to_bytes(wcharStr);
+
+    return str;
 }

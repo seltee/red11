@@ -8,6 +8,7 @@
 #include "utils/deltaCounter.h"
 #include "utils/jobQueue.h"
 #include "utils/logger.h"
+#include "utils/sysinfo.h"
 #include "utils/glm/glm.hpp"
 #include "utils/glm/gtx/vector_angle.inl"
 #include "scene/scene.h"

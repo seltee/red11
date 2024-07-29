@@ -28,3 +28,4 @@ inline unsigned int nextPowerOfTwo(unsigned int n)
 }
 
 EXPORT int getFileByteSize(std::string path);
+EXPORT std::string convertWCharToString(const wchar_t *wcharStr);

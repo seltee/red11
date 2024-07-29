@@ -61,7 +61,7 @@ OBJ_FILES = ${OBJDIR}/red11.o \
 			${OBJDIR}/material.o ${OBJDIR}/materialSimple.o \
 			${OBJDIR}/actor.o ${OBJDIR}/actorTemporary.o \
 			${OBJDIR}/component.o ${OBJDIR}/componentMesh.o ${OBJDIR}/componentText.o ${OBJDIR}/componentLight.o ${OBJDIR}/componentMeshGroup.o ${OBJDIR}/componentCamera.o \
-			${OBJDIR}/utils.o ${OBJDIR}/color.o ${OBJDIR}/meshBuilder.o ${OBJDIR}/meshCombiner.o ${OBJDIR}/destroyable.o \
+			${OBJDIR}/utils.o ${OBJDIR}/sysinfo.o ${OBJDIR}/color.o ${OBJDIR}/meshBuilder.o ${OBJDIR}/meshCombiner.o ${OBJDIR}/destroyable.o \
 			${OBJDIR}/stb_image.o ${OBJDIR}/stb_vorbis.o ${OBJDIR}/stb_truetype.o \
 			${OBJDIR}/deltaCounter.o ${OBJDIR}/jobQueue.o ${OBJDIR}/logger.o ${OBJDIR}/hullCliping.o \
 			${OBJDIR}/loaderFBX.o ${OBJDIR}/FBXNode.o ${OBJDIR}/FBXAnimationStack.o ${OBJDIR}/FBXAnimationLayer.o ${OBJDIR}/FBXAnimationCurve.o ${OBJDIR}/FBXAnimationCurveNode.o \
@@ -260,6 +260,9 @@ ${OBJDIR}/componentCamera.o: ${SRCDIR}/actor/components/componentCamera.cpp
 
 ${OBJDIR}/utils.o: ${SRCDIR}/utils/utils.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/utils.o ${SRCDIR}/utils/utils.cpp
+
+${OBJDIR}/sysinfo.o: ${SRCDIR}/utils/sysinfo.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/sysinfo.o ${SRCDIR}/utils/sysinfo.cpp
 
 ${OBJDIR}/color.o: ${SRCDIR}/utils/color.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/color.o ${SRCDIR}/utils/color.cpp

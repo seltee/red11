@@ -12,6 +12,9 @@ APPMAIN
     auto window = Red11::createWindow("Window Example", WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_RESIZABLE);
     auto renderer = Red11::createRenderer(window, RendererType::DirectX9);
 
+    auto sysInfo = new SysInfo();
+    sysInfo->logIntoFile(Red11::getLogger());
+
     // Meshes
     auto cubeMesh = Red11::getMeshBuilder()->createCube(0.1f);
 
