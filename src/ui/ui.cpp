@@ -45,8 +45,9 @@ void UI::destroyAllChildren()
 void UI::process(float delta)
 {
     Window *window = uiContext->getWindow();
-    root->width.setAsNumber(window->getWidth() / interfaceZoom);
-    root->height.setAsNumber(window->getHeight() / interfaceZoom);
+    root->width.setAsNumber(static_cast<float>(window->getWidth()) / interfaceZoom);
+    root->height.setAsNumber(static_cast<float>(window->getHeight()) / interfaceZoom);
+
     root->font.set(uiContext->getDefaultFont());
     root->fontSize.set(24);
     root->positioning.set(UIBlockPositioning::Absolute);
@@ -96,7 +97,11 @@ void UI::render()
     Window *window = uiContext->getWindow();
     Renderer *renderer = uiContext->getRenderer();
 
-    Matrix4 projectionMatrix = glm::ortho(0.0f, (float)window->getWidth() / interfaceZoom, (float)window->getHeight() / interfaceZoom, 0.0f, -1.0f, 1.0f);
+    Matrix4 projectionMatrix = glm::ortho(
+        0.0f,
+        static_cast<float>(window->getWidth()) / interfaceZoom,
+        static_cast<float>(window->getHeight()) / interfaceZoom,
+        0.0f, 0.0f, 1.0f);
     Matrix4 viewMatrix = Matrix4(1.0f);
 
     renderer->setupSpriteRendering(viewMatrix, projectionMatrix);
@@ -117,7 +122,7 @@ void UI::render()
 
             if (node->getCalculatedColorBackground().a != 0.0f)
             {
-                entity.setPosition(posX, posY, 0.0f);
+                entity.setPosition(posX, posY, -0.5f);
                 entity.setScale(node->getCalculatedFilledWidth(), node->getCalculatedFilledHeight());
                 renderer->renderSpriteRect(entity.getModelMatrix(), node->getCalculatedColorBackground());
             }
@@ -143,11 +148,11 @@ void UI::render()
                         Glyph *glyph = font->getGlyph(c, fontSizeGlyph);
                         if (glyph && glyph->texture)
                         {
-                            float localScale = static_cast<float>(glyph->texture->getWidth()) / interfaceZoom;
+                            float localScale = roundf(static_cast<float>(glyph->texture->getWidth()) / interfaceZoom);
                             entity.setPosition(
-                                xPosIterator + static_cast<float>(glyph->shiftX) / interfaceZoom,
-                                yPosIterator + static_cast<float>(glyph->shiftY) / interfaceZoom + static_cast<float>(fontSize) * 0.8f,
-                                0.0f);
+                                roundf(xPosIterator + static_cast<float>(glyph->shiftX) / interfaceZoom),
+                                roundf(yPosIterator + static_cast<float>(glyph->shiftY) / interfaceZoom + static_cast<float>(fontSize) * 0.8f),
+                                -0.5f);
                             entity.setScale(localScale, localScale);
                             renderer->renderSpriteMask(entity.getModelMatrix(), glyph->texture, textColor);
                             xPosIterator += static_cast<float>(glyph->w) / interfaceZoom + letterSpacing;
@@ -159,7 +164,10 @@ void UI::render()
             {
                 Texture *image = node->getCalculatedImage();
                 bool useMask = node->isCalculatedImageUsingMask();
-                entity.setPosition(posX + node->getCalculatedPaddingLeft() + block.imageShiftX, posY + node->getCalculatedPaddingTop() + block.imageShiftY, 0.0f);
+                entity.setPosition(
+                    posX + node->getCalculatedPaddingLeft() + block.imageShiftX,
+                    posY + node->getCalculatedPaddingTop() + block.imageShiftY,
+                    -0.5f);
                 entity.setScale(image->getWidth(), image->getHeight());
 
                 if (useMask)
