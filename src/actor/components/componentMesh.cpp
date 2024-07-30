@@ -7,14 +7,32 @@ ComponentMesh::ComponentMesh()
 {
 }
 
+ComponentMesh::~ComponentMesh()
+{
+    if (this->material)
+        this->material->removeUser();
+    if (this->mesh)
+        this->mesh->removeUser();
+}
+
 void ComponentMesh::setMesh(Mesh *mesh)
 {
+    if (this->mesh)
+        this->mesh->addUser();
+
     this->mesh = mesh;
+    if (this->mesh)
+        this->mesh->removeUser();
 }
 
 void ComponentMesh::setMaterial(Material *material)
 {
+    if (this->material)
+        this->material->removeUser();
+
     this->material = material;
+    if (this->material)
+        this->material->addUser();
 }
 
 void ComponentMesh::onRenderQueue(Renderer *renderer)

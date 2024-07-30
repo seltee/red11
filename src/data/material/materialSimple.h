@@ -49,6 +49,10 @@ public:
     EXPORT bool isUsingNormalMap() override;
     EXPORT bool isAlphaPhase() override;
 
+    EXPORT bool isLoaded() override;
+    EXPORT void load() override;
+    EXPORT void unload() override;
+
     inline Color &getAlbedoColor() { return albedoColor; }
     inline Color &getEmissionColor() { return emissionColor; }
     inline float getMetallic() { return metallic; }
@@ -95,4 +99,6 @@ protected:
     Texture *AOTexture = nullptr;
 
     MaterialDisplay display = MaterialDisplay::Solid;
+
+    bool loaded = false;
 };

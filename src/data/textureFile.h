@@ -14,9 +14,11 @@ public:
     EXPORT int getWidth() override;
     EXPORT int getHeight() override;
 
-    EXPORT Texture *getFileDataAsTexture(std::string name);
-
+    EXPORT bool isLoaded() override;
+    EXPORT void load() override;
+    EXPORT void unload() override;
 
 protected:
     std::string filePath;
+    bool loaded = false;
 };

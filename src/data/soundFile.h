@@ -10,7 +10,6 @@ public:
     EXPORT SoundFile(std::string path, bool bForceMono = false);
 
     inline bool isPath(std::string path) { return this->path == path; }
-    inline bool isLoaded() { return bIsLoaded; }
     EXPORT bool isStreamable() override;
     EXPORT bool isReady() override;
 
@@ -22,7 +21,9 @@ public:
     EXPORT int processStream(SoundStream *stream, unsigned char *buffer, int bufferSize) override;
     EXPORT void closeStream(SoundStream *stream) override;
 
+    EXPORT bool isLoaded() override;
     EXPORT void load() override;
+    EXPORT void unload() override;
 
 protected:
     bool loadWAV();

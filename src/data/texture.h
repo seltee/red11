@@ -4,6 +4,7 @@
 #pragma once
 #include "utils/utils.h"
 #include "utils/primitives.h"
+#include "data/usable.h"
 #include <list>
 #include <string>
 
@@ -14,7 +15,7 @@ enum class TextureType
     GpuStencil
 };
 
-class Texture
+class Texture : public Usable
 {
 public:
     EXPORT Texture(TextureType textureType);
@@ -44,7 +45,11 @@ public:
     inline TextureType getType() { return textureType; }
     inline std::string &getName() { return name; }
 
-    static inline std::list<Texture *> *getTextureList() { return &textures; }
+    static inline std::vector<Texture *> *getTextureList() { return &textures; }
+
+    EXPORT bool isLoaded() override;
+    EXPORT void load() override;
+    EXPORT void unload() override;
 
 protected:
     std::string name;
@@ -61,5 +66,5 @@ protected:
     // mark it as false - then engine will release this data if memory needed
     bool bStaticBuffer = true;
 
-    static std::list<Texture *> textures;
+    static std::vector<Texture *> textures;
 };

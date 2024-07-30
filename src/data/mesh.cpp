@@ -3,8 +3,11 @@
 
 #include "mesh.h"
 #include "utils/makeSmallestSphere.h"
+#include "renderer/renderer.h"
 
 #define FLOAT_PREC_DIV_CONST 0.00001f
+
+std::vector<Mesh *> Mesh::meshes;
 
 Mesh::Mesh(VertexDataType type, void *verticies, int vLength, PolygonTriPoints *polygons, int pLength, Matrix4 *transformation)
 {
@@ -65,6 +68,8 @@ Mesh::Mesh(VertexDataType type, void *verticies, int vLength, PolygonTriPoints *
     boundVolume = makeSmallestSphere((const float *)this->verticies.ptr, vLength, getVertexDataTypeSize(type) / sizeof(float));
 
     rebuildTangents();
+
+    meshes.push_back(this);
 }
 
 Mesh::~Mesh()
@@ -75,6 +80,18 @@ Mesh::~Mesh()
         delete this->verticies.vertexPositionColor;
     if (this->polygons)
         delete[] this->polygons;
+
+    unload();
+    auto it = meshes.begin();
+    while (it != meshes.end())
+    {
+        if ((*it) == this)
+        {
+            meshes.erase(it);
+            break;
+        }
+        it++;
+    }
 }
 
 void Mesh::addDeform(Deform *deform)
@@ -97,6 +114,20 @@ void Mesh::addDeform(Deform *deform)
 
     deform->index = deforms.size();
     deforms.push_back(deform);
+}
+
+bool Mesh::isLoaded()
+{
+    return true;
+}
+
+void Mesh::load()
+{
+}
+
+void Mesh::unload()
+{
+    Renderer::removeFromAllMeshByIndex(index);
 }
 
 void Mesh::rebuildTangents()

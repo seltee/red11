@@ -9,6 +9,7 @@
 #include "utils/jobQueue.h"
 #include "utils/logger.h"
 #include "utils/sysinfo.h"
+#include "utils/resourceManager.h"
 #include "utils/glm/glm.hpp"
 #include "utils/glm/gtx/vector_angle.inl"
 #include "scene/scene.h"
@@ -68,6 +69,8 @@ public:
 
     EXPORT static Audio *getAudio();
 
+    EXPORT static ResourceManager *getResourceManager();
+
 protected:
     static MeshBuilder *meshBuilder;
     static InputProvider *globalInputProvider;
@@ -75,4 +78,5 @@ protected:
     static DebugEntities *debugEntities;
     static Logger *logger;
     static Audio *audio;
+    static ResourceManager *resourceManager;
 };

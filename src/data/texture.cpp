@@ -2,8 +2,9 @@
 // SPDX-License-Identifier: MIT
 
 #include "texture.h"
+#include "renderer/renderer.h"
 
-std::list<Texture *> Texture::textures;
+std::vector<Texture *> Texture::textures;
 
 Texture::Texture(TextureType textureType) : Texture("texture", textureType)
 {
@@ -108,4 +109,18 @@ void Texture::setGpuRenderSize(int width, int height)
 void Texture::destroy()
 {
     delete this;
+}
+
+bool Texture::isLoaded()
+{
+    return true;
+}
+
+void Texture::load()
+{
+}
+
+void Texture::unload()
+{
+    Renderer::removeFromAllTextureByIndex(index);
 }

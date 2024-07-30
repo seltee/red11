@@ -13,6 +13,7 @@ JobQueue *Red11::jobQueue = nullptr;
 DebugEntities *Red11::debugEntities = nullptr;
 Logger *Red11::logger = nullptr;
 Audio *Red11::audio = nullptr;
+ResourceManager *Red11::resourceManager = nullptr;
 
 Red11::Red11()
 {
@@ -86,4 +87,11 @@ Audio *Red11::getAudio()
     if (!audio)
         audio = new AudioWindows();
     return audio;
+}
+
+ResourceManager *Red11::getResourceManager()
+{
+    if (!resourceManager)
+        resourceManager = new ResourceManager();
+    return resourceManager;
 }

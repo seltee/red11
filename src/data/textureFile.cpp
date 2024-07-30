@@ -3,6 +3,7 @@
 
 #include "textureFile.h"
 #include "utils/image/stb_image.h"
+#include "renderer/renderer.h"
 
 TextureFile::TextureFile(std::string name, std::string filePath) : Texture(name, TextureType::Normal)
 {
@@ -12,12 +13,7 @@ TextureFile::TextureFile(std::string name, std::string filePath) : Texture(name,
 
 unsigned char *TextureFile::getBufferData()
 {
-    if (!data)
-    {
-        int c;
-        data = stbi_load(filePath.c_str(), &width, &height, &c, 4);
-        // printf("%s loaded - %i/%i - %i\n", filePath.c_str(), width, height, c);
-    }
+    load();
     return data;
 }
 
@@ -40,15 +36,28 @@ int TextureFile::getHeight()
     return height;
 }
 
-Texture *TextureFile::getFileDataAsTexture(std::string name)
+bool TextureFile::isLoaded()
 {
-    if (getBufferData() || getWidth() || getHeight())
+    return loaded;
+}
+
+void TextureFile::load()
+{
+    if (!loaded)
     {
-        Texture *texture = new Texture(name, TextureType::Normal);
-        texture->setBufferSize(getWidth(), getHeight());
-        unsigned char *copiedData = texture->getBufferData();
-        memcpy(copiedData, data, getWidth() * getHeight() * 4);
-        return texture;
+        loaded = true;
+        int c;
+        data = stbi_load(filePath.c_str(), &width, &height, &c, 4);
     }
-    return nullptr;
+}
+
+void TextureFile::unload()
+{
+    if (loaded)
+    {
+        loaded = false;
+        stbi_image_free(data);
+        data = nullptr;
+        Renderer::removeFromAllTextureByIndex(index);
+    }
 }

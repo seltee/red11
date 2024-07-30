@@ -3,10 +3,29 @@
 
 #include "sound.h"
 
+std::vector<Sound *> Sound::sounds;
+
 Sound::Sound()
 {
     static unsigned int lastIndex = 0;
     index = lastIndex;
+
+    sounds.push_back(this);
+}
+
+Sound::~Sound()
+{
+    unload();
+    auto it = sounds.begin();
+    while (it != sounds.end())
+    {
+        if ((*it) == this)
+        {
+            sounds.erase(it);
+            break;
+        }
+        it++;
+    }
 }
 
 bool Sound::setupStream(SoundStream *stream)
@@ -47,4 +66,14 @@ unsigned int Sound::getSampleSize()
     case AudioFormat::STEREO_32F:
         return 4;
     }
+}
+
+void Sound::destroy()
+{
+    unload();
+    delete this;
+}
+
+void Sound::unload()
+{
 }

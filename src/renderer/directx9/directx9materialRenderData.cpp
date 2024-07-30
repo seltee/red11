@@ -20,6 +20,7 @@ DX9Material *Directx9MaterialRenderData::getData()
 void Directx9MaterialRenderData::setupForRender(Directx9data *dxData)
 {
     MaterialSimple *materialSimple = reinterpret_cast<MaterialSimple *>(material);
+    materialSimple->load();
 
     Directx9TextureRenderData *albedoTextureData = materialSimple->getAlbedoTexture() ? dxData->getTextureRenderData(materialSimple->getAlbedoTexture()) : nullptr;
     Directx9TextureRenderData *alphaTextureData = materialSimple->getAlphaTexture() ? dxData->getTextureRenderData(materialSimple->getAlphaTexture()) : nullptr;

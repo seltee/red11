@@ -7,7 +7,7 @@
 #include "directx9materialRenderData.h"
 #include "directx9textureRenderData.h"
 #include "directx9utils.h"
-#include "data/sphere.h"
+#include "utils/sphere.h"
 #include <vector>
 
 #ifdef WINDOWS_ONLY
@@ -82,6 +82,10 @@ public:
     Directx9MeshRenderData *getMeshRenderData(Mesh *mesh);
     Directx9MaterialRenderData *getMaterialRenderData(Material *material);
     Directx9TextureRenderData *getTextureRenderData(Texture *texture);
+
+    void destroyMeshRenderDataByIndex(unsigned int index);
+    void destroyMaterialRenderDataByIndex(unsigned int index);
+    void destroyTextureRenderDataByIndex(unsigned int index);
 
     void recalcDistanceInQueue(Vector3 &cameraPosition);
 

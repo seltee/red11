@@ -70,6 +70,33 @@ Directx9TextureRenderData *Directx9data::getTextureRenderData(Texture *texture)
     return textureDXData;
 }
 
+void Directx9data::destroyMeshRenderDataByIndex(unsigned int index)
+{
+    if (meshRenderData[index])
+    {
+        delete meshRenderData[index];
+        meshRenderData[index] = nullptr;
+    }
+}
+
+void Directx9data::destroyMaterialRenderDataByIndex(unsigned int index)
+{
+    if (materialRenderData[index])
+    {
+        delete materialRenderData[index];
+        materialRenderData[index] = nullptr;
+    }
+}
+
+void Directx9data::destroyTextureRenderDataByIndex(unsigned int index)
+{
+    if (textureRenderData[index])
+    {
+        delete textureRenderData[index];
+        textureRenderData[index] = nullptr;
+    }
+}
+
 void Directx9data::recalcDistanceInQueue(Vector3 &cameraPosition)
 {
     for (int i = 0; i < queueCurrentMesh; i++)

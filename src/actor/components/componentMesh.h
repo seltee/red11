@@ -12,6 +12,7 @@ class ComponentMesh : public Component
 {
 public:
     EXPORT ComponentMesh();
+    EXPORT ~ComponentMesh();
 
     EXPORT void onRenderQueue(Renderer *renderer) override final;
 

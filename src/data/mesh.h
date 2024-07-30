@@ -4,8 +4,10 @@
 #pragma once
 #include "utils/primitives.h"
 #include "data/deform.h"
-#include "data/sphere.h"
+#include "data/usable.h"
+#include "utils/sphere.h"
 #include <string>
+#include <vector>
 
 #define MAX_MESH_COUNT 100000
 
@@ -104,11 +106,11 @@ inline int getVertexDataTypeSize(VertexDataType type)
     return 0;
 }
 
-class Mesh
+class Mesh : public Usable
 {
 public:
     Mesh(VertexDataType type, void *verticies, int vLength, PolygonTriPoints *polygons, int pLength, Matrix4 *transformation = nullptr);
-    ~Mesh();
+    virtual ~Mesh();
 
     void addDeform(Deform *deform);
     inline Deform *getDeformByName(std::string &name)
@@ -140,6 +142,12 @@ public:
 
     inline bool hasBones() { return deforms.size() > 0; }
 
+    EXPORT bool isLoaded() override;
+    EXPORT void load() override;
+    EXPORT void unload() override;
+
+    static inline std::vector<Mesh *> *getMeshList() { return &meshes; }
+
 protected:
     void rebuildTangents();
     void getTangentBitangent(VertexDataUV &v1, VertexDataUV &v2, VertexDataUV &v3, Vector3 *tangent, Vector3 *bitangent);
@@ -156,4 +164,6 @@ protected:
 
     std::vector<Deform *> deforms;
     Sphere boundVolume;
+
+    static std::vector<Mesh *> meshes;
 };

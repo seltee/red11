@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 
 #pragma once
-#include "data/sphere.h"
+#include "utils/sphere.h"
 #include "utils/math.h"
 #include "utils/primitives.h"
 #include <algorithm>

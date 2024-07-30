@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 
 #include "materialSimple.h"
+#include "renderer/renderer.h"
 
 MaterialSimple::MaterialSimple()
 {
@@ -102,6 +103,71 @@ bool MaterialSimple::isAlphaPhase()
     return this->display > MaterialDisplay::SolidMask;
 }
 
+bool MaterialSimple::isLoaded()
+{
+    return loaded;
+}
+
+void MaterialSimple::load()
+{
+    if (!loaded)
+    {
+        loaded = true;
+
+        if (albedoTexture)
+            albedoTexture->addUser();
+
+        if (alphaTexture)
+            alphaTexture->addUser();
+
+        if (emissionTexture)
+            emissionTexture->addUser();
+
+        if (normalTexture)
+            normalTexture->addUser();
+
+        if (metallicTexture)
+            metallicTexture->addUser();
+
+        if (roughnessTexture)
+            roughnessTexture->addUser();
+
+        if (AOTexture)
+            AOTexture->addUser();
+    }
+}
+
+void MaterialSimple::unload()
+{
+    if (loaded)
+    {
+        loaded = false;
+
+        if (albedoTexture)
+            albedoTexture->removeUser();
+
+        if (alphaTexture)
+            alphaTexture->removeUser();
+
+        if (emissionTexture)
+            emissionTexture->removeUser();
+
+        if (normalTexture)
+            normalTexture->removeUser();
+
+        if (metallicTexture)
+            metallicTexture->removeUser();
+
+        if (roughnessTexture)
+            roughnessTexture->removeUser();
+
+        if (AOTexture)
+            AOTexture->removeUser();
+    }
+
+    Renderer::removeFromAllMaterialByIndex(index);
+}
+
 void MaterialSimple::setDisplayMode(MaterialDisplay mode)
 {
     this->display = mode;
@@ -140,42 +206,49 @@ void MaterialSimple::setAlpha(float alpha)
 
 void MaterialSimple::setAlbedoTexture(Texture *texture)
 {
+    unload();
     this->albedoTexture = texture;
     updIndex++;
 }
 
 void MaterialSimple::setAlphaTexture(Texture *texture)
 {
+    unload();
     this->alphaTexture = texture;
     updIndex++;
 }
 
 void MaterialSimple::setEmissionTexture(Texture *texture)
 {
+    unload();
     this->emissionTexture = texture;
     updIndex++;
 }
 
 void MaterialSimple::setNormalTexture(Texture *texture)
 {
+    unload();
     this->normalTexture = texture;
     updIndex++;
 }
 
 void MaterialSimple::setMetallicTexture(Texture *texture)
 {
+    unload();
     this->metallicTexture = texture;
     updIndex++;
 }
 
 void MaterialSimple::setRoughnessTexture(Texture *texture)
 {
+    unload();
     this->roughnessTexture = texture;
     updIndex++;
 }
 
 void MaterialSimple::setAOTexture(Texture *texture)
 {
+    unload();
     AOTexture = texture;
     updIndex++;
 }

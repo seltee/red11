@@ -61,13 +61,13 @@ OBJ_FILES = ${OBJDIR}/red11.o \
 			${OBJDIR}/material.o ${OBJDIR}/materialSimple.o \
 			${OBJDIR}/actor.o ${OBJDIR}/actorTemporary.o \
 			${OBJDIR}/component.o ${OBJDIR}/componentMesh.o ${OBJDIR}/componentText.o ${OBJDIR}/componentLight.o ${OBJDIR}/componentMeshGroup.o ${OBJDIR}/componentCamera.o \
-			${OBJDIR}/utils.o ${OBJDIR}/sysinfo.o ${OBJDIR}/color.o ${OBJDIR}/meshBuilder.o ${OBJDIR}/meshCombiner.o ${OBJDIR}/destroyable.o \
+			${OBJDIR}/utils.o ${OBJDIR}/resourceManager.o ${OBJDIR}/sysinfo.o ${OBJDIR}/color.o ${OBJDIR}/meshBuilder.o ${OBJDIR}/meshCombiner.o ${OBJDIR}/destroyable.o \
 			${OBJDIR}/stb_image.o ${OBJDIR}/stb_vorbis.o ${OBJDIR}/stb_truetype.o \
 			${OBJDIR}/deltaCounter.o ${OBJDIR}/jobQueue.o ${OBJDIR}/logger.o ${OBJDIR}/hullCliping.o \
 			${OBJDIR}/loaderFBX.o ${OBJDIR}/FBXNode.o ${OBJDIR}/FBXAnimationStack.o ${OBJDIR}/FBXAnimationLayer.o ${OBJDIR}/FBXAnimationCurve.o ${OBJDIR}/FBXAnimationCurveNode.o \
 			${OBJDIR}/FBXDeform.o ${OBJDIR}/FBXGeometry.o ${OBJDIR}/FBXModel.o ${OBJDIR}/FBXAttribute.o
 
-EXAMPLES = 1-window${EXT} 2-textures${EXT} 3-animation${EXT} 4-bones${EXT} 5-physics${EXT} 6-collisionEvents${EXT} 7-ui${EXT} demo-1${EXT}
+EXAMPLES = 1-window${EXT} 2-textures${EXT} 3-animation${EXT} 4-bones${EXT} 5-physics${EXT} 6-collisionEvents${EXT} 7-ui${EXT} 8-resourceManagment${EXT} demo-1${EXT}
 
 all: engine examples
 
@@ -261,6 +261,9 @@ ${OBJDIR}/componentCamera.o: ${SRCDIR}/actor/components/componentCamera.cpp
 ${OBJDIR}/utils.o: ${SRCDIR}/utils/utils.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/utils.o ${SRCDIR}/utils/utils.cpp
 
+${OBJDIR}/resourceManager.o: ${SRCDIR}/utils/resourceManager.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/resourceManager.o ${SRCDIR}/utils/resourceManager.cpp
+
 ${OBJDIR}/sysinfo.o: ${SRCDIR}/utils/sysinfo.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/sysinfo.o ${SRCDIR}/utils/sysinfo.cpp
 
@@ -380,6 +383,13 @@ ${OBJDIR}/7-ui.o: ${EXMDIR}/7-ui.cpp
 7-ui${EXT}: ${OBJDIR}/7-ui.o
 	$(LD) ${EFLAGS} ${OBJDIR}/7-ui.o -o 7-ui${EXT}
 	${MOVE} 7-ui${EXT} ${BINDIR}/7-ui${EXT}
+
+${OBJDIR}/8-resourceManagment.o: ${EXMDIR}/8-resourceManagment.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/8-resourceManagment.o ${EXMDIR}/8-resourceManagment.cpp
+
+8-resourceManagment${EXT}: ${OBJDIR}/8-resourceManagment.o
+	$(LD) ${EFLAGS} ${OBJDIR}/8-resourceManagment.o -o 8-resourceManagment${EXT}
+	${MOVE} 8-resourceManagment${EXT} ${BINDIR}/8-resourceManagment${EXT}
 
 ${OBJDIR}/demo-1.o: ${EXMDIR}/demo-1.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/demo-1.o ${EXMDIR}/demo-1.cpp

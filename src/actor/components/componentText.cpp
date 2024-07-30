@@ -19,6 +19,7 @@ ComponentText::ComponentText()
     if (!mesh)
     {
         mesh = Red11::getMeshBuilder()->createPlain(0.1f);
+        mesh->addUser();
     }
 }
 

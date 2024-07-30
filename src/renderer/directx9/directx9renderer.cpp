@@ -275,6 +275,21 @@ void DirectX9Renderer::present()
     d3ddev->Present(NULL, NULL, NULL, NULL);
 }
 
+void DirectX9Renderer::removeTextureByIndex(unsigned int index)
+{
+    data.destroyTextureRenderDataByIndex(index);
+}
+
+void DirectX9Renderer::removeMaterialByIndex(unsigned int index)
+{
+    data.destroyMaterialRenderDataByIndex(index);
+}
+
+void DirectX9Renderer::removeMeshByIndex(unsigned int index)
+{
+    data.destroyMeshRenderDataByIndex(index);
+}
+
 // function prototypes
 void DirectX9Renderer::initD3D(HWND hWnd, bool bIsFullscreen, int width, int height)
 {
@@ -303,8 +318,12 @@ void DirectX9Renderer::initD3D(HWND hWnd, bool bIsFullscreen, int width, int hei
     data.d3ddev = d3ddev;
 
     cubeMesh = Red11::getMeshBuilder()->createCube(1.0f);
+    cubeMesh->addUser();
     spriteMesh = Red11::getMeshBuilder()->createSprite(1.0f);
+    spriteMesh->addUser();
+
     lineMaterial = new MaterialSimple(Color(0.0, 0.0, 0.0), Color(0.2, 1.0, 0.2));
+    lineMaterial->addUser();
 
     if (d3ddev->CreateVertexShader((const DWORD *)UVSimpleVertexShader_vso, &pUVSimpleVertexShader) != D3D_OK)
         printf("Shader compilation failed\n");
@@ -367,6 +386,7 @@ void DirectX9Renderer::initD3D(HWND hWnd, bool bIsFullscreen, int width, int hei
     d3ddev->CreateVertexDeclaration(VertexElementsNormalUVSkinned, &pVertexDeclNormalUVSkinned);
 
     defaultMaterial = new MaterialSimple(Color(0.6f, 0.6f, 0.6f));
+    defaultMaterial->addUser();
 
     // shadow slots setup
     for (int i = 8; i < 16; i++)
@@ -383,7 +403,9 @@ void DirectX9Renderer::initD3D(HWND hWnd, bool bIsFullscreen, int width, int hei
     unsigned char whiteData[4] = {255, 255, 255, 255};
     unsigned char blackData[4] = {0, 0, 0, 255};
     white = new Texture("WhiteTexture", TextureType::Normal, 1, 1, whiteData);
+    white->addUser();
     black = new Texture("BlackTexture", TextureType::Normal, 1, 1, blackData);
+    black->addUser();
 }
 
 void DirectX9Renderer::resizeD3D(int width, int height)

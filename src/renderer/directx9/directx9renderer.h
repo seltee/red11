@@ -66,6 +66,10 @@ public:
 
     void present() override final;
 
+    void removeTextureByIndex(unsigned int index) override;
+    void removeMaterialByIndex(unsigned int index) override;
+    void removeMeshByIndex(unsigned int index) override;
+
 protected:
     void initD3D(HWND hWnd, bool bIsFullscreen, int width, int height); // sets up and initializes Direct3D
     void resizeD3D(int width, int height);

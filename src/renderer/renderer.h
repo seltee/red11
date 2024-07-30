@@ -27,6 +27,7 @@ class Renderer
 {
 public:
     Renderer(Window *window);
+    virtual ~Renderer();
 
     virtual RendererType getType() = 0;
 
@@ -58,9 +59,19 @@ public:
     inline int getViewWidth() { return viewWidth; }
     inline int getViewHeight() { return viewHeight; }
 
+    virtual void removeTextureByIndex(unsigned int index) = 0;
+    virtual void removeMaterialByIndex(unsigned int index) = 0;
+    virtual void removeMeshByIndex(unsigned int index) = 0;
+
+    static void removeFromAllTextureByIndex(unsigned int index);
+    static void removeFromAllMaterialByIndex(unsigned int index);
+    static void removeFromAllMeshByIndex(unsigned int index);
+
 protected:
     int viewWidth = 0, viewHeight = 0;
     Window *window = nullptr;
     Matrix4 matrixStore[MAX_MATRICIES];
     int lastMatrixStore = 0;
+
+    static std::vector<Renderer *> renderers;
 };

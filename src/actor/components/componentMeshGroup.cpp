@@ -10,6 +10,8 @@ ComponentMeshGroup::ComponentMeshGroup()
 ComponentMeshGroup::~ComponentMeshGroup()
 {
     destroyList();
+    if (material)
+        material->removeUser();
 }
 
 void ComponentMeshGroup::onRenderQueue(Renderer *renderer)
@@ -155,7 +157,12 @@ AnimationTrack *ComponentMeshGroup::createAnimationTrack(Animation *animation)
 
 void ComponentMeshGroup::setMaterial(Material *material)
 {
+    if (this->material)
+        this->material->removeUser();
+
     this->material = material;
+    if (this->material)
+        this->material->addUser();
 }
 
 void ComponentMeshGroup::destroyList()

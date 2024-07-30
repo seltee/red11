@@ -130,16 +130,32 @@ void SoundFile::closeStream(SoundStream *stream)
     stb_vorbis_close((stb_vorbis *)stream->fileReader);
 }
 
+bool SoundFile::isLoaded()
+{
+    return bIsLoaded;
+}
+
 void SoundFile::load()
 {
     if (bIsLoaded)
-        return;
-    printf("Try to load\n");
-    if (extension == Extension::WAV)
-        bIsLoaded = loadWAV();
+    {
+        if (extension == Extension::WAV)
+            bIsLoaded = loadWAV();
 
-    if (extension == Extension::OGG)
-        bIsLoaded = loadOGG();
+        if (extension == Extension::OGG)
+            bIsLoaded = loadOGG();
+    }
+}
+
+void SoundFile::unload()
+{
+    if (!bIsLoaded)
+    {
+        bIsLoaded = false;
+        if (data)
+            free(data);
+        data = nullptr;
+    }
 }
 
 bool SoundFile::loadWAV()
