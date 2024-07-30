@@ -21,7 +21,7 @@ struct QueuedLightRenderData
 struct QueuedMeshRenderData
 {
     Mesh *mesh;
-    std::vector<BoneTransform> *bones;
+    std::vector<BoneTransform> bones;
     Material *material;
     Matrix4 *model;
     Vector3 centroid;

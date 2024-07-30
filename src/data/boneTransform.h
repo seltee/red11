@@ -4,14 +4,15 @@
 #pragma once
 #include "utils/utils.h"
 #include "utils/primitives.h"
+#include "data/deform.h"
 #include <string>
 
 class BoneTransform
 {
 public:
     BoneTransform();
-    BoneTransform(Matrix4 *model, std::string *name);
+    BoneTransform(Matrix4 *model, Deform *deform);
 
     Matrix4 *model = nullptr;
-    std::string *name = nullptr;
+    Deform *deform = nullptr;
 };

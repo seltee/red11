@@ -7,6 +7,8 @@
 #include "utils/utils.h"
 #include "utils/primitives.h"
 
+class Mesh;
+
 struct DeformIndex
 {
     int index;
@@ -19,6 +21,8 @@ public:
     Deform(std::string &name, DeformIndex *deformIndexData, int amount, Matrix4 &invBindMatrix);
     Deform(std::string &name, int *indexies, float *weights, int amount, Matrix4 &invBindMatrix);
     ~Deform();
+
+    void udpateCullingRadius(Mesh *mesh);
 
     inline std::string &getName() { return name; }
     inline bool isName(std::string &name) { return this->name == name; }
@@ -40,6 +44,11 @@ public:
 
     float getWeightForIndex(int vIndex);
 
+    inline int getIndexAmount() { return deformIndexDataAmount; }
+    inline int getVertIndexByIndex(int index) { return deformIndexData[index].index; }
+
+    inline float getCullingRadius() { return cullingRadius; }
+
     unsigned int index = 0;
 
 protected:
@@ -49,4 +58,7 @@ protected:
 
     DeformIndex *deformIndexData = nullptr;
     int deformIndexDataAmount = 0;
+
+    // Needed for culling
+    float cullingRadius = 0;
 };

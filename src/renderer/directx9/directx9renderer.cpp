@@ -116,16 +116,12 @@ void DirectX9Renderer::renderMeshSkinned(Camera *camera, Vector3 *cameraPosition
     // set bone matrices, base register is 32, so, 56 bone is availalbe
     for (auto &bone : *bones)
     {
-        Deform *deform = mesh->getDeformByName(*bone.name);
-        if (deform)
-        {
-            int reg = 32 + deform->index * 4;
-            if (reg >= 256)
-                break;
-            Matrix4 boneMatrix = *bone.model * deform->getInvBindMatrix();
-            boneMatrix = glm::transpose(boneMatrix);
-            d3ddev->SetVertexShaderConstantF(reg, (const float *)value_ptr(boneMatrix), 4);
-        }
+        int reg = 32 + bone.deform->index * 4;
+        if (reg >= 256)
+            break;
+        Matrix4 boneMatrix = *bone.model * bone.deform->getInvBindMatrix();
+        boneMatrix = glm::transpose(boneMatrix);
+        d3ddev->SetVertexShaderConstantF(reg, (const float *)value_ptr(boneMatrix), 4);
     }
 
     // Shader multiplies model matrix internally, so view projection needs to be provcided
@@ -690,7 +686,7 @@ void DirectX9Renderer::renderMeshColorData(Camera *camera, Vector3 &cameraPositi
     setupLights(Vector3(*mesh->model * Vector4(mesh->centroid, 1.0f)), 1.0f);
     setupMaterialColorRender(mesh->material);
 
-    if (mesh->bones)
+    if (mesh->bones.size() > 0)
     {
         if (mesh->material->isUsingNormalMap())
         {
@@ -703,7 +699,7 @@ void DirectX9Renderer::renderMeshColorData(Camera *camera, Vector3 &cameraPositi
             d3ddev->SetPixelShader(pUVSkinnedFragmentShader);
         }
 
-        renderMeshSkinned(camera, &cameraPosition, mesh->mesh, mesh->model, mesh->bones);
+        renderMeshSkinned(camera, &cameraPosition, mesh->mesh, mesh->model, &mesh->bones);
     }
     else
     {
@@ -724,13 +720,13 @@ void DirectX9Renderer::renderMeshColorData(Camera *camera, Vector3 &cameraPositi
 
 void DirectX9Renderer::renderMeshDepthData(Camera *camera, Vector3 &cameraPosition, QueuedMeshRenderData *mesh)
 {
-    if (mesh->bones)
+    if (mesh->bones.size() > 0)
     {
         setupMaterialDepthRender(mesh->material);
         d3ddev->SetVertexShader(pUVSkinnedVertexShader);
         d3ddev->SetPixelShader(pUVSkinnedFragmentShader);
 
-        renderMeshSkinned(camera, &cameraPosition, mesh->mesh, mesh->model, mesh->bones);
+        renderMeshSkinned(camera, &cameraPosition, mesh->mesh, mesh->model, &mesh->bones);
     }
     else
     {
@@ -752,12 +748,12 @@ void DirectX9Renderer::renderMeshDepthData(Camera *camera, Vector3 &cameraPositi
 
 void DirectX9Renderer::renderMeshShadowDepthData(Camera *camera, Vector3 &cameraPosition, QueuedMeshRenderData *mesh)
 {
-    if (mesh->bones)
+    if (mesh->bones.size() > 0)
     {
         d3ddev->SetVertexShader(pUVShadowSkinnedVertexShader);
         d3ddev->SetPixelShader(pUVShadowFragmentShader);
 
-        renderMeshSkinned(camera, &cameraPosition, mesh->mesh, mesh->model, mesh->bones);
+        renderMeshSkinned(camera, &cameraPosition, mesh->mesh, mesh->model, &mesh->bones);
     }
     else
     {

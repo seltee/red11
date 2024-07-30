@@ -74,6 +74,8 @@ Mesh::Mesh(VertexDataType type, void *verticies, int vLength, PolygonTriPoints *
 
 Mesh::~Mesh()
 {
+    unload();
+
     if (type == VertexDataType::PositionUV && this->verticies.vertexPositionUV)
         delete this->verticies.vertexPositionUV;
     if (type == VertexDataType::PositionColor && this->verticies.vertexPositionColor)
@@ -81,7 +83,6 @@ Mesh::~Mesh()
     if (this->polygons)
         delete[] this->polygons;
 
-    unload();
     auto it = meshes.begin();
     while (it != meshes.end())
     {
@@ -98,10 +99,12 @@ Mesh::~Mesh()
 
 void Mesh::addDeform(Deform *deform)
 {
+    // Blender doesn't export deforms that doesn't affect mesh
+    /*
     bool bAffects = false;
     for (int v = 0; v < vLength; v++)
     {
-        if (deform->hasIndex(v))
+        if (deform->hasIndex(verticies.vertexPositionUV[v].index))
         {
             bAffects = true;
             break;
@@ -109,6 +112,7 @@ void Mesh::addDeform(Deform *deform)
     }
     if (!bAffects)
         return;
+    */
 
     // TODO calc visibility of bone animated meshes by their bone volumes
     if (deforms.size() == 0)

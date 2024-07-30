@@ -30,7 +30,7 @@ public:
             queueMeshes[queueCurrentMesh].mesh = mesh;
             queueMeshes[queueCurrentMesh].material = material;
             queueMeshes[queueCurrentMesh].model = model;
-            queueMeshes[queueCurrentMesh].bones = nullptr;
+            queueMeshes[queueCurrentMesh].bones.clear();
             if (material->isAlphaPhase())
                 queueMeshes[queueCurrentMesh].centroid = Vector3(mesh->getCentroid() * *model);
             queueCurrentMesh++;
@@ -44,7 +44,10 @@ public:
             queueMeshes[queueCurrentMesh].mesh = mesh;
             queueMeshes[queueCurrentMesh].material = material;
             queueMeshes[queueCurrentMesh].model = model;
-            queueMeshes[queueCurrentMesh].bones = bones;
+            queueMeshes[queueCurrentMesh].bones.clear();
+            for (auto &bone : *bones){
+                queueMeshes[queueCurrentMesh].bones.push_back(bone);
+            }
             if (material->isAlphaPhase())
                 queueMeshes[queueCurrentMesh].centroid = Vector3(mesh->getCentroid() * *model);
             queueCurrentMesh++;

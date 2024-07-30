@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 
 #include "directx9data.h"
+#include "utils/sphere.h"
 
 Directx9data::Directx9data()
 {
@@ -131,11 +132,23 @@ void Directx9data::remakeActiveQueueForCamera(Camera *camera)
 bool Directx9data::isMeshVisibleToCamera(QueuedMeshRenderData *mesh, Camera *camera)
 {
     // todo proper bones check
-    if (mesh->bones)
-        return true;
-    Matrix4 mv = *camera->getViewMatrix() * *mesh->model;
-    if (mesh->mesh->getBoundVolumeSphere().isSphereInFrustum(&mv, camera->getCullingPlanes()))
-        return true;
+    if (mesh->bones.size() > 0)
+    {
+        Sphere sphere;
+        for (auto &bone : mesh->bones)
+        {
+            Matrix4 mv = *camera->getViewMatrix() * *bone.model;
+            sphere.setup(Vector3(0), bone.deform->getCullingRadius());
+            if (sphere.isSphereInFrustum(&mv, camera->getCullingPlanes()))
+                return true;
+        }
+    }
+    else
+    {
+        Matrix4 mv = *camera->getViewMatrix() * *mesh->model;
+        if (mesh->mesh->getBoundVolumeSphere().isSphereInFrustum(&mv, camera->getCullingPlanes()))
+            return true;
+    }
     return false;
 }
 

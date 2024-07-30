@@ -7,8 +7,8 @@ BoneTransform::BoneTransform()
 {
 }
 
-BoneTransform::BoneTransform(Matrix4 *model, std::string *name)
+BoneTransform::BoneTransform(Matrix4 *model, Deform *deform)
 {
     this->model = model;
-    this->name = name;
+    this->deform = deform;
 }

@@ -572,3 +572,26 @@ inline EdgeQuery queryEdgeDirection(
                       maxIndexB,
                       axis});
 }
+
+inline Vector3 extractScale(const Matrix4 &transform)
+{
+    Vector3 scale;
+
+    // Extract the basis vectors
+    Vector3 xAxis = Vector3(transform[0][0], transform[1][0], transform[2][0]);
+    Vector3 yAxis = Vector3(transform[0][1], transform[1][1], transform[2][1]);
+    Vector3 zAxis = Vector3(transform[0][2], transform[1][2], transform[2][2]);
+
+    // Calculate the lengths of the basis vectors
+    scale.x = glm::length(xAxis);
+    scale.y = glm::length(yAxis);
+    scale.z = glm::length(zAxis);
+
+    return scale;
+}
+
+// Function to find the maximum scale factor
+inline float findMaxScale(const Vector3 &scale)
+{
+    return fmaxf(fmaxf(scale.x, scale.y), scale.z);
+}

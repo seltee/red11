@@ -39,7 +39,7 @@ public:
     EXPORT void onRenderQueue(Renderer *renderer) override final;
     EXPORT void onProcess(float delta) override final;
 
-    EXPORT void setDebugBonesView(bool bState);
+    EXPORT void setDebugBonesView(bool bViewBones, bool bViewCullingSpheres);
 
     // all MeshObjects will be recreated with meshes and structure for this mesh group component
     // it can be changed freely locally in this component
@@ -55,7 +55,9 @@ protected:
     std::vector<AnimationTrack *> tracks;
     std::vector<BoneTransform> boneTransforms;
     Material *material = nullptr;
-    bool bBonesView = false;
+    
+    bool bViewBones = false;
+    bool bViewCullingSpheres = false;
 
     void destroyList();
 };

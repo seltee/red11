@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 
 #include "deform.h"
+#include "data/mesh.h"
 
 Deform::Deform(std::string &name, DeformIndex *deformIndexData, int amount, Matrix4 &invBindMatrix)
 {
@@ -38,6 +39,36 @@ Deform::~Deform()
     if (this->deformIndexData)
     {
         delete[] this->deformIndexData;
+    }
+}
+
+void Deform::udpateCullingRadius(Mesh *mesh)
+{
+    cullingRadius = 0;
+    VertexData *verticies = mesh->getVerticies();
+    int verticiesAmount = mesh->getVerticiesAmount();
+    Matrix4 model = glm::inverse(invBindMatrix);
+    Vector3 center = Vector3(model * Vector4(0.0f, 0.0f, 0.0f, 1.0f));
+
+    for (int i = 0; i < deformIndexDataAmount; i++)
+    {
+        int index = this->deformIndexData[i].index;
+        int vIndex = -1;
+        for (int i = 0; i < verticiesAmount; i++)
+        {
+            if (verticies->vertexPositionUV[i].index == index)
+            {
+                vIndex = i;
+                break;
+            }
+        }
+        if (vIndex != -1)
+        {
+            Vector3 pos = verticies->vertexPositionUV[vIndex].position;
+            float dist = glm::length(center - pos);
+            if (dist > cullingRadius)
+                cullingRadius = dist;
+        }
     }
 }
 

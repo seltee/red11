@@ -102,7 +102,9 @@ void FBXGeometry::processDeformToMesh(Mesh *mesh, FBXDeform *deform)
     {
         if (deform->getIndexiesAmount() > 0)
         {
-            mesh->addDeform(new Deform(deform->getName(), deform->getIndexies(), deform->getWeights(), deform->getWeightsAmount(), deform->getInvBindMatrix()));
+            Deform *newDeform = new Deform(deform->getName(), deform->getIndexies(), deform->getWeights(), deform->getWeightsAmount(), deform->getInvBindMatrix());
+            newDeform->udpateCullingRadius(mesh);
+            mesh->addDeform(newDeform);
         }
         for (auto &child : *deform->getChildren())
         {

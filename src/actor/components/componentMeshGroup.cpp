@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 
 #include "componentMeshGroup.h"
+#include <utils/glm/gtx/matrix_decompose.hpp>
 
 ComponentMeshGroup::ComponentMeshGroup()
 {
@@ -18,31 +19,58 @@ void ComponentMeshGroup::onRenderQueue(Renderer *renderer)
 {
     for (auto &it : list)
     {
-        if (it->getMesh())
+        Mesh *mesh = it->getMesh();
+        if (mesh)
         {
             if (it->bIsSkinned)
             {
                 boneTransforms.clear();
                 for (auto &boneIt : bonesList)
-                    boneTransforms.push_back(BoneTransform(boneIt->getModelMatrix(), boneIt->getNamePointer()));
-                renderer->queueMeshSkinned(it->getMesh(), material, it->getModelMatrix(), &boneTransforms);
+                {
+                    Deform *deform = mesh->getDeformByName(*boneIt->getNamePointer());
+                    if (deform)
+                        boneTransforms.push_back(BoneTransform(boneIt->getModelMatrix(), deform));
+                }
+                renderer->queueMeshSkinned(mesh, material, it->getModelMatrix(), &boneTransforms);
             }
             else
             {
-                renderer->queueMesh(it->getMesh(), material, it->getModelMatrix());
+                renderer->queueMesh(mesh, material, it->getModelMatrix());
             }
         }
     }
 
-    if (bBonesView)
+    if (bViewBones || bViewCullingSpheres)
     {
         for (auto &it : list)
         {
-            if (it->isBone() && it->getParent() && it->getParent()->isBone())
+            if (bViewBones && it->isBone() && it->getParent() && it->getParent()->isBone())
             {
                 Vector3 from = Vector3(*it->getModelMatrix() * Vector4(0.0f, 0.0f, 0.0f, 1.0f));
                 Vector3 to = Vector3(*it->getParent()->getModelMatrix() * Vector4(0.0f, 0.0f, 0.0f, 1.0f));
                 renderer->queueLine(from, to, Color(0.2f, 0.8f, 0.2f, 1.0f));
+            }
+            if (bViewBones && it->isBone() && it->getParent() && it->getParent()->isBone())
+            {
+                for (auto &meshIt : list)
+                {
+                    if (meshIt->getMesh())
+                    {
+                        float scale = findMaxScale(extractScale(*it->getModelMatrix()));
+                        Deform *deform = meshIt->getMesh()->getDeformByName(*it->getNamePointer());
+                        if (deform)
+                        {
+                            float radius = deform->getCullingRadius() * scale;
+                            Vector3 from = Vector3(*it->getModelMatrix() * Vector4(0.0f, 0.0f, 0.0f, 1.0f));
+                            renderer->queueLine(from, from + Vector3(0, radius, 0), Color(0.8f, 0.2f, 0.2f, 1.0f));
+                            renderer->queueLine(from, from + Vector3(0, -radius, 0), Color(0.8f, 0.2f, 0.2f, 1.0f));
+                            renderer->queueLine(from, from + Vector3(radius, 0, 0), Color(0.8f, 0.2f, 0.2f, 1.0f));
+                            renderer->queueLine(from, from + Vector3(-radius, 0, 0), Color(0.8f, 0.2f, 0.2f, 1.0f));
+                            renderer->queueLine(from, from + Vector3(0, 0, radius), Color(0.8f, 0.2f, 0.2f, 1.0f));
+                            renderer->queueLine(from, from + Vector3(0, 0, -radius), Color(0.8f, 0.2f, 0.2f, 1.0f));
+                        }
+                    }
+                }
             }
         }
     }
@@ -100,9 +128,10 @@ void ComponentMeshGroup::onProcess(float delta)
     }
 }
 
-void ComponentMeshGroup::setDebugBonesView(bool bState)
+void ComponentMeshGroup::setDebugBonesView(bool bViewBones, bool bViewCullingSpheres)
 {
-    bBonesView = bState;
+    this->bViewBones = bViewBones;
+    this->bViewCullingSpheres = bViewCullingSpheres;
 }
 
 void ComponentMeshGroup::setMeshList(std::vector<MeshObject *> *newList)

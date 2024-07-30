@@ -133,7 +133,7 @@ APPMAIN
     auto tzushiComponent = room->createComponentMeshGroup(tzushiFileData->getMeshObjectList());
     tzushiComponent->setMaterial(tzushiMaterial);
     tzushiComponent->setScale(scale);
-    tzushiComponent->setDebugBonesView(showBones);
+    tzushiComponent->setDebugBonesView(showBones, showBones);
     auto tzushiTrack = tzushiComponent->createAnimationTrack(tzushiFileData->getAnimationsList()->at(0));
     tzushiTrack->loop(1.0f);
 
@@ -160,7 +160,7 @@ APPMAIN
             auto mothComponent = light->createComponentMeshGroup(mothFileData->getMeshObjectList());
             mothComponent->setMaterial(mothMaterial);
             mothComponent->setScale(scale);
-            mothComponent->setDebugBonesView(showBones);
+            mothComponent->setDebugBonesView(showBones, showBones);
             auto mothTrack = mothComponent->createAnimationTrack(mothFileData->getAnimationsList()->at(0));
             mothTrack->loop(1.0f);
         }
