@@ -6,10 +6,9 @@
 #include "data/deform.h"
 #include "data/usable.h"
 #include "utils/sphere.h"
+#include "settings.h"
 #include <string>
 #include <vector>
-
-#define MAX_MESH_COUNT 100000
 
 enum class VertexDataType
 {
@@ -151,6 +150,7 @@ public:
 protected:
     void rebuildTangents();
     void getTangentBitangent(VertexDataUV &v1, VertexDataUV &v2, VertexDataUV &v3, Vector3 *tangent, Vector3 *bitangent);
+    unsigned int getNextIndex();
 
     VertexDataType type = VertexDataType::PositionUV;
     VertexData verticies;
@@ -166,4 +166,8 @@ protected:
     Sphere boundVolume;
 
     static std::vector<Mesh *> meshes;
+
+    // Index pool
+    static bool indexPool[MAX_ELEMENT_INDEX];
+    static unsigned int nextIndex;
 };

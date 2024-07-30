@@ -5,6 +5,7 @@
 #include "utils/primitives.h"
 #include "utils/utils.h"
 #include "data/usable.h"
+#include "settings.h"
 #include <list>
 
 #define MAX_MATERIAL_COUNT 10000
@@ -40,8 +41,14 @@ public:
     void unload() override;
 
 protected:
+    unsigned int getNextIndex();
+
     unsigned int index;
     unsigned int updIndex;
 
     static std::vector<Material *> materials;
+
+    // Index pool
+    static bool indexPool[MAX_ELEMENT_INDEX];
+    static unsigned int nextIndex;
 };

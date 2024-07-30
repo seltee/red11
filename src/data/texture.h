@@ -5,6 +5,7 @@
 #include "utils/utils.h"
 #include "utils/primitives.h"
 #include "data/usable.h"
+#include "settings.h"
 #include <list>
 #include <string>
 
@@ -52,6 +53,8 @@ public:
     EXPORT void unload() override;
 
 protected:
+    unsigned int getNextIndex();
+
     std::string name;
     TextureType textureType = TextureType::Normal;
 
@@ -67,4 +70,8 @@ protected:
     bool bStaticBuffer = true;
 
     static std::vector<Texture *> textures;
+
+    // Index pool
+    static bool indexPool[MAX_ELEMENT_INDEX];
+    static unsigned int nextIndex;
 };

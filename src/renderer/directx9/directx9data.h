@@ -8,14 +8,13 @@
 #include "directx9textureRenderData.h"
 #include "directx9utils.h"
 #include "utils/sphere.h"
+#include "settings.h"
 #include <vector>
 
 #ifdef WINDOWS_ONLY
-#define MAX_QUEUE_LIGHTS_COUNT (1 * 1024)
-#define MAX_QUEUE_MESH_COUNT (128 * 1024)
-#define MAX_QUEUE_LINES (1 * 1024)
-#define MAX_TEXTURES_COUNT (128 * 1024)
-#define MAX_MATERIALS_COUNT (32 * 1024)
+#define MAX_QUEUE_LIGHTS_COUNT (2 * 1024)
+#define MAX_QUEUE_MESH_COUNT (256 * 1024)
+#define MAX_QUEUE_LINES (2 * 1024)
 #define MAX_LIGHTS_PER_MESH_COUNT 16
 
 class Directx9data
@@ -93,9 +92,9 @@ public:
     bool isMeshVisibleToCamera(QueuedMeshRenderData *mesh, Camera *camera);
     bool isLightVisibleToCamera(QueuedLightRenderData *light, Camera *camera);
 
-    Directx9MeshRenderData *meshRenderData[MAX_MESH_COUNT];
-    Directx9TextureRenderData *textureRenderData[MAX_TEXTURES_COUNT];
-    Directx9MaterialRenderData *materialRenderData[MAX_MATERIALS_COUNT];
+    Directx9MeshRenderData *meshRenderData[MAX_ELEMENT_INDEX];
+    Directx9TextureRenderData *textureRenderData[MAX_ELEMENT_INDEX];
+    Directx9MaterialRenderData *materialRenderData[MAX_ELEMENT_INDEX];
 
     int queueCurrentMesh = 0;
     QueuedMeshRenderData queueMeshes[MAX_QUEUE_MESH_COUNT];

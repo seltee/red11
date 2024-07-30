@@ -8,14 +8,14 @@
 #define FLOAT_PREC_DIV_CONST 0.00001f
 
 std::vector<Mesh *> Mesh::meshes;
+bool Mesh::indexPool[MAX_ELEMENT_INDEX];
+unsigned int Mesh::nextIndex = 0;
 
 Mesh::Mesh(VertexDataType type, void *verticies, int vLength, PolygonTriPoints *polygons, int pLength, Matrix4 *transformation)
 {
     this->type = type;
     this->vLength = vLength;
-    static unsigned int lastIndex = 0;
-    index = lastIndex;
-    lastIndex++;
+    index = getNextIndex();
 
     Matrix3 mModelInverseTranspose;
     if (transformation)
@@ -92,6 +92,8 @@ Mesh::~Mesh()
         }
         it++;
     }
+
+    indexPool[index] = false;
 }
 
 void Mesh::addDeform(Deform *deform)
@@ -191,4 +193,17 @@ void Mesh::getTangentBitangent(VertexDataUV &v1, VertexDataUV &v2, VertexDataUV 
         f * (-deltaUV2.x * edge1.x + deltaUV1.x * edge2.x),
         f * (-deltaUV2.x * edge1.y + deltaUV1.x * edge2.y),
         f * (-deltaUV2.x * edge1.z + deltaUV1.x * edge2.z)));
+}
+
+unsigned int Mesh::getNextIndex()
+{
+    while (indexPool[nextIndex])
+    {
+        nextIndex++;
+        if (nextIndex >= MAX_ELEMENT_INDEX)
+            nextIndex = 0;
+    }
+
+    indexPool[nextIndex] = true;
+    return nextIndex;
 }

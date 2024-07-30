@@ -5,15 +5,13 @@
 #include "renderer/renderer.h"
 
 std::vector<Material *> Material::materials;
+bool Material::indexPool[MAX_ELEMENT_INDEX];
+unsigned int Material::nextIndex = 0;
 
 Material::Material()
 {
-    static unsigned int lastIndex = 0;
-
-    index = lastIndex;
-    lastIndex++;
+    index = getNextIndex();
     updIndex = 0;
-
     materials.push_back(this);
 }
 
@@ -30,9 +28,23 @@ Material::~Material()
         }
         it++;
     }
+    indexPool[index] = false;
 }
 
 void Material::unload()
 {
     Renderer::removeFromAllMaterialByIndex(index);
+}
+
+unsigned int Material::getNextIndex()
+{
+    while (indexPool[nextIndex])
+    {
+        nextIndex++;
+        if (nextIndex >= MAX_ELEMENT_INDEX)
+            nextIndex = 0;
+    }
+
+    indexPool[nextIndex] = true;
+    return nextIndex;
 }

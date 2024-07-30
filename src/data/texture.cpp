@@ -5,6 +5,8 @@
 #include "renderer/renderer.h"
 
 std::vector<Texture *> Texture::textures;
+bool Texture::indexPool[MAX_ELEMENT_INDEX];
+unsigned int Texture::nextIndex = 0;
 
 Texture::Texture(TextureType textureType) : Texture("texture", textureType)
 {
@@ -14,10 +16,7 @@ Texture::Texture(std::string name, TextureType textureType)
 {
     this->name = name;
     this->textureType = textureType;
-    static unsigned int lastIndex = 0;
-    index = lastIndex;
-    lastIndex++;
-
+    index = getNextIndex();
     textures.push_back(this);
 }
 
@@ -42,6 +41,8 @@ Texture::~Texture()
         }
         it++;
     }
+
+    indexPool[index] = false;
 }
 
 unsigned char *Texture::getBufferData()
@@ -123,4 +124,17 @@ void Texture::load()
 void Texture::unload()
 {
     Renderer::removeFromAllTextureByIndex(index);
+}
+
+unsigned int Texture::getNextIndex()
+{
+    while (indexPool[nextIndex])
+    {
+        nextIndex++;
+        if (nextIndex >= MAX_ELEMENT_INDEX)
+            nextIndex = 0;
+    }
+
+    indexPool[nextIndex] = true;
+    return nextIndex;
 }

@@ -5,9 +5,9 @@
 
 Directx9data::Directx9data()
 {
-    ZeroMemory(meshRenderData, sizeof(Directx9MeshRenderData *) * MAX_MESH_COUNT);
-    ZeroMemory(textureRenderData, sizeof(Directx9TextureRenderData *) * MAX_TEXTURES_COUNT);
-    ZeroMemory(materialRenderData, sizeof(Directx9MaterialRenderData *) * MAX_MATERIALS_COUNT);
+    ZeroMemory(meshRenderData, sizeof(Directx9MeshRenderData *) * MAX_ELEMENT_INDEX);
+    ZeroMemory(textureRenderData, sizeof(Directx9TextureRenderData *) * MAX_ELEMENT_INDEX);
+    ZeroMemory(materialRenderData, sizeof(Directx9MaterialRenderData *) * MAX_ELEMENT_INDEX);
     ZeroMemory(queueMeshes, sizeof(QueuedMeshRenderData) * MAX_QUEUE_MESH_COUNT);
     ZeroMemory(queueLights, sizeof(QueuedLightRenderData) * MAX_QUEUE_LIGHTS_COUNT);
 }
