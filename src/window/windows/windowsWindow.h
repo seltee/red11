@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 
 #pragma once
+#include "settings.h"
 #include "utils/utils.h"
 
 #ifdef WINDOWS_ONLY
@@ -45,6 +46,8 @@ public:
     EXPORT void resetCursorIcon();
 
 protected:
+    void setProcessDPIAware();
+
     HWND hWnd;
     HINSTANCE hInstance;
     int mousePositionX = 0;

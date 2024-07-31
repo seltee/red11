@@ -8,8 +8,7 @@ CFLAGS = -Isrc -Wall -c -std=c++17 -fdeclspec -g -O3
 endif
 
 ifeq ($(OS),Windows_NT)
-LIBRARIES = -lkernel32 -luser32 -lgdi32 -lwinspool \
-			-lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32 -ldsound.lib
+LIBRARIES = -lkernel32 -luser32 -lgdi32 -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32 -ldsound.lib
 endif
 
 ifeq ($(OS),Windows_NT)
@@ -18,7 +17,7 @@ else
 EXT = ""
 endif
 
-LFLAGS = -shared -Wall -g
+LFLAGS = -shared -Wall -g -Xlinker /subsystem:windows -Xlinker /subsystemversion:6.01
 
 # The build target 
 ifeq ($(OS),Windows_NT)
@@ -32,7 +31,7 @@ MOVE = mv -f
 endif
 
 ifeq ($(OS),Windows_NT)
-EFLAGS = -L./ -llibred11
+EFLAGS = -L./ -llibred11 -Xlinker /subsystem:windows -Xlinker /subsystemversion:6.01
 else
 EFLAGS = -L./ -lred11
 endif

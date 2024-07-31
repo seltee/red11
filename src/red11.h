@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 
 #pragma once
+#include "settings.h"
 #include "utils/utils.h"
 #include "utils/math.h"
 #include "utils/meshBuilder.h"

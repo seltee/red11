@@ -1,12 +1,14 @@
 // SPDX-FileCopyrightText: 2024 Dmitrii Shashkov
 // SPDX-License-Identifier: MIT
 
+#include "settings.h"
 #include "windowsWindow.h"
 #include "data/inputProvider.h"
 #include <shellscalingapi.h>
 #include <windows.h>
 
 #ifdef WINDOWS_ONLY
+typedef BOOL(WINAPI *SetProcessDPIAwareFunc)();
 
 #define CLASS_NAME L"Red11 Window Class"
 
@@ -141,7 +143,7 @@ WindowsWindow::WindowsWindow(const char *windowName, int width, int height, int 
 
     // HMODULE handle = LoadLibraryA(mod);
     // return handle && GetProcAddress(handle, func);
-    SetProcessDPIAware();
+    setProcessDPIAware();
 
     HINSTANCE hInstance = GetModuleHandle(NULL);
 
@@ -411,6 +413,25 @@ void WindowsWindow::setCursorIcon(MouseCursorIcon icon, bool bForce)
 void WindowsWindow::resetCursorIcon()
 {
     setCursorIcon(mouseIcon, true);
+}
+
+void WindowsWindow::setProcessDPIAware()
+{
+    HMODULE user32 = LoadLibrary("user32.dll");
+    if (user32 == NULL)
+    {
+        printf("Failed to load user32.dll");
+        return;
+    }
+
+    // Get the address of SetProcessDPIAware
+    SetProcessDPIAwareFunc SetProcessDPIAware = (SetProcessDPIAwareFunc)GetProcAddress(user32, "SetProcessDPIAware");
+
+    if (SetProcessDPIAware)
+        SetProcessDPIAware();
+
+    // Free the library
+    FreeLibrary(user32);
 }
 
 #endif

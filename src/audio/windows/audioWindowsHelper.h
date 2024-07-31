@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: MIT
 
 #pragma once
+#include "settings.h"
+
 #ifdef WINDOWS_ONLY
 
 #include <windows.h>

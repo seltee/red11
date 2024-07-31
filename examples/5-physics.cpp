@@ -4,8 +4,8 @@
 #include "red11.h"
 #include <string>
 
-#define WINDOW_WIDTH 2560
-#define WINDOW_HEIGHT 1440
+#define WINDOW_WIDTH 1800
+#define WINDOW_HEIGHT 1000
 
 struct CameraControl
 {

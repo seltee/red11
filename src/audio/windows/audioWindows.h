@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 
 #pragma once
+#include "settings.h"
 #include "audio/audio.h"
 
 #ifdef WINDOWS_ONLY

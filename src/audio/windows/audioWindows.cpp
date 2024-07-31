@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2024 Dmitrii Shashkov
 // SPDX-License-Identifier: MIT
 
+#include "settings.h"
 #include "audioWindows.h"
 #include <windows.h>
 #include <dsound.h>

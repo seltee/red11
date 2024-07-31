@@ -6,8 +6,10 @@
 
 // #define WINDOW_WIDTH 680 * 2
 // #define WINDOW_HEIGHT 1080 * 2
-#define WINDOW_WIDTH 960 * 2
-#define WINDOW_HEIGHT 960 * 2
+//#define WINDOW_WIDTH 960 * 2
+//#define WINDOW_HEIGHT 960 * 2
+#define WINDOW_WIDTH 960
+#define WINDOW_HEIGHT 960
 
 struct CameraControl
 {
