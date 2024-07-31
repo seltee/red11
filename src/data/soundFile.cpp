@@ -137,7 +137,7 @@ bool SoundFile::isLoaded()
 
 void SoundFile::load()
 {
-    if (bIsLoaded)
+    if (!bIsLoaded)
     {
         if (extension == Extension::WAV)
             bIsLoaded = loadWAV();
@@ -149,7 +149,7 @@ void SoundFile::load()
 
 void SoundFile::unload()
 {
-    if (!bIsLoaded)
+    if (bIsLoaded)
     {
         bIsLoaded = false;
         if (data)
