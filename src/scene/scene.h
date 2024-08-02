@@ -35,6 +35,10 @@ public:
         return actor;
     }
 
+    EXPORT void destroyAllActors();
+    inline int getActorsAmount() { return actors.size(); }
+    inline const std::list<Actor *> *getActorsList() { return &actors; }
+
     template <class T, typename std::enable_if<std::is_base_of<CollisionHandler, T>::value>::type * = nullptr>
     inline T *createCollisionHandler()
     {

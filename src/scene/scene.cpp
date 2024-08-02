@@ -43,3 +43,9 @@ void Scene::render(Renderer *renderer, Camera *camera)
     renderer->renderQueue(camera);
     renderer->clearQueue();
 }
+
+void Scene::destroyAllActors()
+{
+    for (auto actor = actors.begin(); actor != actors.end(); ++actor)
+        (*actor)->destroy();
+}
