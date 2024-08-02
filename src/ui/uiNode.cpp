@@ -41,6 +41,12 @@ void UINode::process(float delta)
     }
     for (auto &node : children)
         node->process(delta);
+}
+
+void UINode::removeDestroyed()
+{
+    for (auto &node : children)
+        node->removeDestroyed();
 
     auto it = children.begin();
     while (it != children.end())

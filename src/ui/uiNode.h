@@ -30,6 +30,7 @@ public:
     EXPORT void destroyAllChildren();
     EXPORT void processStyle();
     EXPORT void process(float delta);
+    EXPORT void removeDestroyed();
     EXPORT void clearHover();
     EXPORT void collectRenderBlock(UIContext *uiContext);
 

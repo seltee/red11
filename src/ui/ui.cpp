@@ -19,11 +19,7 @@ UI::UI(Window *window, Renderer *renderer, Font *defaultFont)
     InputDescriptorList mouseClickList;
     mouseClickList.addMouseInput(InputMouseType::LeftButton, 1.0f);
     inputProvider->addInput(mouseClickList, this, [](InputType type, InputData *data, float value, void *userData)
-                            {
-                                if (value > 0.5)
-                                    ((UI *)userData)->triggerClick();
-                                else
-                                    ((UI *)userData)->triggerRelease(); });
+                            { ((UI *)userData)->processMouseClick(value); });
 }
 
 UI::~UI()
@@ -52,9 +48,22 @@ void UI::process(float delta)
     root->fontSize.set(24);
     root->positioning.set(UIBlockPositioning::Absolute);
 
+    if (clickHappened)
+    {
+        clickHappened = false;
+        triggerClick();
+    }
+    else if (releaseHappened)
+    {
+        releaseHappened = false;
+        triggerRelease();
+    }
+
     root->processStyle();
     root->process(delta);
+    root->removeDestroyed();
     root->clearHover();
+    root->processStyle();
 
     uiContext->cleanForNewRender();
     root->collectRenderBlock(uiContext);
@@ -179,6 +188,14 @@ void UI::render()
     }
 }
 
+void UI::processMouseClick(float value)
+{
+    if (value > 0.5f)
+        clickHappened = true;
+    else
+        releaseHappened = true;
+}
+
 void UI::triggerClick()
 {
     // Click
@@ -210,7 +227,7 @@ void UI::triggerRelease()
         UINode *node = hoveredBlock->source;
         while (node)
         {
-            if (node->triggersEventClick)
+            if (node->triggersEventRelease)
             {
                 triggerEvent(UIEvent::Release, node);
             }

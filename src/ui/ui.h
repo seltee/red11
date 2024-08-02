@@ -37,15 +37,16 @@ public:
         return newEventController;
     }
 
+    EXPORT void processMouseClick(float value);
+
     EXPORT void triggerClick();
     EXPORT void triggerRelease();
-    
     EXPORT void triggerEvent(UIEvent ev, UINode *node);
 
     float interfaceZoom = 1.0f;
 
 protected:
-     EXPORT void prepareNewEventController(UIEventController *eventController);
+    EXPORT void prepareNewEventController(UIEventController *eventController);
 
     UIContext *uiContext;
     UINode *root;
@@ -54,4 +55,7 @@ protected:
 
     UIRenderBlock *hoveredBlock = nullptr;
     unsigned int clickInputIndex = 0;
+
+    bool clickHappened = false;
+    bool releaseHappened = false;
 };
