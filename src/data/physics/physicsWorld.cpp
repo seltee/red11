@@ -51,15 +51,18 @@ PhysicsForm *PhysicsWorld::createPhysicsForm(float friction, float restitution, 
     return form;
 }
 
-PhysicsBody *PhysicsWorld::createPhysicsBody(PhysicsMotionType motionType, PhysicsForm *form, Entity *entity, Vector3 initialPosition, Quat initialRotation)
+PhysicsBody *PhysicsWorld::createPhysicsBody(PhysicsMotionType motionType, PhysicsForm *form, Entity *entity, Vector3 initialPosition, Quat initialRotation, bool simulatePhysics)
 {
-    PhysicsBody *newBody = new PhysicsBody(motionType, form, this, entity, initialPosition * simScale, initialRotation);
+    PhysicsBody *newBody = new PhysicsBody(motionType, form, this, entity, initialPosition * simScale, initialRotation, simulatePhysics);
     bodies.push_back(newBody);
     return newBody;
 }
 
 void PhysicsWorld::removeBody(PhysicsBody *removeBody)
 {
+    for (auto &handler : collisionHanlers)
+        handler->notifyBodyRemoved(removeBody);
+
     auto body = bodies.begin();
     while (body != bodies.end())
         if (*body == removeBody)

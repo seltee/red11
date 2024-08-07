@@ -143,8 +143,10 @@ void UI::render()
                 unsigned int fontSizeGlyph = static_cast<unsigned int>(static_cast<float>(fontSize) * interfaceZoom);
                 Color &textColor = node->getCalculatedColorText();
                 float letterSpacing = node->getCalculatedLetterSpacing() / interfaceZoom;
+                float lineSpacing = node->getCalculatedLineSpacing() / interfaceZoom;
 
-                float xPosIterator = posX + node->getCalculatedPaddingLeft() + block.textShiftX;
+                float startPos = posX + node->getCalculatedPaddingLeft() + block.textShiftX;
+                float xPosIterator = startPos;
                 float yPosIterator = posY + node->getCalculatedPaddingTop() + block.textShiftY;
 
                 std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> convert;
@@ -152,11 +154,37 @@ void UI::render()
 
                 if (font)
                 {
-                    for (auto &c : text32)
+                    UIWordWrap wordWrap = node->getStyleFinal()->wordWrap.getValue();
+                    float panelWidth = node->getCalculatedWidth();
+                    bool newWordStarts = true;
+
+                    for (int i = 0; i < text32.size(); i++)
                     {
+                        char32_t c = text32[i];
+
                         Glyph *glyph = font->getGlyph(c, fontSizeGlyph);
+
                         if (glyph && glyph->texture)
                         {
+                            float glyphWidth = static_cast<float>(glyph->w) / interfaceZoom;
+                            if (wordWrap == UIWordWrap::ByLetter && c != 0x20)
+                            {
+                                if (xPosIterator - startPos + glyphWidth + letterSpacing >= panelWidth)
+                                {
+                                    xPosIterator = startPos;
+                                    yPosIterator += static_cast<float>(fontSizeGlyph) + lineSpacing;
+                                }
+                            }
+                            if (wordWrap == UIWordWrap::ByWord && newWordStarts && startPos != xPosIterator)
+                            {
+                                float wordWidth = getNextWordWidth(text32, font, i, fontSizeGlyph, letterSpacing);
+                                if (xPosIterator - startPos + wordWidth >= panelWidth)
+                                {
+                                    xPosIterator = startPos;
+                                    yPosIterator += static_cast<float>(fontSizeGlyph) + lineSpacing;
+                                }
+                            }
+
                             float localScale = roundf(static_cast<float>(glyph->texture->getWidth()) / interfaceZoom);
                             entity.setPosition(
                                 roundf(xPosIterator + static_cast<float>(glyph->shiftX) / interfaceZoom),
@@ -164,8 +192,10 @@ void UI::render()
                                 -0.5f);
                             entity.setScale(localScale, localScale);
                             renderer->renderSpriteMask(entity.getModelMatrix(), glyph->texture, textColor);
-                            xPosIterator += static_cast<float>(glyph->w) / interfaceZoom + letterSpacing;
+                            xPosIterator += glyphWidth + letterSpacing;
                         }
+
+                        newWordStarts = (c == 0x20);
                     }
                 }
             }
@@ -253,4 +283,16 @@ void UI::triggerEvent(UIEvent ev, UINode *node)
 void UI::prepareNewEventController(UIEventController *eventController)
 {
     this->eventControllers.push_back(eventController);
+}
+
+float UI::getNextWordWidth(std::u32string &str, Font *font, unsigned int position, unsigned int fontSize, float letterSpacing)
+{
+    float size = 0.0f;
+    while (str[position] && str[position] != 0x20)
+    {
+        Glyph *glyph = font->getGlyph(str[position], fontSize);
+        size += static_cast<float>(glyph->w) / interfaceZoom;
+        position++;
+    }
+    return size;
 }

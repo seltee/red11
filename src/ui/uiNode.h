@@ -74,6 +74,7 @@ public:
     inline Font *getCalculatedFont() { return calculatedFont; }
     inline unsigned int getCalcualtedFontSize() { return calculatedFontSize; }
     inline float getCalculatedLetterSpacing() { return calculatedLetterSpacing; }
+    inline float getCalculatedLineSpacing() { return calculatedLineSpacing; }
     inline bool hasCalculatedImage() { return image.isSet() && image.getValue() != nullptr; }
     inline Texture *getCalculatedImage() { return calculatedImage; }
     inline bool isCalculatedImageUsingMask() { return calculatedUseImageMask; }
@@ -95,6 +96,7 @@ public:
     EXPORT Color getColorText();
     EXPORT Color getColorSelection();
     EXPORT float getLetterSpacing();
+    EXPORT float getLineSpacing();
 
     inline UINodeDisplay *getStyleHover() { return &hover; }
     inline UINodeDisplay *getStyleFinal() { return &style; }
@@ -151,6 +153,7 @@ protected:
     Font *calculatedFont = nullptr;
     unsigned int calculatedFontSize = 0;
     float calculatedLetterSpacing = 0.0f;
+    float calculatedLineSpacing = 0.0f;
     UIContentAlign calculatedTextHorizontalAlign = UIContentAlign::Start;
     UIContentAlign calculatedTextVerticalAlign = UIContentAlign::Start;
     bool calculatedUseImageMask = false;

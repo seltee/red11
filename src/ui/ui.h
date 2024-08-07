@@ -47,6 +47,7 @@ public:
 
 protected:
     EXPORT void prepareNewEventController(UIEventController *eventController);
+    EXPORT float getNextWordWidth(std::u32string &str, Font *font, unsigned int position, unsigned int fontSize, float letterSpacing);
 
     UIContext *uiContext;
     UINode *root;

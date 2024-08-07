@@ -11,6 +11,9 @@ CollisionSolver::CollisionSolver(float simScale)
 
 void CollisionSolver::solve(PhysicsBody *a, PhysicsBody *b, CollisionManifold &manifold, float delta)
 {
+    if (!a->isSimulatingPhysics() || !b->isSimulatingPhysics())
+        return;
+
     Vector3 normal = manifold.normal[0];
     float depth = manifold.depth[0];
     if (depth <= 0.0f)

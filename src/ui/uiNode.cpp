@@ -385,6 +385,15 @@ float UINode::getLetterSpacing()
     return 0.0f;
 }
 
+float UINode::getLineSpacing()
+{
+    if (style.letterSpacing.isSet())
+        return style.letterSpacing.getValue();
+    if (parent)
+        return parent->getLineSpacing();
+    return 0.0f;
+}
+
 void UINode::propagateHoverToChildren()
 {
     bHovered = true;
@@ -603,6 +612,7 @@ void UINode::rebuild()
     calculatedColorText = getColorText();
     calculatedColorSelection = getColorSelection();
     calculatedLetterSpacing = getLetterSpacing();
+    calculatedLineSpacing = getLineSpacing();
 
     calculatedTextHorizontalAlign = style.textHorizontalAlign.isSet() ? style.textHorizontalAlign.getValue() : UIContentAlign::Start;
     if (calculatedTextHorizontalAlign == UIContentAlign::SpaceAround || calculatedTextHorizontalAlign == UIContentAlign::SpaceBetween)

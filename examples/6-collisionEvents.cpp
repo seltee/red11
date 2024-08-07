@@ -193,7 +193,7 @@ APPMAIN
         auto sphere = objectContainer->createComponentMesh(sphereMesh);
         sphere->setMaterial(material);
         sphere->setPosition(center);
-        sphere->enablePhysics(PhysicsMotionType::Static, sphereForm, descriptor);
+        sphere->enableCollisions(PhysicsMotionType::Static, sphereForm, descriptor);
         sphere->setCollisionHandler(collisionHandler);
     };
 
@@ -206,7 +206,7 @@ APPMAIN
     auto floorComponent = floor->createComponent<Component>();
     auto floorForm = world->createPhysicsForm(0.9f, 0.1f);
     floorForm->createPlain(Vector3(0, 1, 0), 0.0f);
-    floorComponent->enablePhysics(PhysicsMotionType::Static, floorForm, &descriptorFloor);
+    floorComponent->enableCollisions(PhysicsMotionType::Static, floorForm, &descriptorFloor);
     floorComponent->setRenderDebugPhysicsBody(true);
     floorComponent->setCollisionHandler(collisionHandler);
 
@@ -307,7 +307,7 @@ APPMAIN
             sphereComponent->setPosition(camera->getPosition() - Vector3(0, 0.05f, 0) + camera->getForwardVector() * 0.2f);
             sphereComponent->setMaterial(shootBallMaterial);
             ObjectDescriptor *descriptor = new ObjectDescriptor({ObjectType::ShootBall, &context, sphereComponent, "Shoot Ball", false, 4.0f});
-            sphereComponent->enablePhysics(PhysicsMotionType::Dynamic, ballSphereFrom, descriptor);
+            sphereComponent->enableCollisions(PhysicsMotionType::Dynamic, ballSphereFrom, descriptor);
             sphereComponent->getPhysicsBody()->addLinearVelocity(camera->getForwardVector() * 3.0f);
             audioSystem->playSound(soundShoot, 0.5f);
         }

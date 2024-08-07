@@ -26,6 +26,7 @@ void Scene::process(float delta)
     while (actor != actors.end())
         if ((*actor)->isDestroyed())
         {
+            (*actor)->removeComponents();
             delete (*actor);
             actor = actors.erase(actor);
         }

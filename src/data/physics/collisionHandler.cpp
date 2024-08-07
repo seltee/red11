@@ -45,15 +45,6 @@ void CollisionHandler::removeNotPersistedCollisions()
     }
 }
 
-void CollisionHandler::updateCollisionTimers(float delta)
-{
-    for (auto &data : bodyCollisionData)
-    {
-        data.persistedTimer += delta;
-        data.reaccuredTimer += delta;
-    }
-}
-
 void CollisionHandler::notifyBodyRemoved(PhysicsBody *body)
 {
     auto it = bodyCollisionData.begin();
@@ -69,6 +60,15 @@ void CollisionHandler::notifyBodyRemoved(PhysicsBody *body)
     }
 }
 
+void CollisionHandler::updateCollisionTimers(float delta)
+{
+    for (auto &data : bodyCollisionData)
+    {
+        data.persistedTimer += delta;
+        data.reaccuredTimer += delta;
+    }
+}
+
 void CollisionHandler::collisionStarted(BodyCollisionData *data)
 {
 }
@@ -80,35 +80,3 @@ void CollisionHandler::collisionPersisted(BodyCollisionData *data)
 void CollisionHandler::collisionEnded(BodyCollisionData *data)
 {
 }
-
-/*
-void PhysicsBody::removeNotPersistedCollisions()
-{
-    auto it = bodyCollisionData.begin();
-    while (it != bodyCollisionData.end())
-    {
-        if (it->reaccuredTimer > 0.015f)
-        {
-            it = bodyCollisionData.erase(it);
-            // if (owner)
-            //     owner->onCollideStopped((*it).foreignBody->getOwner());
-        }
-        else
-            ++it;
-    }
-}
-
-void PhysicsBody::notifyBodyRemoved(PhysicsBody *body)
-{
-    for (auto it = bodyCollisionData.begin(); it != bodyCollisionData.end(); it++)
-    {
-        if (it->foreignBody == body)
-        {
-            // if (owner)
-            //     owner->onCollideStopped(it->foreignBody->getOwner());
-            bodyCollisionData.erase(it);
-            break;
-        }
-    }
-}
-*/

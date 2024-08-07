@@ -12,8 +12,8 @@ class CollisionHandler : public Destroyable
 public:
     EXPORT void triggerCollision(PhysicsBody *bodyA, PhysicsBody *bodyB, Vector3 &pointA, Vector3 &pointB);
     EXPORT void removeNotPersistedCollisions();
-    EXPORT void updateCollisionTimers(float delta);
     EXPORT void notifyBodyRemoved(PhysicsBody *body);
+    EXPORT void updateCollisionTimers(float delta);
 
     EXPORT virtual void collisionStarted(BodyCollisionData *data);
     EXPORT virtual void collisionPersisted(BodyCollisionData *data);

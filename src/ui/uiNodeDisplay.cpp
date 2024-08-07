@@ -123,6 +123,10 @@ bool UINodeDisplay::insertFrom(UINodeDisplay *nodeDisplay)
         text.set(nodeDisplay->text.getValue());
         out = true;
     }
+    if (nodeDisplay->wordWrap.isSet())
+    {
+        wordWrap.set(nodeDisplay->wordWrap.getValue());
+    }
     if (nodeDisplay->colorBackground.isSet())
     {
         colorBackground.set(nodeDisplay->colorBackground.getValue());
@@ -156,6 +160,11 @@ bool UINodeDisplay::insertFrom(UINodeDisplay *nodeDisplay)
     if (nodeDisplay->letterSpacing.isSet())
     {
         letterSpacing.set(nodeDisplay->letterSpacing.getValue());
+        out = true;
+    }
+    if (nodeDisplay->lineSpacing.isSet())
+    {
+        lineSpacing.set(nodeDisplay->lineSpacing.getValue());
         out = true;
     }
     if (nodeDisplay->image.isSet())
@@ -217,6 +226,7 @@ void UINodeDisplay::clear()
     contentDirection.unSet();
     positioning.unSet();
     text.unSet();
+    wordWrap.unSet();
     colorBackground.unSet();
     colorBorder.unSet();
     colorText.unSet();
@@ -225,6 +235,7 @@ void UINodeDisplay::clear()
     font.unSet();
     fontSize.unSet();
     letterSpacing.unSet();
+    lineSpacing.unSet();
     image.unSet();
     imageHorizontalAlign.unSet();
     imageVerticalAlign.unSet();

@@ -17,6 +17,7 @@
 #include "uiPropertyTexture.h"
 #include "uiPropertyToggle.h"
 #include "uiPropertyCursorIcon.h"
+#include "uiPropertyWordWrap.h"
 #include "data/font.h"
 
 class UINodeDisplay
@@ -120,6 +121,7 @@ public:
     UIPropertyDirection contentDirection;
     UIPropertyPositioning positioning;
     UIPropertyText text;
+    UIPropertyWordWrap wordWrap;
     UIPropertyColor colorBackground;
     UIPropertyColor colorBorder;
     UIPropertyColor colorText;
@@ -128,6 +130,7 @@ public:
     UIPropertyFont font;
     UIPropertyNumber fontSize;
     UIPropertyFloat letterSpacing;
+    UIPropertyFloat lineSpacing;
     UIPropertyTexture image;
     UIPropertyAlign imageHorizontalAlign;
     UIPropertyAlign imageVerticalAlign;

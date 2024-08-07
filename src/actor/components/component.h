@@ -21,8 +21,8 @@ public:
     EXPORT CollisionHandler *getCollisionHandler();
 
     EXPORT void assignPhysicsWorld(PhysicsWorld *physicsWorld);
-    EXPORT void enablePhysics(PhysicsMotionType motionType, PhysicsForm *physicsForm, void *userData = nullptr, Channel channel = CHANNELS_DEAFULT);
-    EXPORT void disablePhysics();
+    EXPORT void enableCollisions(PhysicsMotionType motionType, PhysicsForm *physicsForm, void *userData = nullptr, bool simulatePhysics = true, Channel channel = CHANNELS_DEAFULT);
+    EXPORT void disableCollisions();
     inline PhysicsBody *getPhysicsBody() { return physicsBody; }
 
     EXPORT virtual void onCreated();

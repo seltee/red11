@@ -28,7 +28,8 @@ public:
         PhysicsWorld *world,
         Entity *entity,
         Vector3 initialPosition,
-        Quat initialRotation);
+        Quat initialRotation,
+        bool simulatePhysics);
     EXPORT ~PhysicsBody();
     EXPORT void destroy();
 
@@ -66,6 +67,7 @@ public:
     inline void forceWake() { bIsSleeping = false; }
     inline bool isEnabled() { return this->bIsEnabled; }
     inline void setEnabled(bool bState) { this->bIsEnabled = bState; }
+    inline bool isSimulatingPhysics() { return this->bSimulatePhysics; }
     inline PhysicsMotionType getMotionType() { return motionType; }
 
     inline void setAsleep()
@@ -127,7 +129,6 @@ protected:
 
     // Channel
     Channel channel = CHANNEL_NONE;
-    
     // Constraints
     std::vector<Constraint *> constraints;
 
@@ -160,6 +161,7 @@ protected:
     // Flags
     bool bIsSleeping = false;
     bool bIsEnabled = true;
+    bool bSimulatePhysics = true;
 
     // Multithreading protection
     std::mutex lock;

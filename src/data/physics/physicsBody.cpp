@@ -10,7 +10,8 @@ PhysicsBody::PhysicsBody(
     PhysicsWorld *world,
     Entity *entity,
     Vector3 initialPosition,
-    Quat initialRotation)
+    Quat initialRotation,
+    bool simulatePhysics)
 {
     this->motionType = motionType;
     this->form = form;
@@ -18,12 +19,11 @@ PhysicsBody::PhysicsBody(
     this->entity = entity;
     this->position = initialPosition;
     this->rotation = initialRotation;
-
-    entity->setPosition(this->position / world->getSimScale());
-    entity->setRotation(this->rotation);
+    this->bSimulatePhysics = simulatePhysics;
 
     sleepCheck = world->getSimScale() * 0.006f;
-    updateCache();
+
+    prepareForSimulation();
 }
 
 PhysicsBody::~PhysicsBody()
@@ -39,21 +39,33 @@ void PhysicsBody::destroy()
 
 void PhysicsBody::prepareForSimulation()
 {
-    this->position = entity->getPosition() * world->getSimScale();
-    this->rotation = entity->getRotation();
+    if (bSimulatePhysics)
+    {
+        this->position = entity->getPosition() * world->getSimScale();
+        this->rotation = entity->getRotation();
+    }
+    else
+    {
+        Matrix4 *model = entity->getModelMatrix();
+        this->position = Vector3(*model * Vector4(0.0f, 0.0f, 0.0f, 1.0f));
+        this->rotation = glm::quat_cast(*model);
+    }
     updateAABB();
     updateCache();
 }
 
 void PhysicsBody::finishSimulation()
 {
-    entity->setPosition(this->position / world->getSimScale());
-    entity->setRotation(this->rotation);
+    if (bSimulatePhysics)
+    {
+        entity->setPosition(this->position / world->getSimScale());
+        entity->setRotation(this->rotation);
+    }
 }
 
 void PhysicsBody::processStep(float delta, Vector3 &gravity)
 {
-    if (!bIsEnabled)
+    if (!bIsEnabled || !bSimulatePhysics)
         return;
 
     if (bIsSleeping && motionType == PhysicsMotionType::Dynamic)
@@ -83,7 +95,7 @@ void PhysicsBody::processStep(float delta, Vector3 &gravity)
 
 void PhysicsBody::applyStep(float delta)
 {
-    if (motionType == PhysicsMotionType::Static)
+    if (motionType == PhysicsMotionType::Static || !bSimulatePhysics)
         return;
 
     if (glm::length2(translationAccumulator) > 0.0000000001f)

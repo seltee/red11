@@ -32,7 +32,7 @@ public:
 
     EXPORT void process(float delta);
     EXPORT PhysicsForm *createPhysicsForm(float friction, float restitution, float linearDamping = 0.15f, float angularDamping = 0.05f, float gravityFactor = 1.0f);
-    EXPORT PhysicsBody *createPhysicsBody(PhysicsMotionType motionType, PhysicsForm *form, Entity *entity, Vector3 initialPosition, Quat initialRotation);
+    EXPORT PhysicsBody *createPhysicsBody(PhysicsMotionType motionType, PhysicsForm *form, Entity *entity, Vector3 initialPosition, Quat initialRotation, bool simulatePhysics);
 
     EXPORT void removeBody(PhysicsBody *removeBody);
 

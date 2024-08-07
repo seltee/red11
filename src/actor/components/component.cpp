@@ -50,23 +50,30 @@ void Component::assignPhysicsWorld(PhysicsWorld *physicsWorld)
     this->physicsWorld = physicsWorld;
 }
 
-void Component::enablePhysics(PhysicsMotionType motionType, PhysicsForm *physicsForm, void *userData, Channel channel)
+void Component::enableCollisions(PhysicsMotionType motionType, PhysicsForm *physicsForm, void *userData, bool simulatePhysics, Channel channel)
 {
     if (physicsWorld)
     {
         if (!physicsBody)
         {
-            Vector3 scale;
-            Quat rotation;
-            Vector3 position;
-            Vector3 skew;
-            Vector4 perspective;
+            if (!simulatePhysics)
+            {
+                physicsBody = physicsWorld->createPhysicsBody(motionType, physicsForm, this, getPosition(), getRotation(), simulatePhysics);
+            }
+            else
+            {
+                Vector3 scale;
+                Quat rotation;
+                Vector3 position;
+                Vector3 skew;
+                Vector4 perspective;
 
-            glm::decompose(*getModelMatrix(), scale, rotation, position, skew, perspective);
+                glm::decompose(*getModelMatrix(), scale, rotation, position, skew, perspective);
 
-            physicsBody = physicsWorld->createPhysicsBody(motionType, physicsForm, this, position, rotation);
+                physicsBody = physicsWorld->createPhysicsBody(motionType, physicsForm, this, position, rotation, simulatePhysics);
 
-            this->setTransformationParent(nullptr);
+                this->setTransformationParent(nullptr);
+            }
         }
 
         if (physicsBody)
@@ -77,7 +84,7 @@ void Component::enablePhysics(PhysicsMotionType motionType, PhysicsForm *physics
     }
 }
 
-void Component::disablePhysics()
+void Component::disableCollisions()
 {
     if (physicsBody)
     {
@@ -220,56 +227,6 @@ void Component::onRenderDebug(Renderer *renderer)
 
         if (form->getType() == ShapeCollisionType::OBB)
         {
-
-            // As Convex
-            /*
-                        ShapeOBB *obb = (ShapeOBB *)form->getSimpleShape();
-                        auto data = physicsBody->getCacheOBB(0);
-                        Matrix4 m;
-
-                        for (int i = 0; i < 6; i++)
-                        {
-                            Vector3 cen = Vector3(0.0f);
-                            for (int p = 0; p < 4; p++)
-                            {
-                                Vector3 p1 = data->points[obb->getPolygons()[i].points[p]];
-                                Vector3 p2 = data->points[obb->getPolygons()[i].points[(p + 1) % 4]];
-                                m = debugEntities->makeDebugCubeIntoLineMatrix(p1 / simScale, p2 / simScale);
-                                renderer->queueMesh(debugEntities->debugCubeMesh, debugEntities->matPhysics, m);
-
-                                cen += data->points[obb->getPolygons()[i].points[p]];
-                            }
-                            cen /= 4.0f;
-
-                            Vector3 normal = getPolygonNormal(
-                                data->points[obb->getPolygons()[i].points[0]],
-                                data->points[obb->getPolygons()[i].points[1]],
-                                data->points[obb->getPolygons()[i].points[2]]);
-
-                            m = debugEntities->makeDebugCubeIntoLineMatrix(cen / simScale, (cen + normal * 0.01f) / simScale);
-                            renderer->queueMesh(debugEntities->debugCubeMesh, debugEntities->matPhysics, m);
-                        }
-            */
-            /*
-                        for (int i = 0; i < 6; i++)
-                        {
-                            Vector3 cen = Vector3(0.0f);
-                            for (int p = 0; p < 4; p++)
-                            {
-                                Vector3 p1 = data->points[obb->getPolygons()[i].points[p]];
-                                Vector3 p2 = data->points[obb->getPolygons()[i].points[(p + 1) % 4]];
-                                m = debugEntities->makeDebugCubeIntoLineMatrix(p1 / simScale, p2 / simScale);
-                                renderer->queueMesh(debugEntities->debugCubeMesh, debugEntities->matPhysics, m);
-
-                                cen += data->points[obb->getPolygons()[i].points[p]];
-                            }
-                            cen /= 4.0f;
-
-                            m = debugEntities->makeDebugCubeIntoLineMatrix(cen / simScale, (cen + data->normals[i] * 0.01f) / simScale);
-                            renderer->queueMesh(debugEntities->debugCubeMesh, debugEntities->matPhysics, m);
-                        }
-                        */
-
             auto data = physicsBody->getCacheOBB(0);
             Matrix4 m;
             m = debugEntities->makeDebugCubeIntoLineMatrix(data->points[0] / simScale, data->points[1] / simScale);

@@ -31,6 +31,13 @@ enum class UIBlockPositioning
     Absolute
 };
 
+enum class UIWordWrap
+{
+    Disabled,
+    ByWord,
+    ByLetter
+};
+
 enum class UIEvent
 {
     Click,

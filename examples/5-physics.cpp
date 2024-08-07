@@ -115,7 +115,7 @@ APPMAIN
         auto boxComponent = objectContainer->createComponentMesh(cubeMeshBig);
         boxComponent->setMaterial(capsuleMaterial);
         boxComponent->setPosition(randf(-3.0f, 3.0f), 0.8f, randf(-3.0f, 3.0f));
-        boxComponent->enablePhysics(PhysicsMotionType::Dynamic, boxFormConvex, boxComponent);
+        boxComponent->enableCollisions(PhysicsMotionType::Dynamic, boxFormConvex, boxComponent);
         boxComponent->setRenderDebugPhysicsBody(true);
     }
 
@@ -124,7 +124,7 @@ APPMAIN
         auto boxComponent = objectContainer->createComponentMesh(cubeMeshBig);
         boxComponent->setMaterial(crateMaterial);
         boxComponent->setPosition(randf(-3.0f, 3.0f), 0.8f, randf(-3.0f, 3.0f));
-        boxComponent->enablePhysics(PhysicsMotionType::Dynamic, boxForm, boxComponent);
+        boxComponent->enableCollisions(PhysicsMotionType::Dynamic, boxForm, boxComponent);
         boxComponent->setRenderDebugPhysicsBody(true);
     }
 
@@ -137,7 +137,7 @@ APPMAIN
         auto capsuleComponent = objectContainer->createComponentMesh(capsuleMesh);
         capsuleComponent->setMaterial(capsuleMaterial);
         capsuleComponent->setPosition(randf(-3.0f, 3.0f), 1.0f, randf(-3.0f, 3.0f));
-        capsuleComponent->enablePhysics(PhysicsMotionType::Dynamic, capsuleFrom);
+        capsuleComponent->enableCollisions(PhysicsMotionType::Dynamic, capsuleFrom);
         capsuleComponent->setRenderDebugPhysicsBody(true);
     }
 
@@ -147,7 +147,7 @@ APPMAIN
 
     auto polyMeshComponent = objectContainer->createComponentMesh(polyMesh);
     polyMeshComponent->setMaterial(buildingMaterial);
-    polyMeshComponent->enablePhysics(PhysicsMotionType::Static, meshFrom, nullptr, CHANNEL_SIMULATION);
+    polyMeshComponent->enableCollisions(PhysicsMotionType::Static, meshFrom, nullptr, CHANNEL_SIMULATION);
     polyMeshComponent->setRenderDebugPhysicsBody(true);
     polyMeshComponent->setScale(0.0012f);
     polyMeshComponent->setPosition(Vector3(0, 0, -2));
@@ -157,7 +157,7 @@ APPMAIN
     auto floorComponent = floor->createComponent<Component>();
     auto floorForm = world->createPhysicsForm(0.9f, 0.1f);
     floorForm->createPlain(Vector3(0, 1, 0), 0.0f);
-    floorComponent->enablePhysics(PhysicsMotionType::Static, floorForm);
+    floorComponent->enableCollisions(PhysicsMotionType::Static, floorForm);
     floorComponent->setRenderDebugPhysicsBody(true);
 
     auto wallRightComponent = floor->createComponentMesh(cubeMesh);
@@ -165,7 +165,7 @@ APPMAIN
     wallRightComponent->setRotation(Vector3(CONST_PI / 2.0f, 0.0f, 0.0f));
     wallRightComponent->setPosition(Vector3(0, 0.5, -3.5));
     wallRightComponent->setScale(Vector3(8.0f, 0.01f, 8.0f));
-    wallRightComponent->enablePhysics(PhysicsMotionType::Static, floorForm);
+    wallRightComponent->enableCollisions(PhysicsMotionType::Static, floorForm);
     wallRightComponent->setRenderDebugPhysicsBody(true);
 
     auto wallLeftComponent = floor->createComponentMesh(cubeMesh);
@@ -173,7 +173,7 @@ APPMAIN
     wallLeftComponent->setRotation(Vector3(-CONST_PI / 2.0f, 0.0f, 0.0f));
     wallLeftComponent->setPosition(Vector3(0, 0.5, 3.5));
     wallLeftComponent->setScale(Vector3(8.0f, 0.01f, 8.0f));
-    wallLeftComponent->enablePhysics(PhysicsMotionType::Static, floorForm);
+    wallLeftComponent->enableCollisions(PhysicsMotionType::Static, floorForm);
     wallLeftComponent->setRenderDebugPhysicsBody(true);
 
     auto wallForwardComponent = floor->createComponentMesh(cubeMesh);
@@ -181,7 +181,7 @@ APPMAIN
     wallForwardComponent->setRotation(Vector3(CONST_PI / 2.0f, CONST_PI / 2.0f, 0.0f));
     wallForwardComponent->setPosition(Vector3(3.5, 0.5, 0));
     wallForwardComponent->setScale(Vector3(8.0f, 0.01f, 8.0f));
-    wallForwardComponent->enablePhysics(PhysicsMotionType::Static, floorForm);
+    wallForwardComponent->enableCollisions(PhysicsMotionType::Static, floorForm);
     wallForwardComponent->setRenderDebugPhysicsBody(true);
 
     auto wallBackwardComponent = floor->createComponentMesh(cubeMesh);
@@ -189,7 +189,7 @@ APPMAIN
     wallBackwardComponent->setRotation(Vector3(CONST_PI / 2.0f, -CONST_PI / 2.0f, 0.0f));
     wallBackwardComponent->setPosition(Vector3(-3.5, 0.5, 0));
     wallBackwardComponent->setScale(Vector3(8.0f, 0.01f, 8.0f));
-    wallBackwardComponent->enablePhysics(PhysicsMotionType::Static, floorForm);
+    wallBackwardComponent->enableCollisions(PhysicsMotionType::Static, floorForm);
     wallBackwardComponent->setRenderDebugPhysicsBody(true);
 
     // Light
@@ -284,14 +284,14 @@ APPMAIN
         timer -= delta;
         if (timer < 0.0f)
         {
-            sphereComponent->enablePhysics(PhysicsMotionType::Dynamic, sphereForm, sphereComponent);
-            sphereComponent2->enablePhysics(PhysicsMotionType::Dynamic, sphereForm, sphereComponent2);
+            sphereComponent->enableCollisions(PhysicsMotionType::Dynamic, sphereForm, sphereComponent);
+            sphereComponent2->enableCollisions(PhysicsMotionType::Dynamic, sphereForm, sphereComponent2);
             for (int i = 0; i < 16; i++)
             {
                 auto sphereComponentI = objectContainer->createComponentMesh(sphereMesh);
                 sphereComponentI->setMaterial(concreteMaterial);
                 sphereComponentI->setPosition(randf(-3.0f, 3.0f), randf(1.5f, 3.0f), randf(-3.0f, 3.0f));
-                sphereComponentI->enablePhysics(PhysicsMotionType::Dynamic, sphereForm, sphereComponentI);
+                sphereComponentI->enableCollisions(PhysicsMotionType::Dynamic, sphereForm, sphereComponentI);
             }
             timer = 100000.0f;
         }
@@ -312,7 +312,7 @@ APPMAIN
             auto sphereComponent = objectContainer->createComponentMesh(ballSphereMesh);
             sphereComponent->setPosition(camera->getPosition() - Vector3(0, 0.05f, 0) + camera->getForwardVector() * 0.2f);
             sphereComponent->setMaterial(redBallMaterial);
-            sphereComponent->enablePhysics(PhysicsMotionType::Dynamic, ballSphereFrom, sphereComponent);
+            sphereComponent->enableCollisions(PhysicsMotionType::Dynamic, ballSphereFrom, sphereComponent);
             sphereComponent->getPhysicsBody()->addLinearVelocity(camera->getForwardVector() * 3.0f);
         }
         if (cameraControl.remove)

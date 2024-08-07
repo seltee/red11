@@ -166,7 +166,7 @@ APPMAIN
         auto boxComponent = objectContainer->createComponentMesh(cubeMeshBig);
         boxComponent->setMaterial(crateMaterial);
         boxComponent->setPosition(randf(-3.0f, 3.0f), 0.8f, randf(-3.0f, 3.0f));
-        boxComponent->enablePhysics(PhysicsMotionType::Dynamic, boxForm, boxComponent);
+        boxComponent->enableCollisions(PhysicsMotionType::Dynamic, boxForm, boxComponent);
         boxComponent->setRenderDebugPhysicsBody(true);
     }
 
@@ -175,7 +175,7 @@ APPMAIN
     auto floorComponent = floor->createComponent<Component>();
     auto floorForm = world->createPhysicsForm(0.9f, 0.1f);
     floorForm->createPlain(Vector3(0, 1, 0), 0.0f);
-    floorComponent->enablePhysics(PhysicsMotionType::Static, floorForm);
+    floorComponent->enableCollisions(PhysicsMotionType::Static, floorForm);
     floorComponent->setRenderDebugPhysicsBody(true);
 
     // Light
@@ -388,7 +388,7 @@ APPMAIN
             auto sphereComponent = objectContainer->createComponentMesh(ballSphereMesh);
             sphereComponent->setPosition(camera->getPosition() - Vector3(0, 0.05f, 0) + camera->getForwardVector() * 0.2f);
             sphereComponent->setMaterial(redBallMaterial);
-            sphereComponent->enablePhysics(PhysicsMotionType::Dynamic, ballSphereFrom, sphereComponent);
+            sphereComponent->enableCollisions(PhysicsMotionType::Dynamic, ballSphereFrom, sphereComponent);
             sphereComponent->getPhysicsBody()->addLinearVelocity(camera->getForwardVector() * 3.0f);
         }
 
