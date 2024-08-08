@@ -387,8 +387,8 @@ float UINode::getLetterSpacing()
 
 float UINode::getLineSpacing()
 {
-    if (style.letterSpacing.isSet())
-        return style.letterSpacing.getValue();
+    if (style.lineSpacing.isSet())
+        return style.lineSpacing.getValue();
     if (parent)
         return parent->getLineSpacing();
     return 0.0f;
