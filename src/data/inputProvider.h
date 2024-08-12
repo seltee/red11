@@ -130,7 +130,7 @@ class InputProvider
 {
 public:
     EXPORT InputProvider();
-    EXPORT ~InputProvider();
+    EXPORT virtual ~InputProvider();
 
     EXPORT unsigned int addInput(InputDescriptorList &list, void *userData, void (*callback)(InputType type, InputData *data, float value, void *userData));
     EXPORT void removeInput(int index);
