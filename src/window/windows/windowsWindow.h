@@ -14,7 +14,7 @@
 class WindowsWindow : public Window
 {
 public:
-    EXPORT WindowsWindow(const char *windowName, int width, int height, int flags = 0);
+    EXPORT WindowsWindow(std::string windowName, int width, int height, int flags = 0);
     inline HWND getHwnd() { return hWnd; }
 
     EXPORT void processWindow() override final;

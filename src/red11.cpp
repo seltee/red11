@@ -24,9 +24,9 @@ Scene *Red11::createScene()
     return new Scene(getDebugEntities());
 }
 
-Window *Red11::createWindow(const char *utf8Name, int width, int height, int flags)
+Window *Red11::createWindow(std::string name, int width, int height, int flags)
 {
-    return new WindowsWindow(utf8Name, width, height, flags);
+    return new WindowsWindow(name.c_str(), width, height, flags);
 }
 
 void Red11::openConsole()

@@ -132,7 +132,7 @@ LRESULT CALLBACK WindowProcedure(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
     return 0;
 }
 
-WindowsWindow::WindowsWindow(const char *windowName, int width, int height, int flags)
+WindowsWindow::WindowsWindow(std::string windowName, int width, int height, int flags)
 {
     state.requesedWidth = width;
     state.requesedHeight = height;
@@ -165,7 +165,7 @@ WindowsWindow::WindowsWindow(const char *windowName, int width, int height, int 
     }
 
     std::wstring wideTitle;
-    int convertResult = MultiByteToWideChar(CP_UTF8, 0, windowName, strlen(windowName), NULL, 0);
+    int convertResult = MultiByteToWideChar(CP_UTF8, 0, windowName.c_str(), windowName.size(), NULL, 0);
     if (convertResult <= 0)
     {
         wideTitle = L"Noname";
@@ -173,7 +173,7 @@ WindowsWindow::WindowsWindow(const char *windowName, int width, int height, int 
     else
     {
         wideTitle.resize(convertResult + 10);
-        convertResult = MultiByteToWideChar(CP_UTF8, 0, windowName, (int)strlen(windowName), &wideTitle[0], (int)wideTitle.size());
+        convertResult = MultiByteToWideChar(CP_UTF8, 0, windowName.c_str(), (int)windowName.size(), &wideTitle[0], (int)wideTitle.size());
         if (convertResult <= 0)
         {
             wideTitle = L"Noname";
