@@ -37,7 +37,7 @@ void ComponentMesh::setMaterial(Material *material)
 
 void ComponentMesh::onRenderQueue(Renderer *renderer)
 {
-    if (mesh)
+    if (mesh && bVisible)
     {
         renderer->queueMesh(mesh, material, getModelMatrix());
 

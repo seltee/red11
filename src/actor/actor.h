@@ -75,6 +75,9 @@ public:
         return component;
     }
 
+    inline void setVisibility(bool state) { bVisible = state; }
+    inline bool getVisibility() { return bVisible; }
+
     EXPORT void setParent(Actor *parent);
 
     EXPORT Scene *getScene();
@@ -96,4 +99,6 @@ protected:
     Actor *parent = nullptr;
 
     PhysicsWorld *physicsWorld = nullptr;
+
+    bool bVisible = true;
 };

@@ -143,6 +143,7 @@ APPMAIN
         {
             s = true;
             boxComponent->destroy();
+            boxComponent = nullptr;
         }
 
         if (time > 2.0f && !s1)
@@ -155,11 +156,16 @@ APPMAIN
         {
             s2 = true;
             Red11::getResourceManager()->freeUnusedAll();
-            auto boxComponent = objectContainer->createComponentMesh(cubeMeshBig);
+            boxComponent = objectContainer->createComponentMesh(cubeMeshBig);
             boxComponent->setMaterial(crateMaterial);
             boxComponent->setPosition(randf(-3.0f, 3.0f), 0.8f, randf(-3.0f, 3.0f));
             Red11::getResourceManager()->freeUnusedAll();
         }
+
+        if (boxComponent)
+            boxComponent->setVisibility(!boxComponent->getVisibility());
+        else
+            objectContainer->setVisibility(!objectContainer->getVisibility());
 
         window->processWindow();
 

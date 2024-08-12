@@ -25,33 +25,36 @@ ComponentText::ComponentText()
 
 void ComponentText::onRenderQueue(Renderer *renderer)
 {
-    if (bIsDirty)
-        rebuild();
-
-    if (mesh)
+    if (bVisible)
     {
-        Entity t;
-        t.setPosition(0.05, 0, 0.05);
-        float shift = 0.0f;
+        if (bIsDirty)
+            rebuild();
 
-        Matrix4 mModelComponent = *getModelMatrix();
-        for (auto &letterIndex : lettersList)
+        if (mesh)
         {
-            ComponentTextLetterItem *item = &lettersCache.at(letterIndex);
-            if (item->localWidth > 0.001f)
-            {
-                t.setScale(item->localScale);
-                t.setPosition(Vector3(shift + 0.05f * item->localScale, 0, 0.05f * item->localScale - item->localHeight));
+            Entity t;
+            t.setPosition(0.05, 0, 0.05);
+            float shift = 0.0f;
 
-                Matrix4 model = mModelComponent * *t.getModelMatrix();
-                renderer->queueMesh(mesh, item->material, model);
-                t.translate(Vector3(item->localWidth, 0, 0));
-
-                shift += item->localWidth;
-            }
-            else
+            Matrix4 mModelComponent = *getModelMatrix();
+            for (auto &letterIndex : lettersList)
             {
-                shift += 0.04f;
+                ComponentTextLetterItem *item = &lettersCache.at(letterIndex);
+                if (item->localWidth > 0.001f)
+                {
+                    t.setScale(item->localScale);
+                    t.setPosition(Vector3(shift + 0.05f * item->localScale, 0, 0.05f * item->localScale - item->localHeight));
+
+                    Matrix4 model = mModelComponent * *t.getModelMatrix();
+                    renderer->queueMesh(mesh, item->material, model);
+                    t.translate(Vector3(item->localWidth, 0, 0));
+
+                    shift += item->localWidth;
+                }
+                else
+                {
+                    shift += 0.04f;
+                }
             }
         }
     }

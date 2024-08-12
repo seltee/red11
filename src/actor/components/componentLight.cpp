@@ -45,7 +45,7 @@ void ComponentLight::setupSpot(Vector3 spotDirection,
 
 void ComponentLight::onRenderQueue(Renderer *renderer)
 {
-    if (bEnabled && light)
+    if (bVisible && light)
     {
         light->transform(this);
         renderer->queueLight(light);

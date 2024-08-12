@@ -34,11 +34,8 @@ public:
 
     EXPORT void setShadowState(bool bShadowEnabled, LightShadowQuality shadowQuality);
 
-    inline void setEnabled(bool bState) { bEnabled = bState; }
-    inline bool isEnabled() { return bEnabled; }
     inline Light *getLight() { return light; }
 
 protected:
     Light *light = nullptr;
-    bool bEnabled = true;
 };

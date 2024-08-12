@@ -48,10 +48,14 @@ public:
     inline bool getRenderDebugPhysicsBody() { return bRenderDebugPhysicsBody; }
     inline bool hasDebugInfoToRender() { return bRenderDebugPhysicsBody; }
 
+    inline void setVisibility(bool state) { bVisible = state; }
+    inline bool getVisibility() { return bVisible; }
+
 protected:
     Actor *owner = nullptr;
     Component *parent = nullptr;
     PhysicsWorld *physicsWorld = nullptr;
     PhysicsBody *physicsBody = nullptr;
     bool bRenderDebugPhysicsBody = false;
+    bool bVisible = true;
 };

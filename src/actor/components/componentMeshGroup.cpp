@@ -17,57 +17,60 @@ ComponentMeshGroup::~ComponentMeshGroup()
 
 void ComponentMeshGroup::onRenderQueue(Renderer *renderer)
 {
-    for (auto &it : list)
-    {
-        Mesh *mesh = it->getMesh();
-        if (mesh)
-        {
-            if (it->bIsSkinned)
-            {
-                boneTransforms.clear();
-                for (auto &boneIt : bonesList)
-                {
-                    Deform *deform = mesh->getDeformByName(*boneIt->getNamePointer());
-                    if (deform)
-                        boneTransforms.push_back(BoneTransform(boneIt->getModelMatrix(), deform));
-                }
-                renderer->queueMeshSkinned(mesh, material, it->getModelMatrix(), &boneTransforms);
-            }
-            else
-            {
-                renderer->queueMesh(mesh, material, it->getModelMatrix());
-            }
-        }
-    }
-
-    if (bViewBones || bViewCullingSpheres)
+    if (bVisible)
     {
         for (auto &it : list)
         {
-            if (bViewBones && it->isBone() && it->getParent() && it->getParent()->isBone())
+            Mesh *mesh = it->getMesh();
+            if (mesh)
             {
-                Vector3 from = Vector3(*it->getModelMatrix() * Vector4(0.0f, 0.0f, 0.0f, 1.0f));
-                Vector3 to = Vector3(*it->getParent()->getModelMatrix() * Vector4(0.0f, 0.0f, 0.0f, 1.0f));
-                renderer->queueLine(from, to, Color(0.2f, 0.8f, 0.2f, 1.0f));
-            }
-            if (bViewBones && it->isBone() && it->getParent() && it->getParent()->isBone())
-            {
-                for (auto &meshIt : list)
+                if (it->bIsSkinned)
                 {
-                    if (meshIt->getMesh())
+                    boneTransforms.clear();
+                    for (auto &boneIt : bonesList)
                     {
-                        float scale = findMaxScale(extractScale(*it->getModelMatrix()));
-                        Deform *deform = meshIt->getMesh()->getDeformByName(*it->getNamePointer());
+                        Deform *deform = mesh->getDeformByName(*boneIt->getNamePointer());
                         if (deform)
+                            boneTransforms.push_back(BoneTransform(boneIt->getModelMatrix(), deform));
+                    }
+                    renderer->queueMeshSkinned(mesh, material, it->getModelMatrix(), &boneTransforms);
+                }
+                else
+                {
+                    renderer->queueMesh(mesh, material, it->getModelMatrix());
+                }
+            }
+        }
+
+        if (bViewBones || bViewCullingSpheres)
+        {
+            for (auto &it : list)
+            {
+                if (bViewBones && it->isBone() && it->getParent() && it->getParent()->isBone())
+                {
+                    Vector3 from = Vector3(*it->getModelMatrix() * Vector4(0.0f, 0.0f, 0.0f, 1.0f));
+                    Vector3 to = Vector3(*it->getParent()->getModelMatrix() * Vector4(0.0f, 0.0f, 0.0f, 1.0f));
+                    renderer->queueLine(from, to, Color(0.2f, 0.8f, 0.2f, 1.0f));
+                }
+                if (bViewBones && it->isBone() && it->getParent() && it->getParent()->isBone())
+                {
+                    for (auto &meshIt : list)
+                    {
+                        if (meshIt->getMesh())
                         {
-                            float radius = deform->getCullingRadius() * scale;
-                            Vector3 from = Vector3(*it->getModelMatrix() * Vector4(0.0f, 0.0f, 0.0f, 1.0f));
-                            renderer->queueLine(from, from + Vector3(0, radius, 0), Color(0.8f, 0.2f, 0.2f, 1.0f));
-                            renderer->queueLine(from, from + Vector3(0, -radius, 0), Color(0.8f, 0.2f, 0.2f, 1.0f));
-                            renderer->queueLine(from, from + Vector3(radius, 0, 0), Color(0.8f, 0.2f, 0.2f, 1.0f));
-                            renderer->queueLine(from, from + Vector3(-radius, 0, 0), Color(0.8f, 0.2f, 0.2f, 1.0f));
-                            renderer->queueLine(from, from + Vector3(0, 0, radius), Color(0.8f, 0.2f, 0.2f, 1.0f));
-                            renderer->queueLine(from, from + Vector3(0, 0, -radius), Color(0.8f, 0.2f, 0.2f, 1.0f));
+                            float scale = findMaxScale(extractScale(*it->getModelMatrix()));
+                            Deform *deform = meshIt->getMesh()->getDeformByName(*it->getNamePointer());
+                            if (deform)
+                            {
+                                float radius = deform->getCullingRadius() * scale;
+                                Vector3 from = Vector3(*it->getModelMatrix() * Vector4(0.0f, 0.0f, 0.0f, 1.0f));
+                                renderer->queueLine(from, from + Vector3(0, radius, 0), Color(0.8f, 0.2f, 0.2f, 1.0f));
+                                renderer->queueLine(from, from + Vector3(0, -radius, 0), Color(0.8f, 0.2f, 0.2f, 1.0f));
+                                renderer->queueLine(from, from + Vector3(radius, 0, 0), Color(0.8f, 0.2f, 0.2f, 1.0f));
+                                renderer->queueLine(from, from + Vector3(-radius, 0, 0), Color(0.8f, 0.2f, 0.2f, 1.0f));
+                                renderer->queueLine(from, from + Vector3(0, 0, radius), Color(0.8f, 0.2f, 0.2f, 1.0f));
+                                renderer->queueLine(from, from + Vector3(0, 0, -radius), Color(0.8f, 0.2f, 0.2f, 1.0f));
+                            }
                         }
                     }
                 }

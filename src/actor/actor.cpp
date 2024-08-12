@@ -105,7 +105,7 @@ void Actor::onProcess(float delta)
 
 void Actor::onRenderQueue(Renderer *renderer)
 {
-    if (!components.empty())
+    if (!components.empty() && bVisible)
     {
         for (auto &component : components)
         {
