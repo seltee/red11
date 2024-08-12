@@ -48,7 +48,7 @@ OBJ_FILES = ${OBJDIR}/red11.o \
 			${OBJDIR}/ui.o ${OBJDIR}/uiContext.o ${OBJDIR}/uiNode.o ${OBJDIR}/uiNodeDisplay.o \
 			${OBJDIR}/renderer.o \
 			${OBJDIR}/directx9renderer.o ${OBJDIR}/directx9meshRenderData.o ${OBJDIR}/directx9textureRenderData.o ${OBJDIR}/directx9materialRenderData.o  \
-			${OBJDIR}/directx9data.o  \
+			${OBJDIR}/directx9data.o ${OBJDIR}/directx9shader.o \
 			${OBJDIR}/mesh.o ${OBJDIR}/meshObject.o ${OBJDIR}/entity.o ${OBJDIR}/light.o ${OBJDIR}/camera.o ${OBJDIR}/texture.o ${OBJDIR}/textureFile.o ${OBJDIR}/inputProvider.o \
 			${OBJDIR}/sound.o ${OBJDIR}/soundFile.o ${OBJDIR}/font.o \
 			${OBJDIR}/deform.o ${OBJDIR}/boneTransform.o ${OBJDIR}/animation.o ${OBJDIR}/animationTarget.o ${OBJDIR}/animator.o ${OBJDIR}/animationTrack.o \
@@ -66,7 +66,8 @@ OBJ_FILES = ${OBJDIR}/red11.o \
 			${OBJDIR}/loaderFBX.o ${OBJDIR}/FBXNode.o ${OBJDIR}/FBXAnimationStack.o ${OBJDIR}/FBXAnimationLayer.o ${OBJDIR}/FBXAnimationCurve.o ${OBJDIR}/FBXAnimationCurveNode.o \
 			${OBJDIR}/FBXDeform.o ${OBJDIR}/FBXGeometry.o ${OBJDIR}/FBXModel.o ${OBJDIR}/FBXAttribute.o
 
-EXAMPLES = 1-window${EXT} 2-textures${EXT} 3-animation${EXT} 4-bones${EXT} 5-physics${EXT} 6-collisionEvents${EXT} 7-ui${EXT} 8-resourceManagment${EXT} demo-1${EXT}
+EXAMPLES = 	1-window${EXT} 2-textures${EXT} 3-animation${EXT} 4-bones${EXT} 5-physics${EXT} 6-collisionEvents${EXT} 7-ui${EXT} 8-resourceManagment${EXT} 9-customShaders${EXT} \
+			demo-1${EXT}
 
 all: engine examples
 
@@ -121,6 +122,9 @@ ${OBJDIR}/directx9materialRenderData.o: ${SRCDIR}/renderer/directx9/directx9mate
 
 ${OBJDIR}/directx9data.o: ${SRCDIR}/renderer/directx9/directx9data.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/directx9data.o ${SRCDIR}/renderer/directx9/directx9data.cpp
+
+${OBJDIR}/directx9shader.o: ${SRCDIR}/renderer/directx9/directx9shader.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/directx9shader.o ${SRCDIR}/renderer/directx9/directx9shader.cpp
 
 ${OBJDIR}/mesh.o: ${SRCDIR}/data/mesh.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/mesh.o ${SRCDIR}/data/mesh.cpp
@@ -390,15 +394,19 @@ ${OBJDIR}/8-resourceManagment.o: ${EXMDIR}/8-resourceManagment.cpp
 	$(LD) ${EFLAGS} ${OBJDIR}/8-resourceManagment.o -o 8-resourceManagment${EXT}
 	${MOVE} 8-resourceManagment${EXT} ${BINDIR}/8-resourceManagment${EXT}
 
+${OBJDIR}/9-customShaders.o: ${EXMDIR}/9-customShaders.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/9-customShaders.o ${EXMDIR}/9-customShaders.cpp
+
+9-customShaders${EXT}: ${OBJDIR}/9-customShaders.o
+	$(LD) ${EFLAGS} ${OBJDIR}/9-customShaders.o -o 9-customShaders${EXT}
+	${MOVE} 9-customShaders${EXT} ${BINDIR}/9-customShaders${EXT}
+
 ${OBJDIR}/demo-1.o: ${EXMDIR}/demo-1.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/demo-1.o ${EXMDIR}/demo-1.cpp
 
 demo-1${EXT}: ${OBJDIR}/demo-1.o
 	$(LD) ${EFLAGS} ${OBJDIR}/demo-1.o -o demo-1${EXT}
 	${MOVE} demo-1${EXT} ${BINDIR}/demo-1${EXT}
-
-
-
 
 # llvm-objcopy
 clean:

@@ -4,6 +4,7 @@
 #pragma once
 #include "window/window.h"
 #include "utils/primitives.h"
+#include "utils/defines.h"
 #include "data/mesh.h"
 #include "data/boneTransform.h"
 #include "data/material/material.h"
@@ -14,14 +15,6 @@
 #include <vector>
 
 #define MAX_MATRICIES (256 * 1024)
-
-enum class RendererType
-{
-    DirectX9,
-    OpenGL2,
-    DirectX11,
-    OpenGL4
-};
 
 class Renderer
 {

@@ -47,3 +47,11 @@ enum Extension
     WAV,
     OGG
 };
+
+enum class RendererType
+{
+    DirectX9,
+    OpenGL2,
+    DirectX11,
+    OpenGL4
+};

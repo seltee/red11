@@ -36,40 +36,45 @@
 #include "directx9textureRenderData.h"
 #include "directx9utils.h"
 #include "directx9data.h"
+#include "directx9shader.h"
 
 #pragma comment(lib, "d3d9.lib")
 
 class DirectX9Renderer : public Renderer
 {
 public:
-    DirectX9Renderer(Window *window);
+    EXPORT DirectX9Renderer(Window *window);
 
-    RendererType getType() override final;
+    EXPORT RendererType getType() override final;
 
-    void prepareToRender() override final;
-    void clearBuffer(Color color) override final;
-    void queueMesh(Mesh *mesh, Material *material, Matrix4 *model) override final;
-    void queueMeshSkinned(Mesh *mesh, Material *material, Matrix4 *model, std::vector<BoneTransform> *bones) override final;
-    void queueLine(Vector3 vFrom, Vector3 vTo, Color color) override final;
-    void queueLight(Light *light) override final;
-    void renderQueue(Camera *camera) override final;
-    void clearQueue() override final;
-    void renderMesh(Camera *camera, Vector3 *cameraPosition, Mesh *mesh, Matrix4 *model) override final;
-    void renderMeshSkinned(Camera *camera, Vector3 *cameraPosition, Mesh *mesh, Matrix4 *model, std::vector<BoneTransform> *bones) override final;
-    void renderLine(Camera *camera, Vector3 vFrom, Vector3 vTo);
+    EXPORT void prepareToRender() override final;
+    EXPORT void clearBuffer(Color color) override final;
+    EXPORT void queueMesh(Mesh *mesh, Material *material, Matrix4 *model) override final;
+    EXPORT void queueMeshSkinned(Mesh *mesh, Material *material, Matrix4 *model, std::vector<BoneTransform> *bones) override final;
+    EXPORT void queueLine(Vector3 vFrom, Vector3 vTo, Color color) override final;
+    EXPORT void queueLight(Light *light) override final;
+    EXPORT void renderQueue(Camera *camera) override final;
+    EXPORT void clearQueue() override final;
+    EXPORT void renderMesh(Camera *camera, Vector3 *cameraPosition, Mesh *mesh, Matrix4 *model) override final;
+    EXPORT void renderMeshSkinned(Camera *camera, Vector3 *cameraPosition, Mesh *mesh, Matrix4 *model, std::vector<BoneTransform> *bones) override final;
+    EXPORT void renderLine(Camera *camera, Vector3 vFrom, Vector3 vTo);
 
-    void setupSpriteRendering(Matrix4 &mView, Matrix4 &mProjection) override final;
-    void renderSpriteRect(Matrix4 *mModel, Color color) override final;
-    void renderSpriteMask(Matrix4 *mModel, Texture *texture, Color color) override final;
-    void renderSpriteImage(Matrix4 *mModel, Texture *texture) override final;
+    EXPORT void setupSpriteRendering(Matrix4 &mView, Matrix4 &mProjection) override final;
+    EXPORT void renderSpriteRect(Matrix4 *mModel, Color color) override final;
+    EXPORT void renderSpriteMask(Matrix4 *mModel, Texture *texture, Color color) override final;
+    EXPORT void renderSpriteImage(Matrix4 *mModel, Texture *texture) override final;
 
-    void setAmbientLight(Color &ambientColor) override final;
+    EXPORT void setAmbientLight(Color &ambientColor) override final;
 
-    void present() override final;
+    EXPORT void present() override final;
 
-    void removeTextureByIndex(unsigned int index) override;
-    void removeMaterialByIndex(unsigned int index) override;
-    void removeMeshByIndex(unsigned int index) override;
+    EXPORT void removeTextureByIndex(unsigned int index) override;
+    EXPORT void removeMaterialByIndex(unsigned int index) override;
+    EXPORT void removeMeshByIndex(unsigned int index) override;
+
+    EXPORT DirectX9Shader *createDirectX9Shader(std::string name, const DWORD *vsoCode, const DWORD *psoCode);
+
+    inline float *getShaderEngineDataPtr() { return engineData; }
 
 protected:
     void initD3D(HWND hWnd, bool bIsFullscreen, int width, int height); // sets up and initializes Direct3D
@@ -113,48 +118,42 @@ protected:
     Mesh *spriteMesh = nullptr;
     Material *lineMaterial = nullptr;
 
+    // Propageted to shader under c19, common to all. May be used for time, etc
+    float engineData[4] = {0, 0, 0, 0};
+
     // Common textures
     Texture *white = nullptr;
     Texture *black = nullptr;
 
     // To render depth into depth buffer without color
-    IDirect3DVertexShader9 *pUVSimpleVertexShader = nullptr;
-    IDirect3DPixelShader9 *pUVSimpleFragmentShader = nullptr;
+    DirectX9Shader *UVSimpleShader = nullptr;
 
     // To render depth into depth buffer without color but with mask of discarded alpha
-    IDirect3DVertexShader9 *pUVSimpleMaskVertexShader = nullptr;
-    IDirect3DPixelShader9 *pUVSimpleMaskFragmentShader = nullptr;
+    DirectX9Shader *UVSimpleMaskShader = nullptr;
 
     // Default fast shader with not normal maps
-    IDirect3DVertexShader9 *pUVVertexShader = nullptr;
-    IDirect3DPixelShader9 *pUVFragmentShader = nullptr;
+    DirectX9Shader *UVShader = nullptr;
 
     // Default fast shader with normal maps
-    IDirect3DVertexShader9 *pUVNormalVertexShader = nullptr;
-    IDirect3DPixelShader9 *pUVNormalFragmentShader = nullptr;
+    DirectX9Shader *UVNormalShader = nullptr;
 
     // Default fast shader with bones but no normal maps
-    IDirect3DVertexShader9 *pUVSkinnedVertexShader = nullptr;
-    IDirect3DPixelShader9 *pUVSkinnedFragmentShader = nullptr;
+    DirectX9Shader *UVSkinnedShader = nullptr;
 
     // Default fast shader with bones but no normal maps
-    IDirect3DVertexShader9 *pUVSkinnedNormalVertexShader = nullptr;
-    IDirect3DPixelShader9 *pUVSkinnedNormalFragmentShader = nullptr;
+    DirectX9Shader *UVSkinnedNormalShader = nullptr;
 
     // Shadow render of depth
-    IDirect3DVertexShader9 *pUVShadowVertexShader = nullptr;
-    IDirect3DPixelShader9 *pUVShadowFragmentShader = nullptr;
+    DirectX9Shader *UVShadowShader = nullptr;
 
     // Shadow render of depth
-    IDirect3DVertexShader9 *pUVShadowMaskVertexShader = nullptr;
-    IDirect3DPixelShader9 *pUVShadowMaskFragmentShader = nullptr;
+    DirectX9Shader *UVShadowMaskShader = nullptr;
 
     // Shadow skinned without mask, uses shadow fragment shader
-    IDirect3DVertexShader9 *pUVShadowSkinnedVertexShader = nullptr;
+    DirectX9Shader *UVShadowSkinnedShader = nullptr;
 
     // Sprite shader
-    IDirect3DVertexShader9 *pSpriteVertexShader = nullptr;
-    IDirect3DPixelShader9 *pSpriteFragmentShader = nullptr;
+    DirectX9Shader *SpriteShader = nullptr;
 
     LPDIRECT3DVERTEXDECLARATION9 pVertexDeclNormalUV = nullptr;
     LPDIRECT3DVERTEXDECLARATION9 pVertexDeclNormalUVSkinned = nullptr;

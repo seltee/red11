@@ -24,6 +24,8 @@ void DirectX9Renderer::prepareToRender()
     {
         resizeD3D(window->getWidth(), window->getHeight());
     }
+
+    d3ddev->SetPixelShaderConstantF(19, (const float *)engineData, 1);
 }
 
 void DirectX9Renderer::clearBuffer(Color color)
@@ -168,8 +170,8 @@ void DirectX9Renderer::setupSpriteRendering(Matrix4 &mView, Matrix4 &mProjection
     d3ddev->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
     d3ddev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
 
-    d3ddev->SetVertexShader(pSpriteVertexShader);
-    d3ddev->SetPixelShader(pSpriteFragmentShader);
+    SpriteShader->use();
+
     d3ddev->SetVertexDeclaration(pVertexDeclNormalUV);
 }
 
@@ -286,6 +288,11 @@ void DirectX9Renderer::removeMeshByIndex(unsigned int index)
     data.destroyMeshRenderDataByIndex(index);
 }
 
+DirectX9Shader *DirectX9Renderer::createDirectX9Shader(std::string name, const DWORD *vsoCode, const DWORD *psoCode)
+{
+    return new DirectX9Shader(name, d3ddev, vsoCode, psoCode);
+}
+
 // function prototypes
 void DirectX9Renderer::initD3D(HWND hWnd, bool bIsFullscreen, int width, int height)
 {
@@ -321,44 +328,16 @@ void DirectX9Renderer::initD3D(HWND hWnd, bool bIsFullscreen, int width, int hei
     lineMaterial = new MaterialSimple(Color(0.0, 0.0, 0.0), Color(0.2, 1.0, 0.2));
     lineMaterial->addUser();
 
-    if (d3ddev->CreateVertexShader((const DWORD *)UVSimpleVertexShader_vso, &pUVSimpleVertexShader) != D3D_OK)
-        printf("Shader compilation failed\n");
-    if (d3ddev->CreatePixelShader((const DWORD *)UVSimpleFragmentShader_pso, &pUVSimpleFragmentShader) != D3D_OK)
-        printf("Shader compilation failed\n");
-    if (d3ddev->CreateVertexShader((const DWORD *)UVSimpleMaskVertexShader_vso, &pUVSimpleMaskVertexShader) != D3D_OK)
-        printf("Shader compilation failed\n");
-    if (d3ddev->CreatePixelShader((const DWORD *)UVSimpleMaskFragmentShader_pso, &pUVSimpleMaskFragmentShader) != D3D_OK)
-        printf("Shader compilation failed\n");
-    if (d3ddev->CreateVertexShader((const DWORD *)UVVertexShader_vso, &pUVVertexShader) != D3D_OK)
-        printf("Shader compilation failed\n");
-    if (d3ddev->CreatePixelShader((const DWORD *)UVFragmentShader_pso, &pUVFragmentShader) != D3D_OK)
-        printf("Shader compilation failed\n");
-    if (d3ddev->CreateVertexShader((const DWORD *)UVNormalVertexShader_vso, &pUVNormalVertexShader) != D3D_OK)
-        printf("Shader compilation failed\n");
-    if (d3ddev->CreatePixelShader((const DWORD *)UVNormalFragmentShader_pso, &pUVNormalFragmentShader) != D3D_OK)
-        printf("Shader compilation failed\n");
-    if (d3ddev->CreateVertexShader((const DWORD *)UVSkinnedVertexShader_vso, &pUVSkinnedVertexShader) != D3D_OK)
-        printf("Shader compilation failed\n");
-    if (d3ddev->CreatePixelShader((const DWORD *)UVSkinnedFragmentShader_pso, &pUVSkinnedFragmentShader) != D3D_OK)
-        printf("Shader compilation failed\n");
-    if (d3ddev->CreateVertexShader((const DWORD *)UVSkinnedNormalVertexShader_vso, &pUVSkinnedNormalVertexShader) != D3D_OK)
-        printf("Shader compilation failed\n");
-    if (d3ddev->CreatePixelShader((const DWORD *)UVSkinnedNormalFragmentShader_pso, &pUVSkinnedNormalFragmentShader) != D3D_OK)
-        printf("Shader compilation failed\n");
-    if (d3ddev->CreateVertexShader((const DWORD *)UVShadowVertexShader_vso, &pUVShadowVertexShader) != D3D_OK)
-        printf("Shader compilation failed\n");
-    if (d3ddev->CreatePixelShader((const DWORD *)UVShadowFragmentShader_pso, &pUVShadowFragmentShader) != D3D_OK)
-        printf("Shader compilation failed\n");
-    if (d3ddev->CreateVertexShader((const DWORD *)UVShadowMaskVertexShader_vso, &pUVShadowMaskVertexShader) != D3D_OK)
-        printf("Shader compilation failed\n");
-    if (d3ddev->CreatePixelShader((const DWORD *)UVShadowMaskFragmentShader_pso, &pUVShadowMaskFragmentShader) != D3D_OK)
-        printf("Shader compilation failed\n");
-    if (d3ddev->CreateVertexShader((const DWORD *)UVShadowSkinnedVertexShader_vso, &pUVShadowSkinnedVertexShader) != D3D_OK)
-        printf("Shader compilation failed\n");
-    if (d3ddev->CreateVertexShader((const DWORD *)SpriteVertexShader_vso, &pSpriteVertexShader) != D3D_OK)
-        printf("Sprite vertex shader compilation failed\n");
-    if (d3ddev->CreatePixelShader((const DWORD *)SpriteFragmentShader_pso, &pSpriteFragmentShader) != D3D_OK)
-        printf("Sprite fragment shader compilation failed\n");
+    UVSimpleShader = new DirectX9Shader("UV Simple Shader", d3ddev, (const DWORD *)UVSimpleVertexShader_vso, (const DWORD *)UVSimpleFragmentShader_pso);
+    UVSimpleMaskShader = new DirectX9Shader("UV Simple Mask Shader", d3ddev, (const DWORD *)UVSimpleMaskVertexShader_vso, (const DWORD *)UVSimpleMaskFragmentShader_pso);
+    UVShader = new DirectX9Shader("UV Shader", d3ddev, (const DWORD *)UVVertexShader_vso, (const DWORD *)UVFragmentShader_pso);
+    UVNormalShader = new DirectX9Shader("UV Normal Shader", d3ddev, (const DWORD *)UVNormalVertexShader_vso, (const DWORD *)UVNormalFragmentShader_pso);
+    UVSkinnedShader = new DirectX9Shader("UV Normal Shader", d3ddev, (const DWORD *)UVSkinnedVertexShader_vso, (const DWORD *)UVSkinnedFragmentShader_pso);
+    UVSkinnedNormalShader = new DirectX9Shader("UV Normal Shader", d3ddev, (const DWORD *)UVSkinnedNormalVertexShader_vso, (const DWORD *)UVSkinnedNormalFragmentShader_pso);
+    UVShadowShader = new DirectX9Shader("UV Normal Shader", d3ddev, (const DWORD *)UVShadowVertexShader_vso, (const DWORD *)UVShadowFragmentShader_pso);
+    UVShadowMaskShader = new DirectX9Shader("UV Normal Shader", d3ddev, (const DWORD *)UVShadowMaskVertexShader_vso, (const DWORD *)UVShadowMaskFragmentShader_pso);
+    UVShadowSkinnedShader = new DirectX9Shader("UV Normal Shader", d3ddev, (const DWORD *)UVShadowSkinnedVertexShader_vso, (const DWORD *)UVShadowFragmentShader_pso);
+    SpriteShader = new DirectX9Shader("UV Normal Shader", d3ddev, (const DWORD *)SpriteVertexShader_vso, (const DWORD *)SpriteFragmentShader_pso);
 
     D3DVERTEXELEMENT9 VertexElementsNormalUV[] = {
         {0, offsetof(DX9VertexNormalUV, x), D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0},
@@ -504,8 +483,7 @@ void DirectX9Renderer::renderQueueDepthEqual(Vector3 &cameraPosition, Camera *ca
             Vector4 color = Vector4(data.queueLines[i].color.r, data.queueLines[i].color.g, data.queueLines[i].color.b, 1.0f);
             d3ddev->SetPixelShaderConstantF(16, (const float *)value_ptr(color), 1);
 
-            d3ddev->SetVertexShader(pUVVertexShader);
-            d3ddev->SetPixelShader(pUVFragmentShader);
+            UVShader->use();
 
             renderLine(camera, data.queueLines[i].vFrom, data.queueLines[i].vTo);
         }
@@ -688,31 +666,27 @@ void DirectX9Renderer::renderMeshColorData(Camera *camera, Vector3 &cameraPositi
 
     if (mesh->bones.size() > 0)
     {
-        if (mesh->material->isUsingNormalMap())
-        {
-            d3ddev->SetVertexShader(pUVSkinnedNormalVertexShader);
-            d3ddev->SetPixelShader(pUVSkinnedNormalFragmentShader);
-        }
+        if (mesh->material->getShaderColorSkinned(RendererType::DirectX9))
+            mesh->material->getShaderColorSkinned(RendererType::DirectX9)->use();
         else
         {
-            d3ddev->SetVertexShader(pUVSkinnedVertexShader);
-            d3ddev->SetPixelShader(pUVSkinnedFragmentShader);
+            if (mesh->material->isUsingNormalMap())
+                UVSkinnedNormalShader->use();
+            else
+                UVSkinnedShader->use();
         }
-
         renderMeshSkinned(camera, &cameraPosition, mesh->mesh, mesh->model, &mesh->bones);
     }
     else
     {
-        if (mesh->material->isUsingNormalMap())
-        {
-            // normals require some additional caluclations, done for performance
-            d3ddev->SetVertexShader(pUVNormalVertexShader);
-            d3ddev->SetPixelShader(pUVNormalFragmentShader);
-        }
+        if (mesh->material->getShaderColor(RendererType::DirectX9))
+            mesh->material->getShaderColor(RendererType::DirectX9)->use();
         else
         {
-            d3ddev->SetVertexShader(pUVVertexShader);
-            d3ddev->SetPixelShader(pUVFragmentShader);
+            if (mesh->material->isUsingNormalMap())
+                UVNormalShader->use();
+            else
+                UVShader->use();
         }
         renderMesh(camera, &cameraPosition, mesh->mesh, mesh->model);
     }
@@ -723,9 +697,10 @@ void DirectX9Renderer::renderMeshDepthData(Camera *camera, Vector3 &cameraPositi
     if (mesh->bones.size() > 0)
     {
         setupMaterialDepthRender(mesh->material);
-        d3ddev->SetVertexShader(pUVSkinnedVertexShader);
-        d3ddev->SetPixelShader(pUVSkinnedFragmentShader);
-
+        if (mesh->material->getShaderDepthSkinned(RendererType::DirectX9))
+            mesh->material->getShaderDepthSkinned(RendererType::DirectX9)->use();
+        else
+            UVSkinnedShader->use();
         renderMeshSkinned(camera, &cameraPosition, mesh->mesh, mesh->model, &mesh->bones);
     }
     else
@@ -733,13 +708,17 @@ void DirectX9Renderer::renderMeshDepthData(Camera *camera, Vector3 &cameraPositi
         if (mesh->material->getDisplay() == MaterialDisplay::SolidMask)
         {
             setupMaterialDepthRender(mesh->material);
-            d3ddev->SetVertexShader(pUVSimpleMaskVertexShader);
-            d3ddev->SetPixelShader(pUVSimpleMaskFragmentShader);
+            if (mesh->material->getShaderDepth(RendererType::DirectX9))
+                mesh->material->getShaderDepth(RendererType::DirectX9)->use();
+            else
+                UVSimpleMaskShader->use();
         }
         else
         {
-            d3ddev->SetVertexShader(pUVSimpleVertexShader);
-            d3ddev->SetPixelShader(pUVSimpleFragmentShader);
+            if (mesh->material->getShaderDepth(RendererType::DirectX9))
+                mesh->material->getShaderDepth(RendererType::DirectX9)->use();
+            else
+                UVSimpleShader->use();
         }
 
         renderMesh(camera, &cameraPosition, mesh->mesh, mesh->model);
@@ -750,24 +729,28 @@ void DirectX9Renderer::renderMeshShadowDepthData(Camera *camera, Vector3 &camera
 {
     if (mesh->bones.size() > 0)
     {
-        d3ddev->SetVertexShader(pUVShadowSkinnedVertexShader);
-        d3ddev->SetPixelShader(pUVShadowFragmentShader);
-
+        if (mesh->material->getShaderShadowSkinned(RendererType::DirectX9))
+            mesh->material->getShaderShadowSkinned(RendererType::DirectX9)->use();
+        else
+            UVShadowSkinnedShader->use();
         renderMeshSkinned(camera, &cameraPosition, mesh->mesh, mesh->model, &mesh->bones);
     }
     else
     {
         if (mesh->material->getDisplay() == MaterialDisplay::Solid)
         {
-
-            d3ddev->SetVertexShader(pUVShadowVertexShader);
-            d3ddev->SetPixelShader(pUVShadowFragmentShader);
+            if (mesh->material->getShaderShadow(RendererType::DirectX9))
+                mesh->material->getShaderShadow(RendererType::DirectX9)->use();
+            else
+                UVShadowShader->use();
         }
         else
         {
             setupMaterialDepthRender(mesh->material);
-            d3ddev->SetVertexShader(pUVSimpleMaskVertexShader);
-            d3ddev->SetPixelShader(pUVSimpleMaskFragmentShader);
+            if (mesh->material->getShaderShadow(RendererType::DirectX9))
+                mesh->material->getShaderShadow(RendererType::DirectX9)->use();
+            else
+                UVSimpleMaskShader->use();
         }
 
         renderMesh(camera, &cameraPosition, mesh->mesh, mesh->model);
