@@ -53,6 +53,8 @@ std::string Logger::formatString(const char *format, va_list arg)
     char *s;
     int i;
     double f;
+    unsigned long lu;
+    unsigned long long llu;
 
     for (; *iterator != 0; iterator++)
     {
@@ -103,6 +105,21 @@ std::string Logger::formatString(const char *format, va_list arg)
                 case 'f':
                     f = va_arg(arg, double); // Fetch double
                     out += std::to_string(f);
+                    break;
+
+                case 'l':
+                    if (*(iterator + 1) == 'u')
+                    {
+                        lu = va_arg(arg, unsigned long); // Fetch unsigned long
+                        out += std::to_string(lu);
+                        iterator++;
+                    }
+                    else if (*(iterator + 1) == 'l' && *(iterator + 2) == 'u')
+                    {
+                        llu = va_arg(arg, unsigned long long); // Fetch unsigned long long
+                        out += std::to_string(llu);
+                        iterator += 2;
+                    }
                     break;
 
                 default:

@@ -58,6 +58,9 @@ APPMAIN
     else
         Red11::getLogger()->logConsole("4k is not available");
 
+    unsigned long long llu = 198237198289993278;
+    Red11::getLogger()->logConsole("llu number %llu", llu);
+
     // Textures & Materials
     auto concreteTexture = new TextureFile("Concrete", "./data/concrete_albedo.jpg");
     auto concreteMaterial = new MaterialSimple(concreteTexture);
