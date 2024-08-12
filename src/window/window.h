@@ -4,6 +4,7 @@
 #pragma once
 #include "utils/utils.h"
 #include "utils/primitives.h"
+#include <vector>
 
 #define WINDOW_FULLSCREEN 1
 #define WINDOW_RESIZABLE 2
@@ -34,13 +35,31 @@ enum class MouseCursorIcon
     Help
 };
 
+struct VideoMode
+{
+    unsigned int width;
+    unsigned int height;
+    unsigned int refreshRate;
+};
+
 class Window
 {
 public:
     virtual void processWindow() = 0;
 
+    // Enables and disables fullscreen. Currently it works always as borderless in full resolution
     EXPORT virtual void setFullscreen(bool fullscreenState) = 0;
-    EXPORT virtual void setResolution(int width, int height) = 0;
+
+    // Sets resolution for windowed mode
+    EXPORT virtual void setResolution(unsigned int width, unsigned int height) = 0;
+
+    // Available for screen
+    EXPORT virtual std::vector<VideoMode> getVideoModesList(unsigned int limitToFps = 0, bool sortByWidth = true) = 0;
+
+    EXPORT virtual std::vector<unsigned int> getRefreshRatesList() = 0;
+    EXPORT virtual std::vector<unsigned int> getRefreshRatesListForResolution(unsigned int width, unsigned int height) = 0;
+    EXPORT virtual bool isResolutionAvailable(unsigned int width, unsigned int height, bool bIsInFullscreen) = 0;
+    EXPORT virtual bool isResolutionAvailable(unsigned int width, unsigned int height, unsigned int refreshRate, bool bIsInFullscreen) = 0;
 
     EXPORT bool isCloseRequested();
     EXPORT bool isFullscreen();

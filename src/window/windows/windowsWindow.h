@@ -20,8 +20,12 @@ public:
     EXPORT void processWindow() override final;
 
     EXPORT void setFullscreen(bool fullscreenState) override final;
-
-    EXPORT void setResolution(int width, int height) override final;
+    EXPORT void setResolution(unsigned int width, unsigned int height) override final;
+    EXPORT std::vector<VideoMode> getVideoModesList(unsigned int limitToFps = 0, bool sortByWidth = true) override final;
+    EXPORT std::vector<unsigned int> getRefreshRatesList() override final;
+    EXPORT std::vector<unsigned int> getRefreshRatesListForResolution(unsigned int width, unsigned int height) override final;
+    EXPORT bool isResolutionAvailable(unsigned int width, unsigned int height, bool bIsInFullscreen) override final;
+    EXPORT bool isResolutionAvailable(unsigned int width, unsigned int height, unsigned int refreshRate, bool bIsInFullscreen) override final;
 
     EXPORT void setMousePosition(int x, int y, bool generateMoveEvents = false) override final;
     EXPORT void setMousePosition(MousePosition position, bool generateMoveEvents = false) override final;
@@ -47,6 +51,8 @@ public:
 
 protected:
     void setProcessDPIAware();
+    bool listHasMode(std::vector<VideoMode> &modes, unsigned int width, unsigned int height, unsigned int refreshRate);
+    bool listHasRefreshRate(std::vector<unsigned int> &refreshRates, unsigned int refreshRate);
 
     HWND hWnd;
     HINSTANCE hInstance;

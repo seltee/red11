@@ -4,6 +4,7 @@
 #include "settings.h"
 #include "windowsWindow.h"
 #include "data/inputProvider.h"
+#include <algorithm>
 #include <shellscalingapi.h>
 #include <windows.h>
 
@@ -271,7 +272,7 @@ void WindowsWindow::setFullscreen(bool fullscreenState)
     }
 }
 
-void WindowsWindow::setResolution(int width, int height)
+void WindowsWindow::setResolution(unsigned int width, unsigned int height)
 {
     state.requesedWidth = width;
     state.requesedHeight = height;
@@ -287,6 +288,169 @@ void WindowsWindow::setResolution(int width, int height)
 
     ShowWindow(hWnd, true);
     UpdateWindow(hWnd);
+}
+
+std::vector<VideoMode> WindowsWindow::getVideoModesList(unsigned int limitToFps, bool sortByWidth)
+{
+    DEVMODE devMode;
+    int modeNum = 0;
+
+    // Initialize the DEVMODE structure to 0
+    ZeroMemory(&devMode, sizeof(devMode));
+    devMode.dmSize = sizeof(devMode);
+
+    std::vector<VideoMode> videoModes;
+
+    // EnumDisplaySettings returns 0 when there are no more settings to enumerate
+    while (EnumDisplaySettings(NULL, modeNum++, &devMode))
+    {
+        if (devMode.dmBitsPerPel == 32)
+        {
+            unsigned int width = static_cast<unsigned int>(devMode.dmPelsWidth);
+            unsigned int height = static_cast<unsigned int>(devMode.dmPelsHeight);
+            unsigned int refreshRate = static_cast<unsigned int>(devMode.dmDisplayFrequency);
+
+            if ((limitToFps == 0 || limitToFps == devMode.dmDisplayFrequency) && !listHasMode(videoModes, width, height, refreshRate))
+                videoModes.push_back(VideoMode({width, height, refreshRate}));
+        }
+    }
+
+    if (sortByWidth)
+    {
+        std::sort(videoModes.begin(), videoModes.end(), [](const VideoMode &a, const VideoMode &b)
+                  { return a.width == b.width ? a.height == b.height ? a.refreshRate < b.refreshRate : a.height < b.height : a.width < b.width; });
+    }
+
+    return videoModes;
+}
+
+std::vector<unsigned int> WindowsWindow::getRefreshRatesList()
+{
+    DEVMODE devMode;
+    int modeNum = 0;
+
+    // Initialize the DEVMODE structure to 0
+    ZeroMemory(&devMode, sizeof(devMode));
+    devMode.dmSize = sizeof(devMode);
+
+    std::vector<unsigned int> refreshRates;
+
+    // EnumDisplaySettings returns 0 when there are no more settings to enumerate
+    while (EnumDisplaySettings(NULL, modeNum++, &devMode))
+    {
+        if (devMode.dmBitsPerPel == 32)
+        {
+            unsigned int refreshRate = static_cast<unsigned int>(devMode.dmDisplayFrequency);
+            if (!listHasRefreshRate(refreshRates, refreshRate))
+                refreshRates.push_back(refreshRate);
+        }
+    }
+
+    std::sort(refreshRates.begin(), refreshRates.end(), [](const int &a, const int &b)
+              { return a < b; });
+
+    return refreshRates;
+}
+
+std::vector<unsigned int> WindowsWindow::getRefreshRatesListForResolution(unsigned int width, unsigned int height)
+{
+    DEVMODE devMode;
+    int modeNum = 0;
+
+    // Initialize the DEVMODE structure to 0
+    ZeroMemory(&devMode, sizeof(devMode));
+    devMode.dmSize = sizeof(devMode);
+
+    std::vector<unsigned int> refreshRates;
+
+    // EnumDisplaySettings returns 0 when there are no more settings to enumerate
+    while (EnumDisplaySettings(NULL, modeNum++, &devMode))
+    {
+        if (devMode.dmBitsPerPel == 32)
+        {
+            unsigned int screenWidth = static_cast<unsigned int>(devMode.dmPelsWidth);
+            unsigned int screenHeight = static_cast<unsigned int>(devMode.dmPelsHeight);
+            unsigned int refreshRate = static_cast<unsigned int>(devMode.dmDisplayFrequency);
+
+            if (screenWidth == width && screenHeight == height && !listHasRefreshRate(refreshRates, refreshRate))
+                refreshRates.push_back(refreshRate);
+        }
+    }
+
+    std::sort(refreshRates.begin(), refreshRates.end(), [](const int &a, const int &b)
+              { return a < b; });
+
+    return refreshRates;
+}
+
+bool WindowsWindow::isResolutionAvailable(unsigned int width, unsigned int height, bool bIsInFullscreen)
+{
+    DEVMODE devMode;
+    int modeNum = 0;
+
+    // Initialize the DEVMODE structure to 0
+    ZeroMemory(&devMode, sizeof(devMode));
+    devMode.dmSize = sizeof(devMode);
+
+    std::vector<unsigned int> refreshRates;
+
+    // EnumDisplaySettings returns 0 when there are no more settings to enumerate
+    while (EnumDisplaySettings(NULL, modeNum++, &devMode))
+    {
+        if (devMode.dmBitsPerPel == 32)
+        {
+            unsigned int screenWidth = static_cast<unsigned int>(devMode.dmPelsWidth);
+            unsigned int screenHeight = static_cast<unsigned int>(devMode.dmPelsHeight);
+
+            if (bIsInFullscreen)
+            {
+                if (width == screenWidth && height == screenHeight)
+                    return true;
+            }
+            else
+            {
+                if (width <= screenWidth && height <= screenHeight)
+                    return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+bool WindowsWindow::isResolutionAvailable(unsigned int width, unsigned int height, unsigned int refreshRate, bool bIsInFullscreen)
+{
+    DEVMODE devMode;
+    int modeNum = 0;
+
+    // Initialize the DEVMODE structure to 0
+    ZeroMemory(&devMode, sizeof(devMode));
+    devMode.dmSize = sizeof(devMode);
+
+    std::vector<unsigned int> refreshRates;
+
+    // EnumDisplaySettings returns 0 when there are no more settings to enumerate
+    while (EnumDisplaySettings(NULL, modeNum++, &devMode))
+    {
+        if (devMode.dmBitsPerPel == 32 && static_cast<unsigned int>(devMode.dmDisplayFrequency) == refreshRate)
+        {
+            unsigned int screenWidth = static_cast<unsigned int>(devMode.dmPelsWidth);
+            unsigned int screenHeight = static_cast<unsigned int>(devMode.dmPelsHeight);
+
+            if (bIsInFullscreen)
+            {
+                if (width == screenWidth && height == screenHeight)
+                    return true;
+            }
+            else
+            {
+                if (width <= screenWidth && height <= screenHeight)
+                    return true;
+            }
+        }
+    }
+
+    return false;
 }
 
 void WindowsWindow::setMousePosition(int x, int y, bool generateMoveEvents)
@@ -432,6 +596,26 @@ void WindowsWindow::setProcessDPIAware()
 
     // Free the library
     FreeLibrary(user32);
+}
+
+bool WindowsWindow::listHasMode(std::vector<VideoMode> &modes, unsigned int width, unsigned int height, unsigned int refreshRate)
+{
+    for (auto &mode : modes)
+    {
+        if (mode.width == width && mode.height == height && mode.refreshRate == refreshRate)
+            return true;
+    }
+    return false;
+}
+
+bool WindowsWindow::listHasRefreshRate(std::vector<unsigned int> &refreshRates, unsigned int refreshRate)
+{
+    for (auto &rate : refreshRates)
+    {
+        if (rate == refreshRate)
+            return true;
+    }
+    return false;
 }
 
 #endif

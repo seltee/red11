@@ -39,6 +39,25 @@ APPMAIN
     auto window = Red11::createWindow("Resource Managment", WINDOW_WIDTH, WINDOW_HEIGHT, 0);
     auto renderer = Red11::createRenderer(window, RendererType::DirectX9);
 
+    auto videoModes = window->getVideoModesList(60, true);
+    Red11::getLogger()->logConsole("Available resolutions:");
+    for (auto &mode : videoModes)
+    {
+        Red11::getLogger()->logConsole("%ix%i", mode.width, mode.height);
+    }
+
+    auto refreshRates = window->getRefreshRatesList();
+    Red11::getLogger()->logConsole("Refresh Rates:");
+    for (auto &rate : refreshRates)
+    {
+        Red11::getLogger()->logConsole("%ihz", rate);
+    }
+
+    if (window->isResolutionAvailable(3840, 2160, true))
+        Red11::getLogger()->logConsole("4k is available");
+    else
+        Red11::getLogger()->logConsole("4k is not available");
+
     // Textures & Materials
     auto concreteTexture = new TextureFile("Concrete", "./data/concrete_albedo.jpg");
     auto concreteMaterial = new MaterialSimple(concreteTexture);
