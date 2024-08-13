@@ -28,13 +28,6 @@ PhysicsBody::PhysicsBody(
 
 PhysicsBody::~PhysicsBody()
 {
-    if (world)
-        world->removeBody(this);
-}
-
-void PhysicsBody::destroy()
-{
-    delete this;
 }
 
 void PhysicsBody::prepareForSimulation()

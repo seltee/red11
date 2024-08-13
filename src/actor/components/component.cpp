@@ -13,7 +13,7 @@ Component::Component()
 Component::~Component()
 {
     if (physicsBody)
-        delete physicsBody;
+        physicsBody->destroy();
 }
 
 void Component::prepare(Actor *owner)
@@ -31,17 +31,13 @@ Actor *Component::getOwner()
 void Component::setCollisionHandler(CollisionHandler *collisionHandler)
 {
     if (this->physicsBody)
-    {
         this->physicsBody->setCollisionHandler(collisionHandler);
-    }
 }
 
 CollisionHandler *Component::getCollisionHandler()
 {
     if (this->physicsBody)
-    {
         return this->physicsBody->getCollisionHandler();
-    }
     return nullptr;
 }
 

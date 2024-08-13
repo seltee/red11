@@ -8,6 +8,20 @@ Scene::Scene(DebugEntities *debugEntities)
     this->debugEntities = debugEntities;
 }
 
+Scene::~Scene()
+{
+    for (auto actor = actors.begin(); actor != actors.end(); actor++)
+    {
+        (*actor)->removeComponents();
+        delete (*actor);
+    }
+}
+
+void Scene::destroy()
+{
+    delete this;
+}
+
 void Scene::prepareNewActor(Actor *actor)
 {
     actors.push_back(actor);
@@ -21,17 +35,7 @@ void Scene::process(float delta)
     physicsWorld.process(delta);
     for (auto actor = actors.begin(); actor != actors.end(); ++actor)
         (*actor)->onProcess(delta);
-
-    auto actor = actors.begin();
-    while (actor != actors.end())
-        if ((*actor)->isDestroyed())
-        {
-            (*actor)->removeComponents();
-            delete (*actor);
-            actor = actors.erase(actor);
-        }
-        else
-            ++actor;
+    cleanDestroyedActors();
 }
 
 void Scene::render(Renderer *renderer, Camera *camera)
@@ -49,4 +53,18 @@ void Scene::destroyAllActors()
 {
     for (auto actor = actors.begin(); actor != actors.end(); ++actor)
         (*actor)->destroy();
+}
+
+void Scene::cleanDestroyedActors()
+{
+    auto actor = actors.begin();
+    while (actor != actors.end())
+        if ((*actor)->isDestroyed())
+        {
+            (*actor)->removeComponents();
+            delete (*actor);
+            actor = actors.erase(actor);
+        }
+        else
+            ++actor;
 }

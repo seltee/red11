@@ -3,6 +3,7 @@
 
 #pragma once
 #include "data/entity.h"
+#include "utils/destroyable.h"
 #include "utils/utils.h"
 #include "utils/primitives.h"
 #include "constraints/constraint.h"
@@ -19,7 +20,7 @@ enum class PhysicsMotionType
     Dynamic, // Responds to forces as a normal physics object
 };
 
-class PhysicsBody
+class PhysicsBody : public Destroyable
 {
 public:
     EXPORT PhysicsBody(
@@ -30,8 +31,7 @@ public:
         Vector3 initialPosition,
         Quat initialRotation,
         bool simulatePhysics);
-    EXPORT ~PhysicsBody();
-    EXPORT void destroy();
+    EXPORT virtual ~PhysicsBody();
 
     EXPORT void prepareForSimulation();
     EXPORT void finishSimulation();

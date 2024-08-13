@@ -28,13 +28,12 @@ class PhysicsWorld
 {
 public:
     EXPORT PhysicsWorld();
+    EXPORT ~PhysicsWorld();
     EXPORT void setup(Vector3 gravity = DEFAULT_GRAVITY, float simScale = DEFAULT_SIM_SCALE, float subStep = DEFAULT_SUB_STEP);
 
     EXPORT void process(float delta);
     EXPORT PhysicsForm *createPhysicsForm(float friction, float restitution, float linearDamping = 0.15f, float angularDamping = 0.05f, float gravityFactor = 1.0f);
     EXPORT PhysicsBody *createPhysicsBody(PhysicsMotionType motionType, PhysicsForm *form, Entity *entity, Vector3 initialPosition, Quat initialRotation, bool simulatePhysics);
-
-    EXPORT void removeBody(PhysicsBody *removeBody);
 
     EXPORT std::vector<PhysicsBodyPoint> castRayCollision(const Segment &ray, Channel channel);
     EXPORT std::vector<PhysicsBodyPoint> castSphereCollision(const Vector3 &p, float radius, Channel channel);
@@ -57,6 +56,7 @@ public:
     inline Vector3 getGravity() { return gravity; }
     inline void setGravity(Vector3 gravity) { this->gravity = gravity; }
 
+    EXPORT void cleanDestroyedBodies();
 protected:
     // prepare bodies like copy new transformations that came from components
     void prepareBodies();

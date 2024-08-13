@@ -6,10 +6,16 @@
 #include <mutex>
 #include <chrono>
 
-EXPORT PhysicsWorld::PhysicsWorld()
+PhysicsWorld::PhysicsWorld()
 {
     jobQueue = Red11::getJobQueue();
     maxJobs = min(jobQueue->getMaxJobs() * 4, 32);
+}
+
+PhysicsWorld::~PhysicsWorld()
+{
+    for (auto body = bodies.begin(); body != bodies.end(); body++)
+        delete (*body);
 }
 
 void PhysicsWorld::setup(Vector3 gravity, float simScale, float subStep)
@@ -43,6 +49,9 @@ void PhysicsWorld::process(float delta)
         removeNotPersistedCollisions();
     }
     finishBodies();
+
+    // removing destroyed bodies
+    cleanDestroyedBodies();
 }
 
 PhysicsForm *PhysicsWorld::createPhysicsForm(float friction, float restitution, float linearDamping, float angularDamping, float gravityFactor)
@@ -56,22 +65,6 @@ PhysicsBody *PhysicsWorld::createPhysicsBody(PhysicsMotionType motionType, Physi
     PhysicsBody *newBody = new PhysicsBody(motionType, form, this, entity, initialPosition * simScale, initialRotation, simulatePhysics);
     bodies.push_back(newBody);
     return newBody;
-}
-
-void PhysicsWorld::removeBody(PhysicsBody *removeBody)
-{
-    for (auto &handler : collisionHanlers)
-        handler->notifyBodyRemoved(removeBody);
-
-    auto body = bodies.begin();
-    while (body != bodies.end())
-        if (*body == removeBody)
-        {
-            bodies.erase(body);
-            break;
-        }
-        else
-            ++body;
 }
 
 std::vector<PhysicsBodyPoint> PhysicsWorld::castRayCollision(const Segment &ray, Channel channel)
@@ -120,6 +113,21 @@ std::vector<PhysicsBodyPoint> PhysicsWorld::castPointCollision(const Vector3 &p,
 {
     points.clear();
     return points;
+}
+
+void PhysicsWorld::cleanDestroyedBodies()
+{
+    auto body = bodies.begin();
+    while (body != bodies.end())
+        if ((*body)->isDestroyed())
+        {
+            for (auto &handler : collisionHanlers)
+                handler->notifyBodyRemoved(*body);
+            delete (*body);
+            body = bodies.erase(body);
+        }
+        else
+            ++body;
 }
 
 void PhysicsWorld::prepareBodies()

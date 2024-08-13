@@ -13,7 +13,10 @@
 class Scene
 {
 public:
-    Scene(DebugEntities *debugEntities);
+    EXPORT Scene(DebugEntities *debugEntities);
+    EXPORT ~Scene();
+
+    EXPORT void destroy();
 
     template <class T, typename std::enable_if<std::is_base_of<Actor, T>::value>::type * = nullptr>
     inline T *createActor(std::string name)
@@ -101,6 +104,8 @@ public:
     inline Color getAmbientLight() { return ambientLight; };
 
     inline PhysicsWorld *getPhysicsWorld() { return &physicsWorld; }
+
+    EXPORT void cleanDestroyedActors();
 
 protected:
     std::list<Actor *> actors;

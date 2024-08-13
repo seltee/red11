@@ -11,6 +11,7 @@ Actor::Actor(std::string &name)
 
 Actor::~Actor()
 {
+    removeComponents();
 }
 
 void Actor::setActorName(std::string &name)
@@ -35,9 +36,7 @@ void Actor::assignPhysicsWorld(PhysicsWorld *physicsWorld)
 void Actor::removeComponents()
 {
     for (auto it = components.begin(); it != components.end(); it++)
-    {
         delete (*it);
-    }
     components.clear();
     bPhysicsNeedsToBeRebuild = true;
 }
@@ -47,9 +46,7 @@ void Actor::removeComponent(Component *component)
     for (auto it = components.begin(); it != components.end(); it++)
     {
         if (*it == component)
-        {
             delete *it;
-        }
         bPhysicsNeedsToBeRebuild = true;
         return;
     }

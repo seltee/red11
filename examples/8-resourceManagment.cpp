@@ -75,38 +75,49 @@ APPMAIN
     auto cubeMesh = Red11::getMeshBuilder()->createCube(0.1f);
     auto cubeMeshBig = Red11::getMeshBuilder()->createCube(0.25f);
 
-    // Scene
-    auto scene = Red11::createScene();
-    scene->setAmbientLight(Color(0.4f, 0.4f, 0.6f));
-
-    // Objects
-    auto objectContainer = scene->createActor<Actor>("ObjectContainer");
-
-    auto boxComponent = objectContainer->createComponentMesh(cubeMeshBig);
-    boxComponent->setMaterial(crateMaterial);
-    boxComponent->setPosition(randf(-3.0f, 3.0f), 0.8f, randf(-3.0f, 3.0f));
-
-    // Floor
-    for (int iy = 0; iy < 9; iy++)
+    Scene *scene = nullptr;
+    Actor *camera = nullptr;
+    ComponentCamera *cameraComponent = nullptr;
+    Actor *objectContainer = nullptr;
+    ComponentMesh *boxComponent = nullptr;
+    for (int i = 0; i < 100000; i++)
     {
-        for (int ix = 0; ix < 9; ix++)
+        if (scene)
+            scene->destroy();
+
+        // Scene
+        scene = Red11::createScene();
+        scene->setAmbientLight(Color(0.4f, 0.4f, 0.6f));
+
+        // Objects
+        objectContainer = scene->createActor<Actor>("ObjectContainer");
+
+        boxComponent = objectContainer->createComponentMesh(cubeMeshBig);
+        boxComponent->setMaterial(crateMaterial);
+        boxComponent->setPosition(randf(-3.0f, 3.0f), 0.8f, randf(-3.0f, 3.0f));
+
+        // Floor
+        for (int iy = 0; iy < 9; iy++)
         {
-            auto floorCubeComponent = objectContainer->createComponentMesh(cubeMesh);
-            floorCubeComponent->setMaterial(concreteMaterial);
-            floorCubeComponent->setPosition(Vector3((float)(ix - 4) * 0.8f, 0.0f, (float)(iy - 4) * 0.8f));
-            floorCubeComponent->setScale(Vector3(8.0f, 0.01f, 8.0f));
+            for (int ix = 0; ix < 9; ix++)
+            {
+                auto floorCubeComponent = objectContainer->createComponentMesh(cubeMesh);
+                floorCubeComponent->setMaterial(concreteMaterial);
+                floorCubeComponent->setPosition(Vector3((float)(ix - 4) * 0.8f, 0.0f, (float)(iy - 4) * 0.8f));
+                floorCubeComponent->setScale(Vector3(8.0f, 0.01f, 8.0f));
+            }
         }
+
+        // Light
+        auto lightSun = scene->createActor<Actor>("Light");
+        auto lightSunComponent = lightSun->createComponent<ComponentLight>();
+        lightSunComponent->setupDirectional(glm::normalize(Vector3(-1.0f, -1.0f, -1.0)), Color(3.8f, 3.4f, 3.2f), true, LightShadowQuality::Maximum);
+
+        // Camera
+        camera = scene->createActor<Actor>("Camera");
+        cameraComponent = camera->createComponent<ComponentCamera>();
+        camera->setPosition(0, 0.2, 0);
     }
-
-    // Light
-    auto lightSun = scene->createActor<Actor>("Light");
-    auto lightSunComponent = lightSun->createComponent<ComponentLight>();
-    lightSunComponent->setupDirectional(glm::normalize(Vector3(-1.0f, -1.0f, -1.0)), Color(3.8f, 3.4f, 3.2f), true, LightShadowQuality::Maximum);
-
-    // Camera
-    Actor *camera = scene->createActor<Actor>("Camera");
-    ComponentCamera *cameraComponent = camera->createComponent<ComponentCamera>();
-    camera->setPosition(0, 0.2, 0);
 
     InputControl inputControl;
     memset(&inputControl, 0, sizeof(InputControl));
