@@ -68,7 +68,7 @@ APPMAIN
         if ((ix % 3) == 2)
             anim = minerShootingFileData;
 
-        auto testMon = scene->createActor<Actor>("Mon");
+        auto testMon = scene->createActor<Actor>();
         testMon->setPosition(Vector3(xPos, 0, yPos));
         auto testMonAnimComponent = testMon->createComponentMeshGroup(anim->getMeshObjectList());
         testMonAnimComponent->setMaterial(monMaterial);
@@ -81,7 +81,7 @@ APPMAIN
     {
         for (int ix = 0; ix < 9; ix++)
         {
-            auto floorCube = scene->createActor<Actor>("FloorCell");
+            auto floorCube = scene->createActor<Actor>();
             auto floorCubeComponent = floorCube->createComponentMesh(cubeMesh);
             floorCubeComponent->setMaterial(concreteMaterial);
             floorCubeComponent->setPosition(Vector3((float)(ix - 4) * 0.8f, 0.0f, (float)(iy - 5) * 0.8f));
@@ -89,13 +89,13 @@ APPMAIN
         }
     }
 
-    auto lightSun = scene->createActor<Actor>("Light");
+    auto lightSun = scene->createActor<Actor>();
     auto lightSunComponent = lightSun->createComponent<ComponentLight>();
     int shadowQuality = (int)LightShadowQuality::Low;
     lightSunComponent->setupDirectional(glm::normalize(Vector3(-1.0f, -1.0f, -1.0)), Color(2.2f, 1.5f, 1.4f), true, (LightShadowQuality)shadowQuality);
 
     // light shadow presenter
-    auto lightShadowPresenter = scene->createActor<Actor>("LightShadowPresenter");
+    auto lightShadowPresenter = scene->createActor<Actor>();
     auto lightShadowComponent = lightShadowPresenter->createComponentMesh(cubeMesh);
     auto lightShadowMaterial = new MaterialSimple(lightSunComponent->getLight()->getShadowTexture(0));
     lightShadowMaterial->setAlbedoColor(Color(1.2f, 0, 0));
@@ -119,7 +119,7 @@ APPMAIN
     }
 
     // Camera
-    Actor *camera = scene->createActor<Actor>("Camera");
+    Actor *camera = scene->createActor<Actor>();
     ComponentCamera *cameraComponent = camera->createComponent<ComponentCamera>();
     camera->setPosition(0, 0.2, 0);
 

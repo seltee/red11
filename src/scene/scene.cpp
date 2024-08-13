@@ -55,6 +55,27 @@ void Scene::destroyAllActors()
         (*actor)->destroy();
 }
 
+std::vector<Actor *> Scene::getActorsByName(std::string name)
+{
+    std::vector<Actor *> actorsList;
+    for (auto actor = actors.begin(); actor != actors.end(); ++actor)
+    {
+        if ((*actor)->getActorName() == name)
+            actorsList.push_back((*actor));
+    }
+    return actorsList;
+}
+
+Actor *Scene::getFirstActorByName(std::string name)
+{
+    for (auto actor = actors.begin(); actor != actors.end(); ++actor)
+    {
+        if ((*actor)->getActorName() == name)
+            return (*actor);
+    }
+    return nullptr;
+}
+
 void Scene::cleanDestroyedActors()
 {
     auto actor = actors.begin();

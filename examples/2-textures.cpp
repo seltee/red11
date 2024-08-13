@@ -74,25 +74,25 @@ APPMAIN
     scene->setAmbientLight(Color(0.4f, 0.4f, 0.7f));
 
     // Objects
-    auto cube = scene->createActor<Actor>("Cube");
+    auto cube = scene->createActor<Actor>();
     auto cubeComponent = cube->createComponentMesh(cubeTest2Mesh);
     cubeComponent->setMaterial(test2Material);
     cubeComponent->setScale(0.0005f);
     cube->setPosition(Vector3(0.0f, -0.1f, -0.5f));
 
-    auto cube2 = scene->createActor<Actor>("Cube 2");
+    auto cube2 = scene->createActor<Actor>();
     cubeComponent = cube2->createComponentMesh(cubeMesh);
     cubeComponent->setMaterial(crateAlphaMaterial);
     cube2->setPosition(Vector3(0.1f, 0.0f, -0.6f));
 
-    auto cube3 = scene->createActor<Actor>("Cube 3");
+    auto cube3 = scene->createActor<Actor>();
     cubeComponent = cube3->createComponentMesh(cubeMesh);
     cubeComponent->setMaterial(test3Material);
     cube3->setPosition(Vector3(-0.05f, 0.1f, -0.65f));
 
     if (mushroomMesh)
     {
-        auto mushroom = scene->createActor<Actor>("Mushroom");
+        auto mushroom = scene->createActor<Actor>();
         auto mushroomComponent = mushroom->createComponentMesh(mushroomMesh);
         mushroomComponent->setMaterial(mushroomMaterial);
         mushroomComponent->setScale(0.0015f);
@@ -101,14 +101,14 @@ APPMAIN
 
     if (animTestMesh)
     {
-        auto animtestStatic = scene->createActor<Actor>("Static Boxes");
+        auto animtestStatic = scene->createActor<Actor>();
         auto animtestComponent = animtestStatic->createComponentMesh(animTestMesh);
         animtestComponent->setMaterial(testMaterial);
         animtestComponent->setScale(0.0005f);
         animtestStatic->setPosition(Vector3(-0.25f, 0.08f, -0.6f));
     }
 
-    auto animatedBoxes = scene->createActor<Actor>("Mushroom");
+    auto animatedBoxes = scene->createActor<Actor>();
     auto animatedBoxesComponent = animatedBoxes->createComponentMeshGroup(animTestFileData->getMeshObjectList());
     animatedBoxesComponent->setMaterial(testMaterial);
     animatedBoxesComponent->setScale(0.00035f);
@@ -117,12 +117,12 @@ APPMAIN
     animatedBoxes->setPosition(Vector3(-0.25f, 0.28f, -0.7f));
 
     // Light
-    auto lightSun = scene->createActor<Actor>("Light");
+    auto lightSun = scene->createActor<Actor>();
     auto lightSunComponent = lightSun->createComponent<ComponentLight>();
     lightSunComponent->setupDirectional(glm::normalize(Vector3(-1.0f, -1.0f, -1.0)), Color(6.7f, 5.9f, 5.0f));
 
     // Camera
-    Actor *camera = scene->createActor<Actor>("Camera");
+    Actor *camera = scene->createActor<Actor>();
     ComponentCamera *cameraComponent = camera->createComponent<ComponentCamera>();
     camera->setPosition(0, 0.2, 0);
 

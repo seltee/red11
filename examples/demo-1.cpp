@@ -107,7 +107,7 @@ APPMAIN
     const float scale = 0.002f;
     const float scaleNormal = scale / 0.01f;
 
-    auto room = scene->createActor<Actor>("Room");
+    auto room = scene->createActor<Actor>();
     auto floorComponent = room->createComponentMesh(roomFloorFileData->getAsMesh());
     floorComponent->setMaterial(floorMaterial);
     floorComponent->setScale(scale);
@@ -143,7 +143,7 @@ APPMAIN
     Color lightColor = Color(46.0f, 38.0f, 34.0f);
     auto generateSpotLight = [&](const Vector3 &center, bool shadows, bool moth = false)
     {
-        auto light = scene->createActor<Actor>("Light");
+        auto light = scene->createActor<Actor>();
         light->setPosition(center);
 
         auto lightComponent = light->createComponentMesh(lampFileData->getAsMesh());
@@ -177,7 +177,7 @@ APPMAIN
     // Light shadow presenter
     if (lightShadowDepthPresenter)
     {
-        auto lightShadowPresenter = scene->createActor<Actor>("LightShadowPresenter");
+        auto lightShadowPresenter = scene->createActor<Actor>();
         auto lightShadowComponent = lightShadowPresenter->createComponentMesh(cubeMesh);
         auto lightShadowMaterial = new MaterialSimple(lightSpot->getLight()->getShadowTexture(0));
         lightShadowMaterial->setAlbedoColor(Color(1, 0, 0));
@@ -186,7 +186,7 @@ APPMAIN
         lightShadowComponent->setScale(Vector3(1.2f, 1.2f, 1.2f));
     }
 
-    auto cameraAnimation = scene->createActor<Actor>("CameraAnimation");
+    auto cameraAnimation = scene->createActor<Actor>();
     auto cameraAnimationComponent = cameraAnimation->createComponentMeshGroup(cameraFileData->getMeshObjectList());
     cameraAnimationComponent->setScale(scale);
 

@@ -65,7 +65,7 @@ APPMAIN
     scene->setAmbientLight(Color(0.4f, 0.4f, 0.6f));
 
     // Objects
-    auto objectContainer = scene->createActor<Actor>("ObjectContainer");
+    auto objectContainer = scene->createActor<Actor>();
 
     // Boxes
     for (int i = 0; i < 16; i++)
@@ -88,12 +88,12 @@ APPMAIN
     }
 
     // Light
-    auto lightSun = scene->createActor<Actor>("Light");
+    auto lightSun = scene->createActor<Actor>();
     auto lightSunComponent = lightSun->createComponent<ComponentLight>();
     lightSunComponent->setupDirectional(glm::normalize(Vector3(-1.0f, -1.0f, -1.0)), Color(3.8f, 3.4f, 3.2f), true, LightShadowQuality::Maximum);
 
     // Camera
-    Actor *camera = scene->createActor<Actor>("Camera");
+    Actor *camera = scene->createActor<Actor>();
     ComponentCamera *cameraComponent = camera->createComponent<ComponentCamera>();
     camera->setPosition(0, 0.2, 0);
 

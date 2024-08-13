@@ -26,6 +26,12 @@ public:
         return newActor;
     }
 
+    template <class T, typename std::enable_if<std::is_base_of<Actor, T>::value>::type * = nullptr>
+    inline T *createActor()
+    {
+        return createActor<T>("Actor");
+    }
+
     EXPORT void prepareNewActor(Actor *actor);
 
     EXPORT void process(float delta);
@@ -104,6 +110,9 @@ public:
     inline Color getAmbientLight() { return ambientLight; };
 
     inline PhysicsWorld *getPhysicsWorld() { return &physicsWorld; }
+
+    EXPORT std::vector<Actor *> getActorsByName(std::string name);
+    EXPORT Actor *getFirstActorByName(std::string name);
 
     EXPORT void cleanDestroyedActors();
 

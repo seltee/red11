@@ -62,7 +62,7 @@ APPMAIN
     {
         for (int ix = 0; ix < 9; ix++)
         {
-            auto floorCube = scene->createActor<Actor>("FloorCell");
+            auto floorCube = scene->createActor<Actor>();
             auto floorCubeComponent = floorCube->createComponentMesh(cubeMesh);
             floorCubeComponent->setMaterial(concreteMaterial);
             floorCubeComponent->setPosition(Vector3((float)(ix - 4) * 0.8f, 0.0f, (float)(iy - 4) * 0.8f));
@@ -71,7 +71,7 @@ APPMAIN
     }
 
     // Sphere
-    auto objectContainer = scene->createActor<Actor>("ObjectContainer");
+    auto objectContainer = scene->createActor<Actor>();
 
     auto sphereComponent = objectContainer->createComponentMesh(sphereMesh);
     sphereComponent->setMaterial(concreteMaterial);
@@ -153,7 +153,7 @@ APPMAIN
     polyMeshComponent->setPosition(Vector3(0, 0, -2));
 
     // Floor && walls
-    auto floor = scene->createActor<Actor>("Floor");
+    auto floor = scene->createActor<Actor>();
     auto floorComponent = floor->createComponent<Component>();
     auto floorForm = world->createPhysicsForm(0.9f, 0.1f);
     floorForm->createPlain(Vector3(0, 1, 0), 0.0f);
@@ -193,12 +193,12 @@ APPMAIN
     wallBackwardComponent->setRenderDebugPhysicsBody(true);
 
     // Light
-    auto lightSun = scene->createActor<Actor>("Light");
+    auto lightSun = scene->createActor<Actor>();
     auto lightSunComponent = lightSun->createComponent<ComponentLight>();
     lightSunComponent->setupDirectional(glm::normalize(Vector3(-1.0f, -1.0f, -1.0)), Color(3.8f, 3.4f, 3.2f), true, LightShadowQuality::Maximum);
 
     // Camera
-    Actor *camera = scene->createActor<Actor>("Camera");
+    Actor *camera = scene->createActor<Actor>();
     ComponentCamera *cameraComponent = camera->createComponent<ComponentCamera>();
     camera->setPosition(0, 0.2, 0);
 

@@ -46,7 +46,7 @@ APPMAIN
     {
         for (int ix = 0; ix < 5; ix++)
         {
-            auto floorCube = scene->createActor<Actor>("FloorCell");
+            auto floorCube = scene->createActor<Actor>();
             auto floorCubeComponent = floorCube->createComponentMesh(cubeMesh);
             floorCubeComponent->setMaterial(concreteMaterial);
             floorCubeComponent->setPosition(Vector3((float)(ix - 2) * 0.8f, -0.1f, (float)(iy - 2) * 0.8f));
@@ -58,7 +58,7 @@ APPMAIN
     Font *font = new Font("./data/Roboto-Medium.ttf");
 
     // Player actor
-    auto player = scene->createActor<Actor>("Player");
+    auto player = scene->createActor<Actor>();
     auto playerAnimComponent = player->createComponentMeshGroup(manFileData->getMeshObjectList());
     playerAnimComponent->setMaterial(crateMaterial);
     playerAnimComponent->setScale(0.00032f);
@@ -87,7 +87,7 @@ APPMAIN
     fpsMeter->setRotation(Vector3(CONST_PI * 0.5f, 0, 0));
 
     // Light
-    auto lightSun = scene->createActor<Actor>("Light");
+    auto lightSun = scene->createActor<Actor>();
     auto lightSunComponent = lightSun->createComponent<ComponentLight>();
     lightSunComponent->setupDirectional(glm::normalize(Vector3(-1.0f, -1.0f, -1.0)), Color(5.8f, 5.8f, 5.8f));
 

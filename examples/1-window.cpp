@@ -23,27 +23,27 @@ APPMAIN
     scene->setAmbientLight(Color(0.05f, 0.05f, 0.09f));
 
     // Objects
-    auto cube = scene->createActor<Actor>("Cube");
+    auto cube = scene->createActor<Actor>();
     auto cubeComponent = cube->createComponentMesh(cubeMesh);
     cubeComponent->setMaterial(new MaterialSimple(Color(0.2, 0.8, 0.8), Color(0.8, 0.0, 0.0)));
     cube->setPosition(Vector3(0.0f, -0.1f, -0.4f));
 
-    auto cube2 = scene->createActor<Actor>("Cube 2");
+    auto cube2 = scene->createActor<Actor>();
     cubeComponent = cube2->createComponentMesh(cubeMesh);
     cubeComponent->setMaterial(new MaterialSimple(Color(0.4, 0.4, 0.4)));
     cube2->setPosition(Vector3(0.1f, 0.0f, -0.5f));
 
-    auto cube3 = scene->createActor<Actor>("Cube 3");
+    auto cube3 = scene->createActor<Actor>();
     cubeComponent = cube3->createComponentMesh(cubeMesh);
     cubeComponent->setMaterial(new MaterialSimple(Color(0.8, 0.3, 0.2)));
     cube3->setPosition(Vector3(-0.05f, 0.1f, -0.55f));
 
     // Lights
-    auto lightSun = scene->createActor<Actor>("Light");
+    auto lightSun = scene->createActor<Actor>();
     auto lightSunComponent = lightSun->createComponent<ComponentLight>();
     lightSunComponent->setupDirectional(glm::normalize(Vector3(-1.0f, -1.0f, -1.0)), Color(3.4f, 3.4f, 3.0f));
 
-    auto lightOmni = scene->createActor<Actor>("Omni");
+    auto lightOmni = scene->createActor<Actor>();
     auto lightOmniComponent = lightOmni->createComponent<ComponentLight>();
     lightOmniComponent->setupOmni(Attenuation(), Color(2.0f, 1.953f, 1.737f));
     auto lightCubeComponent = lightOmni->createComponentMesh(cubeMesh);
@@ -54,7 +54,7 @@ APPMAIN
     Font *font = new Font("./data/Roboto-Medium.ttf");
 
     // Camera
-    Actor *camera = scene->createActor<Actor>("Camera");
+    Actor *camera = scene->createActor<Actor>();
     ComponentCamera *cameraComponent = camera->createComponent<ComponentCamera>();
 
     // Simple UI to show FPS
