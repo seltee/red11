@@ -230,11 +230,10 @@ inline float2 SampleSphericalMap(float3 v)
 
 inline float3 calcReflectionRadiance(sampler2D radianceTexSampler, sampler2D reflectionTexSampler, float3 N, float3 V, float roughness)
 {
-    float3 R = normalize(reflect(-normalize(V), normalize(N)));
     float2 uv = SampleSphericalMap(N);
-    float2 uv2 = SampleSphericalMap(R);
-    float3 irradiance = tex2D(radianceTexSampler, uv).rgb;
-    float3 reflection = tex2D(reflectionTexSampler, uv2).rgb;
+    float2 uv2 = SampleSphericalMap(normalize(reflect(-V, N)));
+    float3 irradiance = tex2D(radianceTexSampler, float2(uv.x, 1.0 - uv.y)).rgb;
+    float3 reflection = tex2D(reflectionTexSampler, float2(uv2.x, 1.0 - uv2.y)).rgb;
 
     float fullRadianceFactor = max(pow(1.0 - roughness, 2) - HDRSwitch, 0.0) * (1.0 / max(1.0 - HDRSwitch, 0.0001));
     float blurRadianceFactor = 1.0 - fullRadianceFactor;

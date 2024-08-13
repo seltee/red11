@@ -31,7 +31,7 @@ APPMAIN
     concreteMaterial->setRoughness(0.6f);
 
     auto redBallMaterial = new MaterialSimple(Color(0.8f, 0.1f, 0.1f), Color(0, 0, 0), 0.0f, 0.4f);
-    auto capsuleMaterial = new MaterialSimple(Color(0.91f, 0.604f, 0.067f), Color(0, 0, 0), 0.0f, 0.25f);
+    auto capsuleMaterial = new MaterialSimple(Color(0.91f, 0.604f, 0.067f), Color(0, 0, 0), 0.0f, 0.08f);
     auto buildingMaterial = new MaterialSimple(Color(0.75f, 0.75f, 0.75f), Color(0, 0, 0), 0.0f, 0.6f);
 
     auto crateTexture = new TextureFile("Crate", "./data/crate.jpg");
