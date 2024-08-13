@@ -23,6 +23,7 @@
 #include "data/camera.h"
 #include "data/texture.h"
 #include "data/textureFile.h"
+#include "data/textureFileHDR.h"
 #include "data/inputProvider.h"
 #include "data/data3DFile.h"
 #include "data/debugEntities.h"

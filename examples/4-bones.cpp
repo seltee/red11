@@ -4,8 +4,8 @@
 #include "red11.h"
 #include <string>
 
-#define WINDOW_WIDTH 1920 
-#define WINDOW_HEIGHT 1080 
+#define WINDOW_WIDTH 1920
+#define WINDOW_HEIGHT 1080
 
 struct CameraControl
 {
@@ -35,6 +35,9 @@ APPMAIN
     auto concreteMaterial = new MaterialSimple(concreteTexture, sphereNormalTexture);
     concreteMaterial->setRoughness(0.52f);
 
+    auto hdr = new TextureFileHDR("HDR", "./data/meadow.hdr", 1.8f, 2.9f);
+    auto radiance = hdr->getRadianceTexture();
+
     // Meshes
     auto minerIdleFileData = new Data3DFile("./data/miner_anim_idle.fbx");
     minerIdleFileData->load();
@@ -52,7 +55,7 @@ APPMAIN
 
     // Scene
     auto scene = Red11::createScene();
-    scene->setAmbientLight(Color(0.4f, 0.4f, 0.5f));
+    scene->setAmbientLight(Color(0.10f, 0.11f, 0.12f));
 
     // Monsters
     int rows = 6;
@@ -104,7 +107,7 @@ APPMAIN
     lightShadowComponent->setScale(Vector3(4.0f, 4.0f, 4.0f));
 
     // rotating lights
-    const int omniLightsAmount = 15;
+    const int omniLightsAmount = 10;
     Actor *omniActors[omniLightsAmount];
     for (int i = 0; i < omniLightsAmount; i++)
     {
@@ -193,9 +196,10 @@ APPMAIN
         window->processWindow();
         window->setMousePosition(renderer->getViewWidth() / 2, renderer->getViewHeight() / 2);
 
-        renderer->prepareToRender();
+        renderer->prepareToRender(hdr, radiance);
         cameraComponent->setupAsPerspective(renderer->getViewWidth(), renderer->getViewHeight());
         renderer->clearBuffer(Color(0.4, 0.5, 0.8));
+        renderer->renderCubeMap(cameraComponent->getCamera(), cameraComponent, hdr);
 
         cameraRX += cameraControl.rotateY * 0.0015f;
         cameraRY += cameraControl.rotateX * 0.0015f;

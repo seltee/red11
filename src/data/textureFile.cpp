@@ -5,9 +5,9 @@
 #include "utils/image/stb_image.h"
 #include "renderer/renderer.h"
 
-TextureFile::TextureFile(std::string name, std::string filePath) : Texture(name, TextureType::Normal)
+TextureFile::TextureFile(std::string sName, std::string sFilePath) : Texture(sName, TextureType::Normal)
 {
-    this->filePath = filePath;
+    this->sFilePath = sFilePath;
     this->bStaticBuffer = false;
 }
 
@@ -24,40 +24,40 @@ unsigned char *TextureFile::setBufferSize(int width, int height)
 
 int TextureFile::getWidth()
 {
-    if (!width)
+    if (!nWidth)
         getBufferData();
-    return width;
+    return nWidth;
 }
 
 int TextureFile::getHeight()
 {
-    if (!height)
+    if (!nHeight)
         getBufferData();
-    return height;
+    return nHeight;
 }
 
 bool TextureFile::isLoaded()
 {
-    return loaded;
+    return bLoaded;
 }
 
 void TextureFile::load()
 {
-    if (!loaded)
+    if (!bLoaded)
     {
-        loaded = true;
-        int c;
-        data = stbi_load(filePath.c_str(), &width, &height, &c, 4);
+        bLoaded = true;
+        int nC;
+        data = stbi_load(sFilePath.c_str(), &nWidth, &nHeight, &nC, 4);
     }
 }
 
 void TextureFile::unload()
 {
-    if (loaded)
+    if (bLoaded)
     {
-        loaded = false;
+        bLoaded = false;
         stbi_image_free(data);
         data = nullptr;
-        Renderer::removeFromAllTextureByIndex(index);
+        Renderer::removeFromAllTextureByIndex(unIndex);
     }
 }

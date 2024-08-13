@@ -47,9 +47,6 @@ void Directx9TextureRenderData::createNormalTexture(LPDIRECT3DDEVICE9 d3ddev, Te
         return;
     }
 
-    d3ddev->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
-    d3ddev->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);
-
     updIndex = dataTexture->getUpdIndex();
 
     D3DLOCKED_RECT r;
@@ -92,9 +89,6 @@ void Directx9TextureRenderData::createByteMapTexture(LPDIRECT3DDEVICE9 d3ddev, T
             printf("E out of memory\n");
         return;
     }
-
-    d3ddev->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
-    d3ddev->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);
 
     updIndex = dataTexture->getUpdIndex();
 

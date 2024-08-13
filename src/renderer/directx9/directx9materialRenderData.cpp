@@ -17,7 +17,7 @@ DX9Material *Directx9MaterialRenderData::getData()
     return &data;
 }
 
-void Directx9MaterialRenderData::setupForRender(Directx9data *dxData)
+void Directx9MaterialRenderData::setupForRender(Directx9data *dxData, bool bUseReflectionRadiance)
 {
     MaterialSimple *materialSimple = reinterpret_cast<MaterialSimple *>(material);
     materialSimple->load();
@@ -32,7 +32,9 @@ void Directx9MaterialRenderData::setupForRender(Directx9data *dxData)
 
     // === Setup material data ===
     Directx9MaterialRenderData *materialRenderData = dxData->getMaterialRenderData(material);
-    d3ddev->SetPixelShaderConstantF(12, (const float *)materialRenderData->getData(), 3);
+    DX9Material *data = materialRenderData->getData();
+    data->useReflectionRadiance = bUseReflectionRadiance ? 1.0f : 0.0f;
+    d3ddev->SetPixelShaderConstantF(12, (const float *)data, 3);
 
     // === Setup colors ===
     // Albedo Color
@@ -106,7 +108,7 @@ void Directx9MaterialRenderData::rebuildData()
     data.useRoughnessTexture = materialSimple->getRoughnessTexture() ? 1.0f : 0.0f;
     data.useAOTexture = materialSimple->getAOTexture() ? 1.0f : 0.0f;
     data.useEmissionTexture = materialSimple->getEmissionTexture() ? 1.0f : 0.0f;
-    data.notUsed1 = 0.0f;
+    data.useReflectionRadiance = 0.0f;
 
     data.roughnessValue = materialSimple->getRoughness();
     data.metallicValue = materialSimple->getMetallic();

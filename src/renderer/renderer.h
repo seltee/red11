@@ -24,8 +24,9 @@ public:
 
     virtual RendererType getType() = 0;
 
-    virtual void prepareToRender() = 0;
+    virtual void prepareToRender(Texture *ambientTexture = nullptr, Texture *radianceTexture = nullptr) = 0;
     virtual void clearBuffer(Color color) = 0;
+    virtual void renderCubeMap(Camera *camera, Entity *entity,Texture *hdr) = 0;
 
     // This function queues everything by pointers without any copies. Be carefull not to pass a temporary object
     virtual void queueMesh(Mesh *mesh, Material *material, Matrix4 *model) = 0;
@@ -40,13 +41,13 @@ public:
     virtual void queueLight(Light *light) = 0;
     virtual void renderQueue(Camera *camera) = 0;
     virtual void clearQueue() = 0;
-    virtual void renderMesh(Camera *camera, Vector3 *cameraPosition, Mesh *mesh, Matrix4 *model) = 0;
-    virtual void renderMeshSkinned(Camera *camera, Vector3 *cameraPosition, Mesh *mesh, Matrix4 *model, std::vector<BoneTransform> *bones) = 0;
-    virtual void setAmbientLight(Color &ambientColor) = 0;
+    virtual void renderMesh(Camera *camera, Mesh *mesh, Matrix4 *model) = 0;
+    virtual void renderMeshSkinned(Camera *camera, Mesh *mesh, Matrix4 *model, std::vector<BoneTransform> *bones) = 0;
+    virtual void setAmbientLight(const Color &ambientColor) = 0;
     virtual void present() = 0;
     virtual void setupSpriteRendering(Matrix4 &mView, Matrix4 &mProjection) = 0;
-    virtual void renderSpriteRect(Matrix4 *mModel, Color color) = 0;
-    virtual void renderSpriteMask(Matrix4 *mModel, Texture *texture, Color color) = 0;
+    virtual void renderSpriteRect(Matrix4 *mModel, const Color color) = 0;
+    virtual void renderSpriteMask(Matrix4 *mModel, Texture *texture, const Color color) = 0;
     virtual void renderSpriteImage(Matrix4 *mModel, Texture *texture) = 0;
 
     inline int getViewWidth() { return viewWidth; }

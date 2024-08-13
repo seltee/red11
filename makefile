@@ -49,7 +49,8 @@ OBJ_FILES = ${OBJDIR}/red11.o \
 			${OBJDIR}/renderer.o \
 			${OBJDIR}/directx9renderer.o ${OBJDIR}/directx9meshRenderData.o ${OBJDIR}/directx9textureRenderData.o ${OBJDIR}/directx9materialRenderData.o  \
 			${OBJDIR}/directx9data.o ${OBJDIR}/directx9shader.o \
-			${OBJDIR}/mesh.o ${OBJDIR}/meshObject.o ${OBJDIR}/entity.o ${OBJDIR}/light.o ${OBJDIR}/camera.o ${OBJDIR}/texture.o ${OBJDIR}/textureFile.o ${OBJDIR}/inputProvider.o \
+			${OBJDIR}/mesh.o ${OBJDIR}/meshObject.o ${OBJDIR}/entity.o ${OBJDIR}/light.o ${OBJDIR}/camera.o ${OBJDIR}/inputProvider.o \
+			${OBJDIR}/texture.o ${OBJDIR}/textureFile.o ${OBJDIR}/textureFileHDR.o \
 			${OBJDIR}/sound.o ${OBJDIR}/soundFile.o ${OBJDIR}/font.o \
 			${OBJDIR}/deform.o ${OBJDIR}/boneTransform.o ${OBJDIR}/animation.o ${OBJDIR}/animationTarget.o ${OBJDIR}/animator.o ${OBJDIR}/animationTrack.o \
 			${OBJDIR}/physicsWorld.o ${OBJDIR}/physicsBody.o ${OBJDIR}/physicsForm.o ${OBJDIR}/physicsUtils.o \
@@ -146,6 +147,9 @@ ${OBJDIR}/texture.o: ${SRCDIR}/data/texture.cpp
 
 ${OBJDIR}/textureFile.o: ${SRCDIR}/data/textureFile.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/textureFile.o ${SRCDIR}/data/textureFile.cpp
+
+${OBJDIR}/textureFileHDR.o: ${SRCDIR}/data/textureFileHDR.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/textureFileHDR.o ${SRCDIR}/data/textureFileHDR.cpp
 
 ${OBJDIR}/inputProvider.o: ${SRCDIR}/data/inputProvider.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/inputProvider.o ${SRCDIR}/data/inputProvider.cpp

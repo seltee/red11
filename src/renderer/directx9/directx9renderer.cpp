@@ -7,6 +7,8 @@
 #include <string>
 #include <algorithm>
 
+const Color defaultAmbientColor = Color(1.0f, 1.0f, 1.0f, 1.0f);
+
 DirectX9Renderer::DirectX9Renderer(Window *window) : Renderer(window)
 {
     WindowsWindow *winWindow = (WindowsWindow *)window;
@@ -18,8 +20,11 @@ RendererType DirectX9Renderer::getType()
     return RendererType::DirectX9;
 }
 
-void DirectX9Renderer::prepareToRender()
+void DirectX9Renderer::prepareToRender(Texture *ambientTexture, Texture *radianceTexture)
 {
+    this->ambientTexture = ambientTexture;
+    this->radianceTexture = radianceTexture;
+
     if (viewWidth != window->getWidth() || viewHeight != window->getHeight())
     {
         resizeD3D(window->getWidth(), window->getHeight());
@@ -32,6 +37,34 @@ void DirectX9Renderer::clearBuffer(Color color)
 {
     d3ddev->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_XRGB(color.getRedAsUChar(), color.getGreenAsUChar(), color.getBlueAsUChar()), 1.0f, 0);
     d3ddev->Clear(0, NULL, D3DCLEAR_ZBUFFER, D3DCOLOR_XRGB(0, 0, 0), 1.0f, 0);
+}
+
+void DirectX9Renderer::renderCubeMap(Camera *camera, Entity *entity, Texture *hdr)
+{
+    if (hdr)
+    {
+        d3ddev->SetRenderState(D3DRS_ZENABLE, false);
+        d3ddev->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_BLUE | D3DCOLORWRITEENABLE_ALPHA);
+        d3ddev->SetRenderState(D3DRS_ZWRITEENABLE, false);
+
+        Vector3 camPosition = Vector3(*entity->getModelMatrix() * Vector4(0.0f, 0.0f, 0.0f, 1.0f));
+
+        Entity model;
+        model.setPosition(camPosition);
+        model.setRotation(Vector3(0, -CONST_PI / 2.0f, 0));
+
+        skyHDRShader->use();
+
+        skyMaterial->setAlbedoColor(Color(0.1f, 0.1f, 0.1f, 1.0f));
+        skyMaterial->setEmissionColor(Color(1.0f, 1.0f, 1.0f, 1.0f));
+        skyMaterial->setEmissionTexture(hdr);
+        setupMaterialColorRender(skyMaterial);
+
+        camera->updateViewMatrix(entity->getModelMatrix());
+        d3ddev->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
+        renderMesh(camera, sphereSkySphere, model.getModelMatrix());
+        d3ddev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+    }
 }
 
 void DirectX9Renderer::queueMesh(Mesh *mesh, Material *material, Matrix4 *model)
@@ -65,7 +98,7 @@ void DirectX9Renderer::renderQueue(Camera *camera)
     data.recalcDistanceInQueue(camPosition);
     data.remakeActiveQueueForCamera(camera);
     renderShadowBuffers(camPosition, camDirection);
-    renderQueueDepthBuffer(camPosition, camera);
+    renderQueueDepthBuffer(camera);
     renderQueueDepthEqual(camPosition, camera);
 }
 
@@ -75,7 +108,7 @@ void DirectX9Renderer::clearQueue()
     lastMatrixStore = 0;
 }
 
-void DirectX9Renderer::renderMesh(Camera *camera, Vector3 *cameraPosition, Mesh *mesh, Matrix4 *model)
+void DirectX9Renderer::renderMesh(Camera *camera, Mesh *mesh, Matrix4 *model)
 {
     if (!mesh)
         return;
@@ -109,7 +142,7 @@ void DirectX9Renderer::renderMesh(Camera *camera, Vector3 *cameraPosition, Mesh 
     d3ddev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, meshData->vAmount, 0, meshData->iAmount);
 }
 
-void DirectX9Renderer::renderMeshSkinned(Camera *camera, Vector3 *cameraPosition, Mesh *mesh, Matrix4 *model, std::vector<BoneTransform> *bones)
+void DirectX9Renderer::renderMeshSkinned(Camera *camera, Mesh *mesh, Matrix4 *model, std::vector<BoneTransform> *bones)
 {
     if (!mesh)
         return;
@@ -154,8 +187,7 @@ void DirectX9Renderer::renderLine(Camera *camera, Vector3 vFrom, Vector3 vTo)
     entity.setScale(Vector3(0.0008f, 0.0008f, glm::length(difference)));
     entity.setRotation(Vector3(CONST_PI / 2 - x, -y - CONST_PI / 2.0f, 0.0f));
 
-    Vector3 camPosition = Vector3(*camera->getWorldMatrix() * Vector4(0.0f, 0.0f, 0.0f, 1.0f));
-    renderMesh(camera, &camPosition, cubeMesh, entity.getModelMatrix());
+    renderMesh(camera, sphereSkySphere, entity.getModelMatrix());
 }
 
 void DirectX9Renderer::setupSpriteRendering(Matrix4 &mView, Matrix4 &mProjection)
@@ -170,7 +202,7 @@ void DirectX9Renderer::setupSpriteRendering(Matrix4 &mView, Matrix4 &mProjection
     d3ddev->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
     d3ddev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
 
-    SpriteShader->use();
+    spriteShader->use();
 
     d3ddev->SetVertexDeclaration(pVertexDeclNormalUV);
 }
@@ -202,7 +234,7 @@ void DirectX9Renderer::renderSpriteRect(Matrix4 *mModel, Color color)
     d3ddev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, meshData->vAmount, 0, meshData->iAmount);
 }
 
-void DirectX9Renderer::renderSpriteMask(Matrix4 *mModel, Texture *texture, Color color)
+void DirectX9Renderer::renderSpriteMask(Matrix4 *mModel, Texture *texture, const Color color)
 {
     Matrix4 worldViewProjection = glm::transpose(mSpriteViewProjection * *mModel);
     d3ddev->SetVertexShaderConstantF(0, (const float *)value_ptr(worldViewProjection), 4);
@@ -263,7 +295,7 @@ void DirectX9Renderer::renderSpriteImage(Matrix4 *mModel, Texture *texture)
     d3ddev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, meshData->vAmount, 0, meshData->iAmount);
 }
 
-void DirectX9Renderer::setAmbientLight(Color &ambientColor)
+void DirectX9Renderer::setAmbientLight(const Color &ambientColor)
 {
     this->ambientColor = ambientColor;
 }
@@ -324,20 +356,25 @@ void DirectX9Renderer::initD3D(HWND hWnd, bool bIsFullscreen, int width, int hei
     cubeMesh->addUser();
     spriteMesh = Red11::getMeshBuilder()->createSprite(1.0f);
     spriteMesh->addUser();
+    sphereSkySphere = Red11::getMeshBuilder()->createSphere(1.0f, 14, 10);
+    sphereSkySphere->addUser();
 
     lineMaterial = new MaterialSimple(Color(0.0, 0.0, 0.0), Color(0.2, 1.0, 0.2));
     lineMaterial->addUser();
+    skyMaterial = new MaterialSimple(Color(0.0, 0.0, 0.0));
+    skyMaterial->addUser();
 
     UVSimpleShader = new DirectX9Shader("UV Simple Shader", d3ddev, (const DWORD *)UVSimpleVertexShader_vso, (const DWORD *)UVSimpleFragmentShader_pso);
     UVSimpleMaskShader = new DirectX9Shader("UV Simple Mask Shader", d3ddev, (const DWORD *)UVSimpleMaskVertexShader_vso, (const DWORD *)UVSimpleMaskFragmentShader_pso);
     UVShader = new DirectX9Shader("UV Shader", d3ddev, (const DWORD *)UVVertexShader_vso, (const DWORD *)UVFragmentShader_pso);
     UVNormalShader = new DirectX9Shader("UV Normal Shader", d3ddev, (const DWORD *)UVNormalVertexShader_vso, (const DWORD *)UVNormalFragmentShader_pso);
-    UVSkinnedShader = new DirectX9Shader("UV Normal Shader", d3ddev, (const DWORD *)UVSkinnedVertexShader_vso, (const DWORD *)UVSkinnedFragmentShader_pso);
-    UVSkinnedNormalShader = new DirectX9Shader("UV Normal Shader", d3ddev, (const DWORD *)UVSkinnedNormalVertexShader_vso, (const DWORD *)UVSkinnedNormalFragmentShader_pso);
-    UVShadowShader = new DirectX9Shader("UV Normal Shader", d3ddev, (const DWORD *)UVShadowVertexShader_vso, (const DWORD *)UVShadowFragmentShader_pso);
-    UVShadowMaskShader = new DirectX9Shader("UV Normal Shader", d3ddev, (const DWORD *)UVShadowMaskVertexShader_vso, (const DWORD *)UVShadowMaskFragmentShader_pso);
-    UVShadowSkinnedShader = new DirectX9Shader("UV Normal Shader", d3ddev, (const DWORD *)UVShadowSkinnedVertexShader_vso, (const DWORD *)UVShadowFragmentShader_pso);
-    SpriteShader = new DirectX9Shader("UV Normal Shader", d3ddev, (const DWORD *)SpriteVertexShader_vso, (const DWORD *)SpriteFragmentShader_pso);
+    UVSkinnedShader = new DirectX9Shader("UV Skinned Shader", d3ddev, (const DWORD *)UVSkinnedVertexShader_vso, (const DWORD *)UVFragmentShader_pso);
+    UVSkinnedNormalShader = new DirectX9Shader("UV Skinned Normal Shader", d3ddev, (const DWORD *)UVSkinnedNormalVertexShader_vso, (const DWORD *)UVNormalFragmentShader_pso);
+    UVShadowShader = new DirectX9Shader("UV Shadow Shader", d3ddev, (const DWORD *)UVShadowVertexShader_vso, (const DWORD *)UVShadowFragmentShader_pso);
+    UVShadowMaskShader = new DirectX9Shader("UV Shadow Mask Shader", d3ddev, (const DWORD *)UVShadowMaskVertexShader_vso, (const DWORD *)UVShadowMaskFragmentShader_pso);
+    UVShadowSkinnedShader = new DirectX9Shader("UV Shadow Skinned Shader", d3ddev, (const DWORD *)UVShadowSkinnedVertexShader_vso, (const DWORD *)UVShadowFragmentShader_pso);
+    skyHDRShader = new DirectX9Shader("Sky HDR Shader", d3ddev, (const DWORD *)skyHDRVertexShader_vso, (const DWORD *)skyHDRFragmentShader_pso);
+    spriteShader = new DirectX9Shader("UV Normal Shader", d3ddev, (const DWORD *)SpriteVertexShader_vso, (const DWORD *)SpriteFragmentShader_pso);
 
     D3DVERTEXELEMENT9 VertexElementsNormalUV[] = {
         {0, offsetof(DX9VertexNormalUV, x), D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0},
@@ -364,11 +401,16 @@ void DirectX9Renderer::initD3D(HWND hWnd, bool bIsFullscreen, int width, int hei
     defaultMaterial->addUser();
 
     // shadow slots setup
-    for (int i = 8; i < 16; i++)
+    for (int i = 10; i < 16; i++)
     {
         d3ddev->SetSamplerState(i, D3DSAMP_ADDRESSU, D3DTADDRESS_BORDER);
         d3ddev->SetSamplerState(i, D3DSAMP_ADDRESSV, D3DTADDRESS_BORDER);
         d3ddev->SetSamplerState(i, D3DSAMP_BORDERCOLOR, D3DCOLOR_XRGB(255, 255, 255));
+    }
+
+    // filtering setup
+    for (int i = 0; i < 16; i++)
+    {
         d3ddev->SetSamplerState(i, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);
         d3ddev->SetSamplerState(i, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
         d3ddev->SetSamplerState(i, D3DSAMP_MIPFILTER, D3DTEXF_NONE);
@@ -389,7 +431,7 @@ void DirectX9Renderer::resizeD3D(int width, int height)
     this->viewHeight = height;
 }
 
-void DirectX9Renderer::renderQueueDepthBuffer(Vector3 &cameraPosition, Camera *camera)
+void DirectX9Renderer::renderQueueDepthBuffer(Camera *camera)
 {
     // Enable z buffer
     d3ddev->SetRenderState(D3DRS_ZENABLE, true);
@@ -406,12 +448,12 @@ void DirectX9Renderer::renderQueueDepthBuffer(Vector3 &cameraPosition, Camera *c
     for (int i = 0; i < data.queueActiveCurrentMesh; i++)
     {
         if (!data.queueActiveMeshes[i]->material->isAlphaPhase())
-            renderMeshDepthData(camera, cameraPosition, data.queueActiveMeshes[i]);
+            renderMeshDepthData(camera, data.queueActiveMeshes[i]);
     }
     d3ddev->EndScene();
 }
 
-void DirectX9Renderer::renderQueueLightDepthBuffer(Vector3 &cameraPosition, Camera *camera)
+void DirectX9Renderer::renderQueueLightDepthBuffer(Camera *camera)
 {
     // Enable z buffer
     d3ddev->SetRenderState(D3DRS_ZENABLE, true);
@@ -428,7 +470,7 @@ void DirectX9Renderer::renderQueueLightDepthBuffer(Vector3 &cameraPosition, Came
     for (int i = 0; i < data.queueCurrentMesh; i++)
     {
         if (data.queueMeshes[i].mesh->isCastsShadow() && data.isMeshVisibleToCamera(&data.queueMeshes[i], camera))
-            renderMeshShadowDepthData(camera, cameraPosition, &data.queueMeshes[i]);
+            renderMeshShadowDepthData(camera, &data.queueMeshes[i]);
     }
     d3ddev->EndScene();
 }
@@ -447,6 +489,23 @@ void DirectX9Renderer::renderQueueDepthEqual(Vector3 &cameraPosition, Camera *ca
     // Ambient Color is shared
     d3ddev->SetPixelShaderConstantF(18, ambientColor.getAsFloatArray(), 1);
 
+    if (ambientTexture && radianceTexture)
+    {
+        bUseRadianceReflection = true;
+        Directx9TextureRenderData *radianceTextureData = data.getTextureRenderData(radianceTexture);
+        Directx9TextureRenderData *reflectionTextureData = data.getTextureRenderData(ambientTexture);
+
+        if (radianceTextureData && reflectionTextureData)
+        {
+            d3ddev->SetTexture(8, radianceTextureData->texture);
+            d3ddev->SetTexture(9, reflectionTextureData->texture);
+        }
+    }
+    else
+    {
+        bUseRadianceReflection = false;
+    }
+
     // Camera position is shared among all render targets
     d3ddev->SetPixelShaderConstantF(17, (const float *)value_ptr(cameraPosition), 1);
 
@@ -460,7 +519,7 @@ void DirectX9Renderer::renderQueueDepthEqual(Vector3 &cameraPosition, Camera *ca
         if (data.queueActiveMeshes[i]->material->isAlphaPhase())
             alphaRenderMeshes.push_back(data.queueActiveMeshes[i]);
         else
-            renderMeshColorData(camera, cameraPosition, data.queueActiveMeshes[i]);
+            renderMeshColorData(camera, data.queueActiveMeshes[i]);
     }
 
     // === Sort and Render Alpha Meshes ===
@@ -470,7 +529,7 @@ void DirectX9Renderer::renderQueueDepthEqual(Vector3 &cameraPosition, Camera *ca
               { return a->distance > b->distance; });
     for (auto &renderMesh : alphaRenderMeshes)
     {
-        renderMeshColorData(camera, cameraPosition, renderMesh);
+        renderMeshColorData(camera, renderMesh);
     }
 
     if (data.queueCurrentLine > 0)
@@ -534,8 +593,8 @@ void DirectX9Renderer::setupLights(Vector3 objectPosition, float objectRadius)
     // Bonned meshed limited to 4 shadows per mesh
     int baseReg = 20;
     int shadowMatrixBaseReg = 16;
-    int shadowMatrixMaxReg = 32;
-    int shadowTextureBaseReg = 8;
+    int shadowMatrixMaxReg = 28;
+    int shadowTextureBaseReg = 10;
     DX9LightShaderStruct dxLight;
     memset(&dxLight, 0, sizeof(DX9LightShaderStruct));
 
@@ -659,7 +718,7 @@ void DirectX9Renderer::setupLights(Vector3 objectPosition, float objectRadius)
     }
 }
 
-void DirectX9Renderer::renderMeshColorData(Camera *camera, Vector3 &cameraPosition, QueuedMeshRenderData *mesh)
+void DirectX9Renderer::renderMeshColorData(Camera *camera, QueuedMeshRenderData *mesh)
 {
     setupLights(Vector3(*mesh->model * Vector4(mesh->centroid, 1.0f)), 1.0f);
     setupMaterialColorRender(mesh->material);
@@ -675,7 +734,7 @@ void DirectX9Renderer::renderMeshColorData(Camera *camera, Vector3 &cameraPositi
             else
                 UVSkinnedShader->use();
         }
-        renderMeshSkinned(camera, &cameraPosition, mesh->mesh, mesh->model, &mesh->bones);
+        renderMeshSkinned(camera, mesh->mesh, mesh->model, &mesh->bones);
     }
     else
     {
@@ -688,11 +747,11 @@ void DirectX9Renderer::renderMeshColorData(Camera *camera, Vector3 &cameraPositi
             else
                 UVShader->use();
         }
-        renderMesh(camera, &cameraPosition, mesh->mesh, mesh->model);
+        renderMesh(camera, mesh->mesh, mesh->model);
     }
 }
 
-void DirectX9Renderer::renderMeshDepthData(Camera *camera, Vector3 &cameraPosition, QueuedMeshRenderData *mesh)
+void DirectX9Renderer::renderMeshDepthData(Camera *camera, QueuedMeshRenderData *mesh)
 {
     if (mesh->bones.size() > 0)
     {
@@ -701,7 +760,7 @@ void DirectX9Renderer::renderMeshDepthData(Camera *camera, Vector3 &cameraPositi
             mesh->material->getShaderDepthSkinned(RendererType::DirectX9)->use();
         else
             UVSkinnedShader->use();
-        renderMeshSkinned(camera, &cameraPosition, mesh->mesh, mesh->model, &mesh->bones);
+        renderMeshSkinned(camera, mesh->mesh, mesh->model, &mesh->bones);
     }
     else
     {
@@ -721,11 +780,11 @@ void DirectX9Renderer::renderMeshDepthData(Camera *camera, Vector3 &cameraPositi
                 UVSimpleShader->use();
         }
 
-        renderMesh(camera, &cameraPosition, mesh->mesh, mesh->model);
+        renderMesh(camera, mesh->mesh, mesh->model);
     }
 }
 
-void DirectX9Renderer::renderMeshShadowDepthData(Camera *camera, Vector3 &cameraPosition, QueuedMeshRenderData *mesh)
+void DirectX9Renderer::renderMeshShadowDepthData(Camera *camera, QueuedMeshRenderData *mesh)
 {
     if (mesh->bones.size() > 0)
     {
@@ -733,7 +792,7 @@ void DirectX9Renderer::renderMeshShadowDepthData(Camera *camera, Vector3 &camera
             mesh->material->getShaderShadowSkinned(RendererType::DirectX9)->use();
         else
             UVShadowSkinnedShader->use();
-        renderMeshSkinned(camera, &cameraPosition, mesh->mesh, mesh->model, &mesh->bones);
+        renderMeshSkinned(camera, mesh->mesh, mesh->model, &mesh->bones);
     }
     else
     {
@@ -753,7 +812,7 @@ void DirectX9Renderer::renderMeshShadowDepthData(Camera *camera, Vector3 &camera
                 UVSimpleMaskShader->use();
         }
 
-        renderMesh(camera, &cameraPosition, mesh->mesh, mesh->model);
+        renderMesh(camera, mesh->mesh, mesh->model);
     }
 }
 
@@ -801,7 +860,7 @@ void DirectX9Renderer::renderShadowBuffersDirectional(Vector3 &cameraPosition, V
         d3ddev->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_XRGB(0, 0, 0), 1.0f, 0);
         d3ddev->Clear(0, NULL, D3DCLEAR_ZBUFFER, D3DCOLOR_XRGB(0, 0, 0), 1.0f, 0);
 
-        renderQueueLightDepthBuffer(lightShotPosition, &camera);
+        renderQueueLightDepthBuffer(&camera);
         if (i == 0)
             light->setShadowViewProjectionMatrix(glm::transpose(*camera.getProjectionMatrix() * *camera.getViewMatrix()));
     }
@@ -840,7 +899,7 @@ void DirectX9Renderer::renderShadowBuffersSpot(Light *light)
     d3ddev->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_XRGB(0, 0, 0), 1.0f, 0);
     d3ddev->Clear(0, NULL, D3DCLEAR_ZBUFFER, D3DCOLOR_XRGB(0, 0, 0), 1.0f, 0);
 
-    renderQueueLightDepthBuffer(lightPosition, &camera);
+    renderQueueLightDepthBuffer(&camera);
 
     light->setShadowViewProjectionMatrix(glm::transpose(*camera.getProjectionMatrix() * *camera.getViewMatrix()));
 

@@ -39,6 +39,9 @@ APPMAIN
     crateMaterial->setRoughness(0.7f);
     crateMaterial->setMetallic(0.2f);
 
+    auto hdr = new TextureFileHDR("HDR", "./data/meadow.hdr", 1.8f, 2.9f);
+    auto radiance = hdr->getRadianceTexture();
+
     // Meshes
     auto cubeMesh = Red11::getMeshBuilder()->createCube(0.1f);
     auto cubeMeshBig = Red11::getMeshBuilder()->createCube(0.25f);
@@ -53,7 +56,7 @@ APPMAIN
 
     // Scene
     auto scene = Red11::createScene();
-    scene->setAmbientLight(Color(0.4f, 0.4f, 0.6f));
+    scene->setAmbientLight(Color(0.1f, 0.12f, 0.14f));
     PhysicsWorld *world = scene->getPhysicsWorld();
     world->setGravity(Vector3(0, -1.0f, 0));
 
@@ -277,9 +280,10 @@ APPMAIN
 
         window->processWindow();
         window->setMousePosition(renderer->getViewWidth() / 2, renderer->getViewHeight() / 2);
-        renderer->prepareToRender();
+        renderer->prepareToRender(hdr, radiance);
         cameraComponent->setupAsPerspective(renderer->getViewWidth(), renderer->getViewHeight());
         renderer->clearBuffer(Color(0.4, 0.5, 0.8));
+        renderer->renderCubeMap(cameraComponent->getCamera(), cameraComponent, hdr);
 
         timer -= delta;
         if (timer < 0.0f)

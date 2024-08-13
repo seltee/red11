@@ -1,3 +1,6 @@
+static const float2 invAtan = float2(0.1591, 0.3183);
+static const float HDRSwitch = 0.5;
+
 struct Light
 {
     float4 type;     // 1 - directional / omni / spot, 2 - castShadow, 3 - texel size / outer radius, 4 - constant
@@ -215,4 +218,26 @@ inline float3 CaclLight(
     float3 specular = numerator / denominator;
 
     return (kD * diffuse + specular) * light.color.xyz * NdotL * attenuation;
+}
+
+inline float2 SampleSphericalMap(float3 v)
+{
+    float2 uv = float2(atan2(v.z, v.x), asin(v.y));
+    uv *= invAtan;
+    uv += 0.5;
+    return uv;
+}
+
+inline float3 calcReflectionRadiance(sampler2D radianceTexSampler, sampler2D reflectionTexSampler, float3 N, float3 V, float roughness)
+{
+    float3 R = normalize(reflect(-normalize(V), normalize(N)));
+    float2 uv = SampleSphericalMap(N);
+    float2 uv2 = SampleSphericalMap(R);
+    float3 irradiance = tex2D(radianceTexSampler, uv).rgb;
+    float3 reflection = tex2D(reflectionTexSampler, uv2).rgb;
+
+    float fullRadianceFactor = max(pow(1.0 - roughness, 2) - HDRSwitch, 0.0) * (1.0 / max(1.0 - HDRSwitch, 0.0001));
+    float blurRadianceFactor = 1.0 - fullRadianceFactor;
+
+    return irradiance * blurRadianceFactor + reflection * fullRadianceFactor;
 }

@@ -91,7 +91,7 @@ struct DX9Material
     float useRoughnessTexture;
     float useAOTexture;
     float useEmissionTexture;
-    float notUsed1;
+    float useReflectionRadiance;
 
     float roughnessValue;
     float metallicValue;

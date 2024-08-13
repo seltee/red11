@@ -13,14 +13,14 @@ struct VS_Output
     float3 worldPos : TEXCOORD2;
     float3 normal : TEXCOORD1;
     float2 texCoord : TEXCOORD;
-    float3 shadowCoord[4] : TEXCOORD3;
+    float3 shadowCoord[3] : TEXCOORD3;
 };
 
 matrix World : register(c0);
 matrix WorldViewProj : register(c4);
 matrix WorldInverseTranspose : register(c8);
 
-matrix LightsShadowMatricies[4] : register(c16);
+matrix LightsShadowMatricies[3] : register(c16);
 
 VS_Output main(VS_Input vin)
 {
@@ -29,7 +29,7 @@ VS_Output main(VS_Input vin)
     vout.worldPos = mul(float4(vin.pos, 1.f), World).xyz;
     vout.normal = normalize(mul(vin.normal, (float3x3)WorldInverseTranspose));
     vout.texCoord = vin.texCoord;
-    for (int i = 0; i < 4; i++)
+    for (int i = 0; i < 3; i++)
     {
         float4 shadowCoord = mul(float4(vout.worldPos, 1.0), LightsShadowMatricies[i]);
         shadowCoord.xyz /= shadowCoord.w;

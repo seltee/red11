@@ -5,26 +5,26 @@
 #include "renderer/renderer.h"
 
 std::vector<Texture *> Texture::textures;
-bool Texture::indexPool[MAX_ELEMENT_INDEX];
-unsigned int Texture::nextIndex = 0;
+bool Texture::pbIndexPool[MAX_ELEMENT_INDEX];
+unsigned int Texture::unNextIndex = 0;
 
 Texture::Texture(TextureType textureType) : Texture("texture", textureType)
 {
 }
 
-Texture::Texture(std::string name, TextureType textureType)
+Texture::Texture(std::string sName, TextureType textureType)
 {
-    this->name = name;
+    this->sName = sName;
     this->textureType = textureType;
-    index = getNextIndex();
+    unIndex = getNextIndex();
     textures.push_back(this);
 }
 
-Texture::Texture(std::string name, TextureType textureType, int width, int height, unsigned char *data) : Texture(name, textureType)
+Texture::Texture(std::string sName, TextureType textureType, int nWidth, int nHeight, unsigned char *data) : Texture(sName, textureType)
 {
     this->textureType = textureType;
-    setBufferSize(width, height);
-    memcpy(this->data, data, width * height * getBytesPerPixel());
+    setBufferSize(nWidth, nHeight);
+    memcpy(this->data, data, nWidth * nHeight * getBytesPerPixel());
 }
 
 Texture::~Texture()
@@ -42,7 +42,7 @@ Texture::~Texture()
         it++;
     }
 
-    indexPool[index] = false;
+    pbIndexPool[unIndex] = false;
 }
 
 unsigned char *Texture::getBufferData()
@@ -55,33 +55,33 @@ void Texture::releaseBuffer()
     if (data)
         delete[] data;
     data = nullptr;
-    updIndex++;
+    unUpdIndex++;
 }
 
-unsigned char *Texture::setBufferSize(int width, int height)
+unsigned char *Texture::setBufferSize(int nWidth, int nHeight)
 {
     if (data)
         delete[] data;
 
-    this->width = width;
-    this->height = height;
+    this->nWidth = nWidth;
+    this->nHeight = nHeight;
 
-    int size = width * height * getBytesPerPixel();
+    int size = nWidth * nHeight * getBytesPerPixel();
     data = new unsigned char[size];
 
     memset(data, 0, size);
-    updIndex++;
+    unUpdIndex++;
     return data;
 }
 
 int Texture::getWidth()
 {
-    return width;
+    return nWidth;
 }
 
 int Texture::getHeight()
 {
-    return height;
+    return nHeight;
 }
 
 int Texture::getBytesPerPixel()
@@ -92,19 +92,19 @@ int Texture::getBytesPerPixel()
 unsigned int Texture::getColorAtPoint(int x, int y)
 {
     auto dt = getBufferData();
-    if (dt && width && height)
+    if (dt && nWidth && nHeight)
     {
-        int p = (y * width + x);
-        if (p >= 0 && p < width * height)
+        int p = (y * nWidth + x);
+        if (p >= 0 && p < nWidth * nHeight)
             return reinterpret_cast<unsigned int *>(dt)[p];
     }
     return 0;
 }
 
-void Texture::setGpuRenderSize(int width, int height)
+void Texture::setGpuRenderSize(int nWidth, int nHeight)
 {
-    this->width = width;
-    this->height = height;
+    this->nWidth = nWidth;
+    this->nHeight = nHeight;
 }
 
 void Texture::destroy()
@@ -123,18 +123,18 @@ void Texture::load()
 
 void Texture::unload()
 {
-    Renderer::removeFromAllTextureByIndex(index);
+    Renderer::removeFromAllTextureByIndex(unIndex);
 }
 
 unsigned int Texture::getNextIndex()
 {
-    while (indexPool[nextIndex])
+    while (pbIndexPool[unNextIndex])
     {
-        nextIndex++;
-        if (nextIndex >= MAX_ELEMENT_INDEX)
-            nextIndex = 0;
+        unNextIndex++;
+        if (unNextIndex >= MAX_ELEMENT_INDEX)
+            unNextIndex = 0;
     }
 
-    indexPool[nextIndex] = true;
-    return nextIndex;
+    pbIndexPool[unNextIndex] = true;
+    return unNextIndex;
 }

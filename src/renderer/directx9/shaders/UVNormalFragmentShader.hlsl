@@ -9,7 +9,9 @@ sampler2D roughnessTexSampler : register(s5);
 sampler2D aoTexSampler : register(s6);
 sampler2D emptyTexSampler : register(s7);
 
-sampler2D shadowTexSampler[8] : register(s8);
+sampler2D radianceTexSampler : register(s8);
+sampler2D reflectionTexSampler : register(s9);
+sampler2D shadowTexSampler[6] : register(s10);
 
 struct VS_Output
 {
@@ -19,7 +21,7 @@ struct VS_Output
     float2 texCoord : TEXCOORD;
     float3 tangent : TEXCOORD3;
     float3 bitangent : TEXCOORD4;
-    float3 shadowCoord[4] : TEXCOORD5;
+    float3 shadowCoord[3] : TEXCOORD5;
 };
 
 // useAlbedoTexture, useAlphaTexture, useNormalTexture, useMetallicTexture;
@@ -60,9 +62,14 @@ float4 main(VS_Output pin) : SV_TARGET
     float3 N = normalize(mul(normalMapSample, TBN));
     float3 V = normalize(CameraPosition.xyz - pin.worldPos);
     float3 H, L, F;
-    float3 diffuse = albedo.xyz / 3.14159265359;
 
-    float3 color = albedo.xyz * AmbientLightColor.xyz * ao + emission;
+    float3 ambientColor = AmbientLightColor.rgb;
+    if (MaterialData2[3])
+    {
+        ambientColor += calcReflectionRadiance(radianceTexSampler, reflectionTexSampler, N, V, roughness);
+    }
+    float3 diffuse = albedo.rgb / 3.14159265359;
+    float3 color = albedo.rgb * ambientColor * ao + emission;
 
     if (Lights[0].type[0] > 0.1)
         color += CaclLightWithShadow(
@@ -77,8 +84,7 @@ float4 main(VS_Output pin) : SV_TARGET
             Lights[2], shadowTexSampler[4], shadowTexSampler[5], diffuse, metallic, roughness, N, V, pin.worldPos, pin.shadowCoord[2], pin.normal);
 
     if (Lights[3].type[0] > 0.1)
-        color += CaclLightWithShadow(
-            Lights[3], shadowTexSampler[6], shadowTexSampler[7], diffuse, metallic, roughness, N, V, pin.worldPos, pin.shadowCoord[3], pin.normal);
+        color += CaclLight(Lights[3], diffuse, metallic, roughness, N, V, pin.worldPos);
 
     if (Lights[4].type[0] > 0.1)
         color += CaclLight(Lights[4], diffuse, metallic, roughness, N, V, pin.worldPos);

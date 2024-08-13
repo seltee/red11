@@ -21,7 +21,7 @@ public:
     {
         return (getAlphaAsUChar() << 24) | (getRedAsUChar() << 16) | (getGreenAsUChar() << 8) | (getBlueAsUChar());
     }
-    inline float *getAsFloatArray() { return &r; }
+    inline const float *getAsFloatArray() const { return &r; }
 
     EXPORT Color &operator=(const Color &other);
 };

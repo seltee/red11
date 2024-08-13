@@ -17,14 +17,14 @@ struct VS_Output
     float2 texCoord : TEXCOORD;
     float3 tangent : TEXCOORD3;
     float3 bitangent : TEXCOORD4;
-    float3 shadowCoord[4] : TEXCOORD5;
+    float3 shadowCoord[3] : TEXCOORD5;
 };
 
 matrix World : register(c0);
 matrix WorldViewProj : register(c4);
 matrix WorldInverseTranspose : register(c8);
 
-matrix LightsShadowMatricies[4] : register(c16);
+matrix LightsShadowMatricies[3] : register(c16);
 
 VS_Output main(VS_Input vin)
 {
@@ -35,7 +35,7 @@ VS_Output main(VS_Input vin)
     vout.tangent = normalize(mul(vin.tangent, (float3x3)WorldInverseTranspose));
     vout.bitangent = normalize(mul(vin.bitangent, (float3x3)WorldInverseTranspose));
     vout.texCoord = vin.texCoord;
-    for (int i = 0; i < 4; i++)
+    for (int i = 0; i < 3; i++)
     {
         float4 shadowCoord = mul(float4(vout.worldPos, 1.0), LightsShadowMatricies[i]);
         shadowCoord.xyz /= shadowCoord.w;

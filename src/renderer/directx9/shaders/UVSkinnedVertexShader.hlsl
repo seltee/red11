@@ -15,7 +15,7 @@ struct VS_Output
     float3 worldPos : TEXCOORD2;
     float3 normal : TEXCOORD1;
     float2 uv : TEXCOORD;
-    float3 shadowCoord[4] : TEXCOORD3;
+    float3 shadowCoord[3] : TEXCOORD3;
 };
 
 matrix ViewProj : register(c0);
@@ -51,7 +51,7 @@ VS_Output main(VS_Input vin)
     vout.normal = normalize(normal);
     vout.uv = vin.uv;
 
-    for (int p = 0; p < 4; p++)
+    for (int p = 0; p < 3; p++)
     {
         float4 shadowCoord = mul(float4(vout.worldPos, 1.0), LightsShadowMatricies[p]);
         shadowCoord.xyz /= shadowCoord.w;

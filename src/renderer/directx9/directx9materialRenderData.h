@@ -22,7 +22,7 @@ public:
 
     DX9Material *getData();
 
-    void setupForRender(Directx9data *dxData);
+    void setupForRender(Directx9data *dxData, bool bUseReflectionRadiance);
     void setupForDepth(Directx9data *dxData);
 
 protected:

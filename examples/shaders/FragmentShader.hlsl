@@ -17,7 +17,7 @@ struct VS_Output
     float3 worldPos : TEXCOORD2;
     float3 normal : TEXCOORD1;
     float2 texCoord : TEXCOORD;
-    float3 shadowCoord[4] : TEXCOORD3;
+    float3 shadowCoord[3] : TEXCOORD3;
 };
 
 // useAlbedoTexture, useAlphaTexture, useNormalTexture, useMetallicTexture;
@@ -67,8 +67,7 @@ float4 main(VS_Output pin) : SV_TARGET
             Lights[2], shadowTexSampler[4], shadowTexSampler[5], diffuse, metallic, roughness, N, V, pin.worldPos, pin.shadowCoord[2], N);
 
     if (Lights[3].type[0] > 0.1)
-        color += CaclLightWithShadow(
-            Lights[3], shadowTexSampler[6], shadowTexSampler[7], diffuse, metallic, roughness, N, V, pin.worldPos, pin.shadowCoord[3], N);
+        color += CaclLight(Lights[3], diffuse, metallic, roughness, N, V, N);
 
     if (Lights[4].type[0] > 0.1)
         color += CaclLight(Lights[4], diffuse, metallic, roughness, N, V, N);

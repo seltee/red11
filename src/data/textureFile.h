@@ -19,6 +19,6 @@ public:
     EXPORT void unload() override;
 
 protected:
-    std::string filePath;
-    bool loaded = false;
+    std::string sFilePath;
+    bool bLoaded = false;
 };
