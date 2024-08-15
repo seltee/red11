@@ -219,6 +219,7 @@ WindowsWindow::WindowsWindow(std::string windowName, int width, int height, int 
 
     ShowWindow(hWnd, true);
     UpdateWindow(hWnd);
+    SetActiveWindow(hWnd);
 
     setCursorIcon(MouseCursorIcon::Default);
 }
@@ -228,8 +229,9 @@ void WindowsWindow::processWindow()
     bCursorOverWindow = true;
 
     TRACKMOUSEEVENT tme = {sizeof(tme)};
-    tme.dwFlags = TME_LEAVE;
+    tme.dwFlags = TME_HOVER | TME_LEAVE;
     tme.hwndTrack = hWnd;
+    tme.dwHoverTime = HOVER_DEFAULT;
     TrackMouseEvent(&tme);
 
     if (state.bIsValid && !state.bIsCloseRequested)
@@ -483,6 +485,8 @@ void WindowsWindow::updateMousePosition(int x, int y)
 void WindowsWindow::updateMouseOverWindow(bool bState)
 {
     this->bCursorOverWindow = bState;
+    if (!bState)
+        setCursorIcon(MouseCursorIcon::Default);
 }
 
 MousePosition WindowsWindow::getMousePosition()
