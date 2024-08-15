@@ -1,31 +1,34 @@
 # Red 11 Engine
 
-### Is
-
-Personal crossplatform 2D/3D game engine I'm creating for development of my indie projects.
+Personal 2D/3D game engine I'm creating for development of my indie projects. Primary renderer uses DirectX 9.0c.
 
 ### Features
 
-- Support for variety of retro hardware (DirectX 9/OpenGL 2)
-- Support for multipls OS
-- No additional libraries required to build aside of standard ones
+- PBR rendering
+- Lights (Omni, Directional and Spot)
+- Shadows (Directional and Spot only)
+- Simple Physics (Capsule, AABB, Mesh, Convex, Sphere)
+- UI system
+- Support for variety of retro hardware
+- Works on Windows 7 and later, Windows XP currently unsupported (Work in progress, problems with multithreading)
+- No additional libraries required to build aside of standard C++ ones
 
 # Compilation
 
-1. Clone the repo, install make tools if you don't have it, install clang++
-2. Install following libraries:
+1. Clone the repo, install make tools and clang++
+2. Run make in root directory
 
 # Usage
 
 ### Windows
 
 Link rtengine.lib with your program and put rtengine.dll into your bin folder.
-
 You can just reproduce the same building process as the examples.
 
 ### How to learn
 
-The easiest and currently the only way is to go through the examples. They have comments to explain how to do most of the things the engine capable of and to understand it's architecture
+The easiest and currently the only way is to go through the examples. 
+They have comments to explain how to do most of the things the engine capable of and to understand it's architecture
 
 ### How engine is being developed
 
