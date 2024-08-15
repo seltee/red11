@@ -31,9 +31,9 @@ void ComponentMeshGroup::onRenderQueue(Renderer *renderer)
                     {
                         Deform *deform = mesh->getDeformByName(*boneIt->getNamePointer());
                         if (deform)
-                            boneTransforms.push_back(BoneTransform(boneIt->getModelMatrix(), deform));
+                            boneTransforms.push_back(BoneTransform(&boneIt->getModelMatrix(), deform));
                     }
-                    renderer->queueMeshSkinned(mesh, material, it->getModelMatrix(), &boneTransforms);
+                    renderer->queueMeshSkinned(mesh, material, &it->getModelMatrix(), &boneTransforms);
                 }
                 else
                 {
@@ -48,8 +48,8 @@ void ComponentMeshGroup::onRenderQueue(Renderer *renderer)
             {
                 if (bViewBones && it->isBone() && it->getParent() && it->getParent()->isBone())
                 {
-                    Vector3 from = Vector3(*it->getModelMatrix() * Vector4(0.0f, 0.0f, 0.0f, 1.0f));
-                    Vector3 to = Vector3(*it->getParent()->getModelMatrix() * Vector4(0.0f, 0.0f, 0.0f, 1.0f));
+                    Vector3 from = Vector3(it->getModelMatrix() * Vector4(0.0f, 0.0f, 0.0f, 1.0f));
+                    Vector3 to = Vector3(it->getParent()->getModelMatrix() * Vector4(0.0f, 0.0f, 0.0f, 1.0f));
                     renderer->queueLine(from, to, Color(0.2f, 0.8f, 0.2f, 1.0f));
                 }
                 if (bViewBones && it->isBone() && it->getParent() && it->getParent()->isBone())
@@ -58,12 +58,12 @@ void ComponentMeshGroup::onRenderQueue(Renderer *renderer)
                     {
                         if (meshIt->getMesh())
                         {
-                            float scale = findMaxScale(extractScale(*it->getModelMatrix()));
+                            float scale = findMaxScale(extractScale(it->getModelMatrix()));
                             Deform *deform = meshIt->getMesh()->getDeformByName(*it->getNamePointer());
                             if (deform)
                             {
                                 float radius = deform->getCullingRadius() * scale;
-                                Vector3 from = Vector3(*it->getModelMatrix() * Vector4(0.0f, 0.0f, 0.0f, 1.0f));
+                                Vector3 from = Vector3(it->getModelMatrix() * Vector4(0.0f, 0.0f, 0.0f, 1.0f));
                                 renderer->queueLine(from, from + Vector3(0, radius, 0), Color(0.8f, 0.2f, 0.2f, 1.0f));
                                 renderer->queueLine(from, from + Vector3(0, -radius, 0), Color(0.8f, 0.2f, 0.2f, 1.0f));
                                 renderer->queueLine(from, from + Vector3(radius, 0, 0), Color(0.8f, 0.2f, 0.2f, 1.0f));
@@ -109,7 +109,7 @@ void ComponentMeshGroup::onProcess(float delta)
             for (auto &track : tracks)
             {
                 if (track->isPlaying())
-                    totalWeightNode += track->getNodeWeight(node->getNamePointer());
+                    totalWeightNode += track->getNodeWeight(*node->getNamePointer());
             }
 
             float initialTake = fmaxf(0.0f, 1.0f - totalWeightNode);
@@ -120,7 +120,7 @@ void ComponentMeshGroup::onProcess(float delta)
             Vector3 scale = initialTake > 0.0f ? node->initialScale * initialTake : Vector3(0.0f);
 
             for (auto &track : tracks)
-                track->addTransformation(totalWeightNode, node->getNamePointer(), &position, &rotation, &scale);
+                track->addTransformation(totalWeightNode, *node->getNamePointer(), &position, &rotation, &scale);
 
             // printf("%s - %f %f %f\n", node->getNamePointer()->c_str(), position.x, position.y, position.z);
 

@@ -25,19 +25,19 @@ public:
     EXPORT void setupAsPerspective(float width, float height, float nearDistance = 0.01f, float farDistance = 80.0f, float fov = 45.0f);
 
     EXPORT void recalcCullingPlanes();
-    inline Vector4 *getCullingPlanes() { return cullingPlanes; }
+    inline const Vector4 *getCullingPlanes() const { return cullingPlanes; }
 
-    inline void updateViewMatrix(Matrix4 *worldModelMatrix)
+    inline void updateViewMatrix(const Matrix4 &worldModelMatrix)
     {
-        this->worldMatrix = *worldModelMatrix;
-        this->viewMatrix = glm::inverse(*worldModelMatrix);
+        this->worldMatrix = worldModelMatrix;
+        this->viewMatrix = glm::inverse(worldModelMatrix);
     }
-    inline Vector3 getForwardVector()
+    inline Vector3 getForwardVector() const
     {
         return Matrix3(worldMatrix) * Vector3(0.0f, 0.0f, -1.0f);
     }
 
-    EXPORT PointWithDirection screenToWorld(float x, float y, Matrix4 *worldModelMatrix);
+    EXPORT PointWithDirection screenToWorld(float x, float y, const Matrix4 &worldModelMatrix);
 
     inline CameraType getType() { return type; }
 

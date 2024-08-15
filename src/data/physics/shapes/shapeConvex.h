@@ -20,7 +20,7 @@ public:
     EXPORT void recalcAABB();
 
     EXPORT ShapeCollisionType getType() override;
-    EXPORT AABB getAABB(Matrix4 *model) override final;
+    EXPORT AABB getAABB(const Matrix4 &model) override final;
 
     EXPORT int castRay(const Segment &ray, PhysicsBodyPoint *newPoints, PhysicsBodyCache *cache) override final;
 

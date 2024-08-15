@@ -15,11 +15,11 @@ public:
     EXPORT ShapeOBB(const Vector3 &center, float width, float height, float depth, float density);
 
     EXPORT ShapeCollisionType getType() override final;
-    EXPORT AABB getAABB(Matrix4 *model) override final;
+    EXPORT AABB getAABB(const Matrix4 &model) override final;
 
     EXPORT int castRay(const Segment &ray, PhysicsBodyPoint *newPoints, PhysicsBodyCache *cache) override final;
 
-    EXPORT Vector3 getClosestPoint(Matrix4 &OBBTransformation, Vector3 point);
+    EXPORT Vector3 getClosestPoint(const Matrix4 &OBBTransformation, Vector3 point);
 
     inline HullPolygon *getPolygons() { return hullPolygons; };
     inline HullEdge *getEdges() { return hullEdges; };

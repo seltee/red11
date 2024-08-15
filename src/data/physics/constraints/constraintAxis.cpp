@@ -13,6 +13,16 @@ ConstraintAxis::ConstraintAxis(bool bXMovement, bool bYMovement, bool bZMovement
     zRotation = bZRotation ? 1.0f : 0.0f;
 }
 
+ConstraintAxis::ConstraintAxis(const Vector3 &movement, const Vector3 &rotation)
+{
+    xMovement = movement.x;
+    yMovement = movement.y;
+    zMovement = movement.z;
+    xRotation = rotation.x;
+    yRotation = rotation.y;
+    zRotation = rotation.z;
+}
+
 void ConstraintAxis::processTranslation(Vector3 *translation)
 {
     translation->x *= xMovement;

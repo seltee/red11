@@ -15,7 +15,7 @@ public:
     inline float getRadius() { return radius; }
 
     EXPORT ShapeCollisionType getType() override final;
-    EXPORT AABB getAABB(Matrix4 *model) override final;
+    EXPORT AABB getAABB(const Matrix4 &model) override final;
 
     EXPORT int castRay(const Segment &ray, PhysicsBodyPoint *newPoints, PhysicsBodyCache *cache) override final;
 

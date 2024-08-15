@@ -23,7 +23,7 @@ public:
     Directx9data();
     ~Directx9data();
 
-    inline void addMesh(Mesh *mesh, Material *material, Matrix4 *model)
+    inline void addMesh(Mesh *mesh, Material *material, const Matrix4 *model)
     {
         if (queueCurrentMesh < MAX_QUEUE_MESH_COUNT && mesh)
         {
@@ -37,7 +37,7 @@ public:
         }
     }
 
-    inline void addMeshSkinned(Mesh *mesh, Material *material, Matrix4 *model, std::vector<BoneTransform> *bones)
+    inline void addMeshSkinned(Mesh *mesh, Material *material, const Matrix4 *model, std::vector<BoneTransform> *bones)
     {
         if (queueCurrentMesh < MAX_QUEUE_MESH_COUNT && mesh)
         {
@@ -45,7 +45,8 @@ public:
             queueMeshes[queueCurrentMesh].material = material;
             queueMeshes[queueCurrentMesh].model = model;
             queueMeshes[queueCurrentMesh].bones.clear();
-            for (auto &bone : *bones){
+            for (auto &bone : *bones)
+            {
                 queueMeshes[queueCurrentMesh].bones.push_back(bone);
             }
             if (material->isAlphaPhase())
@@ -54,7 +55,7 @@ public:
         }
     }
 
-    inline void addLine(Vector3 vFrom, Vector3 vTo, Color color)
+    inline void addLine(const Vector3 &vFrom, const Vector3 &vTo, const Color &color)
     {
         if (queueCurrentLine < MAX_QUEUE_LINES)
         {

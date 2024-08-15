@@ -3,12 +3,12 @@
 
 #include "animation.h"
 
-Animation::Animation(std::string name)
+Animation::Animation(const std::string name)
 {
     this->name = name;
 }
 
-AnimationTarget *Animation::getAnimationTarget(std::string &name)
+AnimationTarget *Animation::getAnimationTarget(const std::string &name)
 {
     for (auto &target : targets)
     {
@@ -18,7 +18,7 @@ AnimationTarget *Animation::getAnimationTarget(std::string &name)
     return nullptr;
 }
 
-AnimationTarget *Animation::createAnimationTarget(std::string &targetName)
+AnimationTarget *Animation::createAnimationTarget(const std::string &targetName)
 {
     auto existing = getAnimationTarget(targetName);
     if (!existing)
@@ -30,7 +30,7 @@ AnimationTarget *Animation::createAnimationTarget(std::string &targetName)
     return existing;
 }
 
-AnimationTarget *Animation::getTargetByName(std::string &targetName)
+AnimationTarget *Animation::getTargetByName(const std::string &targetName)
 {
     for (auto &target : targets)
     {
@@ -42,7 +42,7 @@ AnimationTarget *Animation::getTargetByName(std::string &targetName)
     return nullptr;
 }
 
-bool Animation::getAnimationTransformation(std::string &name, float timeStamp, Entity *entity)
+bool Animation::getAnimationTransformation(const std::string &name, float timeStamp, Entity *entity)
 {
     for (auto &target : targets)
     {

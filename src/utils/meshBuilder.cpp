@@ -148,7 +148,7 @@ Mesh *MeshBuilder::createSphere(float radius, unsigned int rings, unsigned int s
     return new Mesh(VertexDataType::PositionUV, &verticies.front(), verticies.size(), &polygons.front(), polygons.size());
 }
 
-Mesh *MeshBuilder::createCapsule(Vector3 pa, Vector3 pb, float radius, unsigned int segments)
+Mesh *MeshBuilder::createCapsule(const Vector3 &pa, const Vector3 &pb, float radius, unsigned int segments)
 {
     std::vector<VertexDataUV> verticies;
     std::vector<PolygonTriPoints> polygons;

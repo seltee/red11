@@ -48,22 +48,22 @@ public:
     EXPORT RendererType getType() override final;
 
     EXPORT void prepareToRender(Texture *ambientTexture = nullptr, Texture *radianceTexture = nullptr) override final;
-    EXPORT void clearBuffer(Color color) override final;
+    EXPORT void clearBuffer(const Color &color) override final;
     EXPORT void renderCubeMap(Camera *camera, Entity *entity, Texture *hdr) override final;
-    EXPORT void queueMesh(Mesh *mesh, Material *material, Matrix4 *model) override final;
-    EXPORT void queueMeshSkinned(Mesh *mesh, Material *material, Matrix4 *model, std::vector<BoneTransform> *bones) override final;
-    EXPORT void queueLine(Vector3 vFrom, Vector3 vTo, Color color) override final;
+    EXPORT void queueMesh(Mesh *mesh, Material *material, const Matrix4 *model) override final;
+    EXPORT void queueMeshSkinned(Mesh *mesh, Material *material, const Matrix4 *model, std::vector<BoneTransform> *bones) override final;
+    EXPORT void queueLine(const Vector3 &vFrom, const Vector3 &vTo, const Color &color) override final;
     EXPORT void queueLight(Light *light) override final;
     EXPORT void renderQueue(Camera *camera) override final;
     EXPORT void clearQueue() override final;
-    EXPORT void renderMesh(Camera *camera, Mesh *mesh, Matrix4 *model) override final;
-    EXPORT void renderMeshSkinned(Camera *camera, Mesh *mesh, Matrix4 *model, std::vector<BoneTransform> *bones) override final;
-    EXPORT void renderLine(Camera *camera, Vector3 vFrom, Vector3 vTo);
+    EXPORT void renderMesh(Camera *camera, Mesh *mesh, const Matrix4 *model) override final;
+    EXPORT void renderMeshSkinned(Camera *camera, Mesh *mesh, std::vector<BoneTransform> *bones) override final;
+    EXPORT void renderLine(Camera *camera, const Vector3 &vFrom, const Vector3 &vTo);
 
-    EXPORT void setupSpriteRendering(Matrix4 &mView, Matrix4 &mProjection) override final;
-    EXPORT void renderSpriteRect(Matrix4 *mModel, const Color color) override final;
-    EXPORT void renderSpriteMask(Matrix4 *mModel, Texture *texture, const Color color) override final;
-    EXPORT void renderSpriteImage(Matrix4 *mModel, Texture *texture) override final;
+    EXPORT void setupSpriteRendering(const Matrix4 &mView, const Matrix4 &mProjection) override final;
+    EXPORT void renderSpriteRect(const Matrix4 &mModel, const Color &color) override final;
+    EXPORT void renderSpriteMask(const Matrix4 &mModel, Texture *texture, const Color &color) override final;
+    EXPORT void renderSpriteImage(const Matrix4 &mModel, Texture *texture) override final;
 
     EXPORT void setAmbientLight(const Color &ambientColor) override final;
 
@@ -73,7 +73,7 @@ public:
     EXPORT void removeMaterialByIndex(unsigned int index) override;
     EXPORT void removeMeshByIndex(unsigned int index) override;
 
-    EXPORT DirectX9Shader *createDirectX9Shader(std::string name, const DWORD *vsoCode, const DWORD *psoCode);
+    EXPORT DirectX9Shader *createDirectX9Shader(const std::string &name, const DWORD *vsoCode, const DWORD *psoCode);
 
     inline float *getShaderEngineDataPtr() { return engineData; }
 
@@ -82,11 +82,11 @@ protected:
     void resizeD3D(int width, int height);
     void renderQueueDepthBuffer(Camera *camera);
     void renderQueueLightDepthBuffer(Camera *camera);
-    void renderQueueDepthEqual(Vector3 &cameraPosition, Camera *camera);
+    void renderQueueDepthEqual(const Vector3 &cameraPosition, Camera *camera);
     void cleanD3D(void);
 
     // Bonned meshed limited to 4 shadows per mesh
-    void setupLights(Vector3 objectPosition, float objectRadius);
+    void setupLights(const Vector3 &objectPosition, float objectRadius);
 
     inline void setupMaterialColorRender(Material *material)
     {
@@ -106,8 +106,8 @@ protected:
     void renderMeshDepthData(Camera *camera, QueuedMeshRenderData *mesh);
     void renderMeshShadowDepthData(Camera *camera, QueuedMeshRenderData *mesh);
 
-    void renderShadowBuffers(Vector3 &cameraPosition, Vector3 &cameraFrowardVector);
-    void renderShadowBuffersDirectional(Vector3 &cameraPosition, Vector3 &cameraFrowardVector, Light *light);
+    void renderShadowBuffers(const Vector3 &cameraPosition, const Vector3 &cameraFrowardVector);
+    void renderShadowBuffersDirectional(const Vector3 &cameraPosition, const Vector3 &cameraFrowardVector, Light *light);
     void renderShadowBuffersSpot(Light *light);
 
     LPDIRECT3D9 d3d = nullptr;          // the pointer to our Direct3D interface

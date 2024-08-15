@@ -20,7 +20,7 @@ Light::Light()
     rebuildShadowTextures();
 }
 
-Light::Light(Vector3 &directionalNormal, Color &directionalColor, bool bShadowEnabled, LightShadowQuality shadowQuality)
+Light::Light(const Vector3 &directionalNormal, const Color &directionalColor, bool bShadowEnabled, LightShadowQuality shadowQuality)
 {
     this->type = LightType::Directional;
     this->normal = glm::normalize(directionalNormal);
@@ -37,7 +37,7 @@ Light::Light(Vector3 &directionalNormal, Color &directionalColor, bool bShadowEn
     rebuildShadowTextures();
 }
 
-Light::Light(Attenuation &omniAttenuation, Color &omniColor, bool bShadowEnabled, LightShadowQuality shadowQuality)
+Light::Light(const Attenuation &omniAttenuation, const Color &omniColor, bool bShadowEnabled, LightShadowQuality shadowQuality)
 {
     this->type = LightType::Omni;
     this->normal = Vector3(0.0f, 0.0f, -1.0f);
@@ -54,11 +54,11 @@ Light::Light(Attenuation &omniAttenuation, Color &omniColor, bool bShadowEnabled
     rebuildShadowTextures();
 }
 
-Light::Light(Vector3 &spotDirection,
-             Attenuation &spotAttenuation,
+Light::Light(const Vector3 &spotDirection,
+             const Attenuation &spotAttenuation,
              float spotOuterRadius,
              float spotInnerRadius,
-             Color &spotColor,
+             const Color &spotColor,
              bool bShadowEnabled,
              LightShadowQuality shadowQuality)
 {
@@ -77,7 +77,7 @@ Light::Light(Vector3 &spotDirection,
     rebuildShadowTextures();
 }
 
-float Light::isAffecting(Vector3 point, float radius)
+float Light::isAffecting(const Vector3 &point, float radius)
 {
     if (type == LightType::Directional)
         return 0.00001f;
@@ -195,23 +195,23 @@ void Light::rebuildShadowTextures()
 
 void Light::transform(Entity *entity)
 {
-    Matrix4 *m = entity->getModelMatrix();
+    const Matrix4 &m = entity->getModelMatrix();
 
     if (type == LightType::Directional)
     {
-        Quat rotation = glm::quat_cast(*m);
+        Quat rotation = glm::quat_cast(m);
         normal = glm::normalize(Vector3(rotation * Vector4(originalNormal, 1.0f)));
     }
 
     if (type == LightType::Omni)
     {
-        position = Vector3(*m * Vector4(0.0f, 0.0f, 0.0f, 1.0f));
+        position = Vector3(m * Vector4(0.0f, 0.0f, 0.0f, 1.0f));
     }
 
     if (type == LightType::Spot)
     {
-        position = Vector3(*m * Vector4(0.0f, 0.0f, 0.0f, 1.0f));
-        Quat rotation = glm::quat_cast(*m);
+        position = Vector3(m * Vector4(0.0f, 0.0f, 0.0f, 1.0f));
+        Quat rotation = glm::quat_cast(m);
         normal = glm::normalize(Vector3(rotation * Vector4(originalNormal, 1.0f)));
     }
 }

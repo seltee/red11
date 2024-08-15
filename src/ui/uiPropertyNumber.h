@@ -7,9 +7,9 @@
 class UIPropertyNumber
 {
 public:
-    inline unsigned int getValue() { return value; }
-    inline bool isSet() { return bIsSet; }
-    inline bool isNotSet() { return !bIsSet; }
+    inline unsigned int getValue() const { return value; }
+    inline bool isSet() const { return bIsSet; }
+    inline bool isNotSet() const { return !bIsSet; }
     inline void unSet()
     {
         value = 0;

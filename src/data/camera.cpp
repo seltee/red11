@@ -75,10 +75,9 @@ void Camera::recalcCullingPlanes()
     }
 }
 
-PointWithDirection Camera::screenToWorld(float x, float y, Matrix4 *worldModelMatrix)
+PointWithDirection Camera::screenToWorld(float x, float y, const Matrix4 &worldModelMatrix)
 {
-    if (worldModelMatrix)
-        updateViewMatrix(worldModelMatrix);
+    updateViewMatrix(worldModelMatrix);
 
     PointWithDirection out;
 

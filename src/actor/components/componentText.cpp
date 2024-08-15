@@ -36,7 +36,6 @@ void ComponentText::onRenderQueue(Renderer *renderer)
             t.setPosition(0.05, 0, 0.05);
             float shift = 0.0f;
 
-            Matrix4 mModelComponent = *getModelMatrix();
             for (auto &letterIndex : lettersList)
             {
                 ComponentTextLetterItem *item = &lettersCache.at(letterIndex);
@@ -45,7 +44,7 @@ void ComponentText::onRenderQueue(Renderer *renderer)
                     t.setScale(item->localScale);
                     t.setPosition(Vector3(shift + 0.05f * item->localScale, 0, 0.05f * item->localScale - item->localHeight));
 
-                    Matrix4 model = mModelComponent * *t.getModelMatrix();
+                    Matrix4 model = getModelMatrix() * t.getModelMatrix();
                     renderer->queueMesh(mesh, item->material, model);
                     t.translate(Vector3(item->localWidth, 0, 0));
 
@@ -73,7 +72,7 @@ void ComponentText::setSize(int size)
     bIsDirty = true;
 }
 
-void ComponentText::setText(std::string text)
+void ComponentText::setText(const std::string &text)
 {
     this->text = text;
     bIsDirty = true;

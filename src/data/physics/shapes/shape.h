@@ -29,7 +29,7 @@ protected:
 public:
     virtual ~Shape();
     EXPORT virtual ShapeCollisionType getType() = 0;
-    EXPORT virtual AABB getAABB(Matrix4 *model) = 0;
+    EXPORT virtual AABB getAABB(const Matrix4 &model) = 0;
     EXPORT virtual int castRay(const Segment &ray, PhysicsBodyPoint *newPoints, PhysicsBodyCache *cache) = 0;
     inline void setMass(float mass) { this->mass = mass; }
     inline float getMass() { return mass; }

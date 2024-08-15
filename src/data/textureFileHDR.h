@@ -7,7 +7,7 @@
 class TextureFileHDR : public Texture
 {
 public:
-    EXPORT TextureFileHDR(std::string sName, std::string sFilePath, float fLdrScale = 1.0f, float fLdrGamma = 1.0f);
+    EXPORT TextureFileHDR(const std::string &sName, const std::string &sFilePath, float fLdrScale = 1.0f, float fLdrGamma = 1.0f);
 
     EXPORT unsigned char *getBufferData() override;
     EXPORT unsigned char *setBufferSize(int nWidth, int nHeight) override;

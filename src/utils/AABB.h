@@ -8,14 +8,14 @@
 class AABB
 {
 public:
-    AABB(){};
-    AABB(Vector3 start, Vector3 end)
+    AABB() {};
+    AABB(const Vector3 &start, const Vector3 &end)
     {
         this->start = start;
         this->end = end;
     }
 
-    inline void extend(AABB aabb)
+    inline void extend(const AABB &aabb)
     {
         if (aabb.start.x < start.x)
             start.x = aabb.start.x;
@@ -31,12 +31,12 @@ public:
             end.z = aabb.end.z;
     }
 
-    inline bool test(AABB aabb)
+    inline bool test(const AABB &aabb) const
     {
         return aabb.start.x < end.x && aabb.end.x > start.x && aabb.start.y < end.y && aabb.end.y > start.y && aabb.start.z < end.z && aabb.end.z > start.z;
     }
 
-    inline bool test(Segment line)
+    inline bool test(const Segment &line) const
     {
         // Point p0, Point p1, AABB b
         Vector3 AABBcenter = (start + end) / 2.0f;     // Box center-point
@@ -75,7 +75,7 @@ public:
         return true;
     }
 
-    inline Vector3 getCenter()
+    inline Vector3 getCenter() const
     {
         return (start + end) / 2.0f;
     }

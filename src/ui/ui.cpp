@@ -137,7 +137,7 @@ void UI::render()
             }
             if (node->hasCalculatedText())
             {
-                std::string &text = node->getCalculatedText();
+                const std::string &text = node->getCalculatedText();
                 Font *font = node->getCalculatedFont();
                 unsigned int fontSize = node->getCalcualtedFontSize();
                 unsigned int fontSizeGlyph = static_cast<unsigned int>(static_cast<float>(fontSize) * interfaceZoom);
@@ -285,7 +285,7 @@ void UI::prepareNewEventController(UIEventController *eventController)
     this->eventControllers.push_back(eventController);
 }
 
-float UI::getNextWordWidth(std::u32string &str, Font *font, unsigned int position, unsigned int fontSize, float letterSpacing)
+float UI::getNextWordWidth(const std::u32string &str, Font *font, unsigned int position, unsigned int fontSize, float letterSpacing)
 {
     float size = 0.0f;
     while (str[position] && str[position] != 0x20)

@@ -18,18 +18,18 @@ struct DeformIndex
 class Deform
 {
 public:
-    Deform(std::string &name, DeformIndex *deformIndexData, int amount, Matrix4 &invBindMatrix);
-    Deform(std::string &name, int *indexies, float *weights, int amount, Matrix4 &invBindMatrix);
+    Deform(const std::string &name, DeformIndex *deformIndexData, int amount, const Matrix4 &invBindMatrix);
+    Deform(const std::string &name, int *indexies, float *weights, int amount, const Matrix4 &invBindMatrix);
     ~Deform();
 
     void udpateCullingRadius(Mesh *mesh);
 
-    inline std::string &getName() { return name; }
-    inline bool isName(std::string &name) { return this->name == name; }
+    inline const std::string &getName() const { return name; }
+    inline bool isName(const std::string &name) const { return this->name == name; }
 
-    inline Matrix4 &getInvBindMatrix() { return invBindMatrix; }
+    inline const Matrix4 &getInvBindMatrix() const { return invBindMatrix; }
 
-    inline bool hasIndex(int index)
+    inline bool hasIndex(int index) const
     {
         if (deformIndexDataAmount == 0)
             return false;
@@ -42,12 +42,12 @@ public:
         return false;
     }
 
-    float getWeightForIndex(int vIndex);
+    float getWeightForIndex(int vIndex) const;
 
-    inline int getIndexAmount() { return deformIndexDataAmount; }
-    inline int getVertIndexByIndex(int index) { return deformIndexData[index].index; }
+    inline int getIndexAmount() const { return deformIndexDataAmount; }
+    inline int getVertIndexByIndex(int index) const { return deformIndexData[index].index; }
 
-    inline float getCullingRadius() { return cullingRadius; }
+    inline float getCullingRadius() const { return cullingRadius; }
 
     unsigned int index = 0;
 

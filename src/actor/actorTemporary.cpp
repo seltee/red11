@@ -1,6 +1,6 @@
 #include "actorTemporary.h"
 
-ActorTemporary::ActorTemporary(std::string &name) : Actor(name)
+ActorTemporary::ActorTemporary(const std::string &name) : Actor(name)
 {
 }
 

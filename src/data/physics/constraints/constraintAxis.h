@@ -8,6 +8,7 @@ class ConstraintAxis : public Constraint
 {
 public:
     EXPORT ConstraintAxis(bool bXMovement, bool bYMovement, bool bZMovement, bool bXRotation, bool bYRotation, bool bZRotation);
+    EXPORT ConstraintAxis(const Vector3 &movement, const Vector3 &rotation);
 
     EXPORT void processTranslation(Vector3 *translation) override;
     EXPORT void processMotion(Vector3 *linearVelocity, Vector3 *angularVelocity) override;

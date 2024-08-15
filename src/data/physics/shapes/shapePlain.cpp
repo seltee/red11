@@ -26,7 +26,7 @@ ShapeCollisionType ShapePlain::getType()
     return ShapeCollisionType::Plain;
 }
 
-AABB ShapePlain::getAABB(Matrix4 *model)
+AABB ShapePlain::getAABB(const Matrix4 &model)
 {
     return AABB(Vector3(-FLT_MAX, -FLT_MAX, -FLT_MAX), Vector3(FLT_MAX, FLT_MAX, FLT_MAX));
 }

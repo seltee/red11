@@ -4,7 +4,7 @@
 #include "entity.h"
 #include "utils/glm/gtc/matrix_transform.hpp"
 
-Matrix4 *Entity::getModelMatrix()
+const Matrix4 &Entity::getModelMatrix()
 {
     if (bIsTransformationDirty)
     {
@@ -18,7 +18,7 @@ Matrix4 *Entity::getModelMatrix()
             mModelLocal *= glm::scale(Matrix4(1.0f), scale);
         }
 
-        mModelWithParent = transformationParent ? *transformationParent->getModelMatrix() * mModelLocal : mModelLocal;
+        mModelWithParent = transformationParent ? transformationParent->getModelMatrix() * mModelLocal : mModelLocal;
         tLastParentIteration = transformationParent ? transformationParent->getTIteration() : 0;
     }
     else
@@ -26,10 +26,10 @@ Matrix4 *Entity::getModelMatrix()
         if (transformationParent && (transformationParent->getTIteration() != tIteration || transformationParent->isTransformationDirty()))
         {
             tIteration++;
-            mModelWithParent = *transformationParent->getModelMatrix() * mModelLocal;
+            mModelWithParent = transformationParent->getModelMatrix() * mModelLocal;
             tLastParentIteration = transformationParent->getTIteration();
         }
     }
 
-    return &mModelWithParent;
+    return mModelWithParent;
 }

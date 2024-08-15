@@ -7,9 +7,9 @@
 class UIPropertyFloat
 {
 public:
-    inline float getValue() { return value; }
-    inline bool isSet() { return bIsSet; }
-    inline bool isNotSet() { return !bIsSet; }
+    inline float getValue() const { return value; }
+    inline bool isSet() const { return bIsSet; }
+    inline bool isNotSet() const { return !bIsSet; }
     inline void unSet()
     {
         value = 0;

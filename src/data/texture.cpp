@@ -12,7 +12,7 @@ Texture::Texture(TextureType textureType) : Texture("texture", textureType)
 {
 }
 
-Texture::Texture(std::string sName, TextureType textureType)
+Texture::Texture(const std::string &sName, TextureType textureType)
 {
     this->sName = sName;
     this->textureType = textureType;
@@ -20,7 +20,7 @@ Texture::Texture(std::string sName, TextureType textureType)
     textures.push_back(this);
 }
 
-Texture::Texture(std::string sName, TextureType textureType, int nWidth, int nHeight, unsigned char *data) : Texture(sName, textureType)
+Texture::Texture(const std::string &sName, TextureType textureType, int nWidth, int nHeight, unsigned char *data) : Texture(sName, textureType)
 {
     this->textureType = textureType;
     setBufferSize(nWidth, nHeight);

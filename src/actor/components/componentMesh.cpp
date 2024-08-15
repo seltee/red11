@@ -41,19 +41,16 @@ void ComponentMesh::onRenderQueue(Renderer *renderer)
     {
         renderer->queueMesh(mesh, material, getModelMatrix());
 
-        if (bShowDebugNormals && getModelMatrix())
+        if (bShowDebugNormals)
         {
-            Matrix3 mModelInverseTranspose;
-            Matrix4 *transformation = getModelMatrix();
-
-            if (transformation)
-                mModelInverseTranspose = (Matrix3)glm::transpose(glm::inverse(*transformation));
+            const Matrix4 &transformation = getModelMatrix();
+            Matrix3 mModelInverseTranspose = (Matrix3)glm::transpose(glm::inverse(transformation));
 
             int vAmount = mesh->getVerticiesAmount();
             auto verticies = mesh->getVerticies();
             for (int i = 0; i < vAmount; i++)
             {
-                Vector3 p = (Vector3)(*transformation * Vector4(verticies->vertexPositionUV[i].position, 1.0f));
+                Vector3 p = (Vector3)(transformation * Vector4(verticies->vertexPositionUV[i].position, 1.0f));
                 Vector3 n = glm::normalize(mModelInverseTranspose * verticies->vertexPositionUV[i].normal);
                 Vector3 tg = glm::normalize(mModelInverseTranspose * verticies->vertexPositionUV[i].tangent);
                 Vector3 btg = glm::normalize(mModelInverseTranspose * verticies->vertexPositionUV[i].bitangent);

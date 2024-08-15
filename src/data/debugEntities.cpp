@@ -57,7 +57,7 @@ Matrix4 DebugEntities::makeDebugCubeIntoLineMatrix(const Vector3 &pA, const Vect
     entity.setScale(Vector3(debugScale, debugScale, glm::length(difference)));
     entity.setRotation(Vector3(CONST_PI / 2 - x, -y - CONST_PI / 2.0f, 0.0f));
 
-    return *entity.getModelMatrix();
+    return entity.getModelMatrix();
 }
 
 Matrix4 DebugEntities::makeDebugCubeIntoPointMatrix(const Vector3 &center, const Vector3 *lookAt)
@@ -77,5 +77,5 @@ Matrix4 DebugEntities::makeDebugCubeIntoPointMatrix(const Vector3 &center, const
         entity.setRotation(Vector3(CONST_PI / 2 - x, -y - CONST_PI / 2.0f, 0.0f));
     }
 
-    return *entity.getModelMatrix();
+    return entity.getModelMatrix();
 }

@@ -20,8 +20,8 @@ class Texture : public Usable
 {
 public:
     EXPORT Texture(TextureType textureType);
-    EXPORT Texture(std::string sName, TextureType textureType);
-    EXPORT Texture(std::string sName, TextureType textureType, int nWidth, int nHeight, unsigned char *data);
+    EXPORT Texture(const std::string &sName, TextureType textureType);
+    EXPORT Texture(const std::string &sName, TextureType textureType, int nWidth, int nHeight, unsigned char *data);
     EXPORT virtual ~Texture();
 
     EXPORT virtual unsigned char *getBufferData();
@@ -44,7 +44,7 @@ public:
     inline bool isStaticBuffer() { return bStaticBuffer; }
 
     inline TextureType getType() { return textureType; }
-    inline std::string &getName() { return sName; }
+    inline const std::string &getName() const { return sName; }
 
     static inline std::vector<Texture *> *getTextureList() { return &textures; }
 

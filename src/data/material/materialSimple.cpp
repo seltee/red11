@@ -174,13 +174,13 @@ void MaterialSimple::setDisplayMode(MaterialDisplay mode)
     updIndex++;
 }
 
-void MaterialSimple::setAlbedoColor(Color albedoColor)
+void MaterialSimple::setAlbedoColor(const Color &albedoColor)
 {
     this->albedoColor = albedoColor;
     updIndex++;
 }
 
-void MaterialSimple::setEmissionColor(Color emissionColor)
+void MaterialSimple::setEmissionColor(const Color &emissionColor)
 {
     this->emissionColor = emissionColor;
     updIndex++;

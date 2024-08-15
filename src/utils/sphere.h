@@ -8,7 +8,7 @@
 class Sphere
 {
 public:
-    inline const void setup(Vector3 center, float radius)
+    inline const void setup(const Vector3 &center, float radius)
     {
         this->radius = radius;
         this->center = center;

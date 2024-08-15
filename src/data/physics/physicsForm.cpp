@@ -24,7 +24,7 @@ void PhysicsForm::destroy()
 {
 }
 
-ShapePlain *PhysicsForm::createPlain(Vector3 normal, float distance)
+ShapePlain *PhysicsForm::createPlain(const Vector3 &normal, float distance)
 {
     ShapePlain *newPlain = new ShapePlain(normal, distance * simScale);
     shapes.push_back(newPlain);
@@ -33,7 +33,7 @@ ShapePlain *PhysicsForm::createPlain(Vector3 normal, float distance)
     return newPlain;
 }
 
-ShapePlain *PhysicsForm::createPlain(Vector3 normal, Vector3 point)
+ShapePlain *PhysicsForm::createPlain(const Vector3 &normal, const Vector3 &point)
 {
     ShapePlain *newPlain = new ShapePlain(normal, point * simScale);
     shapes.push_back(newPlain);
@@ -42,7 +42,7 @@ ShapePlain *PhysicsForm::createPlain(Vector3 normal, Vector3 point)
     return newPlain;
 }
 
-ShapeSphere *PhysicsForm::createSphere(Vector3 center, float radius, float density)
+ShapeSphere *PhysicsForm::createSphere(const Vector3 &center, float radius, float density)
 {
     ShapeSphere *newSphere = new ShapeSphere(center * simScale, radius * simScale, density);
     shapes.push_back(newSphere);
@@ -51,7 +51,7 @@ ShapeSphere *PhysicsForm::createSphere(Vector3 center, float radius, float densi
     return newSphere;
 }
 
-ShapeOBB *PhysicsForm::createOBB(Vector3 center, float width, float height, float depth, float density)
+ShapeOBB *PhysicsForm::createOBB(const Vector3 &center, float width, float height, float depth, float density)
 {
     ShapeOBB *newOBB = new ShapeOBB(center * simScale, width * simScale, height * simScale, depth * simScale, density);
     shapes.push_back(newOBB);
@@ -60,12 +60,12 @@ ShapeOBB *PhysicsForm::createOBB(Vector3 center, float width, float height, floa
     return newOBB;
 }
 
-ShapeOBB *PhysicsForm::createOBB(Vector3 center, float size, float density)
+ShapeOBB *PhysicsForm::createOBB(const Vector3 &center, float size, float density)
 {
     return createOBB(center, size, size, size, density);
 }
 
-ShapeCapsule *PhysicsForm::createCapsule(Vector3 a, Vector3 b, float radius, float density)
+ShapeCapsule *PhysicsForm::createCapsule(const Vector3 &a, const Vector3 &b, float radius, float density)
 {
     ShapeCapsule *newOBB = new ShapeCapsule(a * simScale, b * simScale, radius * simScale, density);
     shapes.push_back(newOBB);
@@ -135,7 +135,7 @@ void PhysicsForm::recalcParameters()
     }
 }
 
-AABB PhysicsForm::getAABB(Matrix4 *model)
+AABB PhysicsForm::getAABB(const Matrix4 &model)
 {
     if (shapes.size() == 1)
     {
@@ -150,7 +150,7 @@ AABB PhysicsForm::getAABB(Matrix4 *model)
         }
         return aabb;
     }
-    Vector3 p = Vector3(*model * Vector4(0, 0, 0, 1.0f));
+    Vector3 p = Vector3(model * Vector4(0, 0, 0, 1.0f));
     return AABB(p, p);
 }
 

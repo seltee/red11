@@ -5,7 +5,7 @@
 class ActorTemporary : public Actor
 {
 public:
-    EXPORT ActorTemporary(std::string &name);
+    EXPORT ActorTemporary(const std::string &name);
     EXPORT void onSubProcess(float delta) override;
 
     inline void setTimeToExist(float time) { timeToExist = time; }

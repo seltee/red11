@@ -21,9 +21,9 @@ ShapeCollisionType ShapeSphere::getType()
     return ShapeCollisionType::Sphere;
 }
 
-AABB ShapeSphere::getAABB(Matrix4 *model)
+AABB ShapeSphere::getAABB(const Matrix4 &model)
 {
-    Vector3 absoluteCenter = Vector3(*model * Vector4(center, 1.0f));
+    Vector3 absoluteCenter = Vector3(model * Vector4(center, 1.0f));
     return AABB(absoluteCenter - radius, absoluteCenter + radius);
 }
 

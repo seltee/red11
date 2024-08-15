@@ -66,17 +66,17 @@ void AnimationTrack::process(float delta)
     }
 }
 
-float AnimationTrack::getNodeWeight(std::string *name)
+float AnimationTrack::getNodeWeight(const std::string &name)
 {
-    auto animator = animation->getTargetByName(*name);
+    auto animator = animation->getTargetByName(name);
     if (animator)
         return weight;
     return 0.0f;
 }
 
-void AnimationTrack::addTransformation(float totalWeight, std::string *nodeName, Vector3 *position, Quat *rotation, Vector3 *scale)
+void AnimationTrack::addTransformation(float totalWeight, const std::string &nodeName, Vector3 *position, Quat *rotation, Vector3 *scale)
 {
-    auto animator = animation->getTargetByName(*nodeName);
+    auto animator = animation->getTargetByName(nodeName);
     if (animator && totalWeight > 0.0f && weight > 0.0f)
     {
         float dWeight = weight / totalWeight;

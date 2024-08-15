@@ -7,7 +7,7 @@ BoneTransform::BoneTransform()
 {
 }
 
-BoneTransform::BoneTransform(Matrix4 *model, Deform *deform)
+BoneTransform::BoneTransform(const Matrix4 *model, const Deform *deform)
 {
     this->model = model;
     this->deform = deform;

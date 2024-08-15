@@ -11,8 +11,8 @@ class BoneTransform
 {
 public:
     BoneTransform();
-    BoneTransform(Matrix4 *model, Deform *deform);
+    BoneTransform(const Matrix4 *model, const Deform *deform);
 
-    Matrix4 *model = nullptr;
-    Deform *deform = nullptr;
+    const Matrix4 *model = nullptr;
+    const Deform *deform = nullptr;
 };

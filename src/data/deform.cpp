@@ -4,7 +4,7 @@
 #include "deform.h"
 #include "data/mesh.h"
 
-Deform::Deform(std::string &name, DeformIndex *deformIndexData, int amount, Matrix4 &invBindMatrix)
+Deform::Deform(const std::string &name, DeformIndex *deformIndexData, int amount, const Matrix4 &invBindMatrix)
 {
     this->name = name;
     this->invBindMatrix = invBindMatrix;
@@ -17,7 +17,7 @@ Deform::Deform(std::string &name, DeformIndex *deformIndexData, int amount, Matr
     }
 }
 
-Deform::Deform(std::string &name, int *indexies, float *weights, int amount, Matrix4 &invBindMatrix)
+Deform::Deform(const std::string &name, int *indexies, float *weights, int amount, const Matrix4 &invBindMatrix)
 {
     this->name = name;
     this->invBindMatrix = invBindMatrix;
@@ -72,7 +72,7 @@ void Deform::udpateCullingRadius(Mesh *mesh)
     }
 }
 
-float Deform::getWeightForIndex(int vIndex)
+float Deform::getWeightForIndex(int vIndex) const
 {
     for (int i = 0; i < deformIndexDataAmount; i++)
     {

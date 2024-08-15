@@ -11,7 +11,7 @@
 class Logger
 {
 public:
-    EXPORT Logger(std::string filePath);
+    EXPORT Logger(const std::string &filePath);
     EXPORT void logFile(const char *format, ...);
     EXPORT void logConsole(const char *format, ...);
     EXPORT void logFileAndConsole(const char *format, ...);

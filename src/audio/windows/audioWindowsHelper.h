@@ -31,7 +31,7 @@ inline std::string convertToString(LPCWSTR wideString)
     return narrowString;
 }
 
-inline std::string getAudioError(std::string systemMessage, HRESULT result)
+inline std::string getAudioError(const std::string &systemMessage, HRESULT result)
 {
     if (result == DSERR_ALLOCATED)
         return systemMessage + ": because resources, such as a priority level, were already in use by another caller\n";

@@ -28,19 +28,19 @@ public:
         PhysicsForm *form,
         PhysicsWorld *world,
         Entity *entity,
-        Vector3 initialPosition,
-        Quat initialRotation,
+        const Vector3 &initialPosition,
+        const Quat &initialRotation,
         bool simulatePhysics);
     EXPORT virtual ~PhysicsBody();
 
     EXPORT void prepareForSimulation();
     EXPORT void finishSimulation();
-    EXPORT void processStep(float delta, Vector3 &gravity);
+    EXPORT void processStep(float delta, const Vector3 &gravity);
     EXPORT void applyStep(float delta);
 
-    EXPORT void translate(Vector3 v);
-    EXPORT void addLinearVelocity(Vector3 velocity);
-    EXPORT void addAngularVelocity(Vector3 velocity);
+    EXPORT void translate(const Vector3 &v);
+    EXPORT void addLinearVelocity(const Vector3 &velocity);
+    EXPORT void addAngularVelocity(const Vector3 &velocity);
 
     EXPORT void updateCache();
 
@@ -84,17 +84,17 @@ public:
         sleepAccumulator = 0.0f;
     }
 
-    inline ShapeCollisionType getType() { return form->getType(); }
-    inline AABB &getAABB() { return aabb; }
+    inline ShapeCollisionType getType() const { return form->getType(); }
+    inline const AABB &getAABB() const { return aabb; }
 
-    inline Vector3 &getCenterOfMass() { return position; }
+    inline const Vector3 &getCenterOfMass() const { return position; }
 
-    inline PhysicsForm *getForm() { return form; }
+    inline PhysicsForm *getForm() const { return form; }
 
-    inline PhysicsWorld *getPhysicsWorld() { return world; }
+    inline PhysicsWorld *getPhysicsWorld() const { return world; }
 
-    inline Quat getRotation() { return rotation; }
-    inline Vector3 getPosition() { return position; }
+    inline const Quat &getRotation() const { return rotation; }
+    inline const Vector3 &getPosition() const { return position; }
 
     PhysicsBodyCacheTypeSphere *getCacheSphere(int bodyNum) { return &cache[bodyNum].sphere; }
     PhysicsBodyCacheTypePlain *getCachePlain(int bodyNum) { return &cache[bodyNum].plain; }

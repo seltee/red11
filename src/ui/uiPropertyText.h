@@ -8,9 +8,9 @@
 class UIPropertyText
 {
 public:
-    inline std::string &getValue() { return value; }
-    inline bool isSet() { return bIsSet; }
-    inline bool isNotSet() { return !bIsSet; }
+    inline const std::string &getValue() const { return value; }
+    inline bool isSet() const { return bIsSet; }
+    inline bool isNotSet() const { return !bIsSet; }
     inline void unSet()
     {
         value = "";

@@ -18,13 +18,13 @@ public:
 
     virtual std::vector<AudioDevice> getDevicesList() = 0;
     virtual bool setup() = 0;
-    virtual bool setup(std::string deviceName) = 0;
+    virtual bool setup(const std::string &deviceName) = 0;
     virtual void fillBuffers() = 0;
 
     EXPORT AudioSource *createAudioSource();
 
     EXPORT void playSound(Sound *sound, float volume = 0.8f);
-    EXPORT void playSound3d(Sound *sound, Vector3 position, float volume = 0.8f, float maxDistance = 10.0f, float refDistance = 1.0f);
+    EXPORT void playSound3d(Sound *sound, const Vector3 &position, float volume = 0.8f, float maxDistance = 10.0f, float refDistance = 1.0f);
 
     EXPORT void syncPosition(Entity *entity);
 

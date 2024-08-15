@@ -64,7 +64,7 @@ void Component::enableCollisions(PhysicsMotionType motionType, PhysicsForm *phys
                 Vector3 skew;
                 Vector4 perspective;
 
-                glm::decompose(*getModelMatrix(), scale, rotation, position, skew, perspective);
+                glm::decompose(getModelMatrix(), scale, rotation, position, skew, perspective);
 
                 physicsBody = physicsWorld->createPhysicsBody(motionType, physicsForm, this, position, rotation, simulatePhysics);
 

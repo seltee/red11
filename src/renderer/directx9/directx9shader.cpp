@@ -4,7 +4,7 @@
 #include "directx9shader.h"
 #include "red11.h"
 
-DirectX9Shader::DirectX9Shader(std::string name, LPDIRECT3DDEVICE9 d3ddev, const DWORD *vsoCode, const DWORD *psoCode)
+DirectX9Shader::DirectX9Shader(const std::string &name, LPDIRECT3DDEVICE9 d3ddev, const DWORD *vsoCode, const DWORD *psoCode)
 {
     this->name = name;
     this->d3ddev = d3ddev;

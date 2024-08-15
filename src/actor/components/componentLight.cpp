@@ -3,7 +3,7 @@
 
 #include "componentLight.h"
 
-void ComponentLight::setupDirectional(Vector3 directionalNormal, Color directionalColor, bool bEnableShadow, LightShadowQuality shadowQuality)
+void ComponentLight::setupDirectional(const Vector3 directionalNormal, const Color directionalColor, bool bEnableShadow, LightShadowQuality shadowQuality)
 {
     if (this->light)
         delete this->light;
@@ -11,8 +11,8 @@ void ComponentLight::setupDirectional(Vector3 directionalNormal, Color direction
     this->light = new Light(directionalNormal, directionalColor, bEnableShadow, shadowQuality);
 }
 
-void ComponentLight::setupOmni(Attenuation omniAttenuation,
-                               Color omniColor,
+void ComponentLight::setupOmni(const Attenuation omniAttenuation,
+                               const Color omniColor,
                                bool bEnableShadow,
                                LightShadowQuality shadowQuality)
 {
@@ -22,11 +22,11 @@ void ComponentLight::setupOmni(Attenuation omniAttenuation,
     this->light = new Light(omniAttenuation, omniColor, bEnableShadow, shadowQuality);
 }
 
-void ComponentLight::setupSpot(Vector3 spotDirection,
-                               Attenuation spotAttenuation,
+void ComponentLight::setupSpot(const Vector3 spotDirection,
+                               const Attenuation spotAttenuation,
                                float spotInnerRadius,
                                float spotOuterRadius,
-                               Color spotColor,
+                               const Color spotColor,
                                bool bEnableShadow,
                                LightShadowQuality shadowQuality)
 {

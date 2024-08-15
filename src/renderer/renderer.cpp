@@ -30,7 +30,7 @@ Renderer::~Renderer()
     }
 }
 
-void Renderer::queueMesh(Mesh *mesh, Material *material, Matrix4 &model)
+void Renderer::queueMesh(Mesh *mesh, Material *material, const Matrix4 &model)
 {
     if (lastMatrixStore < MAX_MATRICIES)
     {

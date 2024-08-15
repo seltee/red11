@@ -19,7 +19,7 @@ public:
     EXPORT void destroy();
 
     template <class T, typename std::enable_if<std::is_base_of<Actor, T>::value>::type * = nullptr>
-    inline T *createActor(std::string name)
+    inline T *createActor(const std::string name)
     {
         auto newActor = new T(name);
         prepareNewActor(newActor);
@@ -110,13 +110,13 @@ public:
         return physicsWorld.castPointCollision(p, channel);
     }
 
-    inline void setAmbientLight(Color color) { this->ambientLight = color; }
+    inline void setAmbientLight(const Color &color) { this->ambientLight = color; }
     inline Color getAmbientLight() { return ambientLight; };
 
     inline PhysicsWorld *getPhysicsWorld() { return &physicsWorld; }
 
-    EXPORT std::vector<Actor *> getActorsByName(std::string name);
-    EXPORT Actor *getFirstActorByName(std::string name);
+    EXPORT std::vector<Actor *> getActorsByName(const std::string &name);
+    EXPORT Actor *getFirstActorByName(const std::string &name);
 
     EXPORT void cleanDestroyedActors();
 

@@ -11,7 +11,7 @@ std::vector<Mesh *> Mesh::meshes;
 bool Mesh::indexPool[MAX_ELEMENT_INDEX];
 unsigned int Mesh::nextIndex = 0;
 
-Mesh::Mesh(VertexDataType type, void *verticies, int vLength, PolygonTriPoints *polygons, int pLength, Matrix4 *transformation)
+Mesh::Mesh(VertexDataType type, void *verticies, int vLength, PolygonTriPoints *polygons, int pLength, const Matrix4 *transformation)
 {
     this->type = type;
     this->vLength = vLength;

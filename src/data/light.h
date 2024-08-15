@@ -53,7 +53,7 @@ struct Attenuation
         this->quadratic = quadratic;
     }
 
-    inline float calcRadius()
+    inline float calcRadius() const
     {
         const float threshold = 0.01f;
         const float target = 1.0f / threshold;
@@ -80,27 +80,27 @@ class Light
 public:
     EXPORT Light();
     EXPORT Light(
-        Vector3 &directionalNormal,
-        Color &directionalColor,
+        const Vector3 &directionalNormal,
+        const Color &directionalColor,
         bool bShadowEnabled = false,
         LightShadowQuality shadowQuality = LightShadowQuality::Low);
 
     EXPORT Light(
-        Attenuation &omniAttenuation,
-        Color &omniColor,
+        const Attenuation &omniAttenuation,
+        const Color &omniColor,
         bool bShadowEnabled = false,
         LightShadowQuality shadowQuality = LightShadowQuality::Low);
 
-    EXPORT Light(Vector3 &spotDirection,
-                 Attenuation &spotAttenuation,
+    EXPORT Light(const Vector3 &spotDirection,
+                 const Attenuation &spotAttenuation,
                  float spotOuterRadius,
                  float spotInnerRadius,
-                 Color &spotColor,
+                 const Color &spotColor,
                  bool bShadowEnabled = false,
                  LightShadowQuality shadowQuality = LightShadowQuality::Low);
 
     // returns distance or 0.0f if not
-    EXPORT float isAffecting(Vector3 point, float radius);
+    EXPORT float isAffecting(const Vector3 &point, float radius);
 
     EXPORT void rebuildShadowTextures();
 
@@ -125,7 +125,7 @@ public:
     inline void setShadowMaskTexture(Texture *texture) { this->shadowMaskTexture = texture; }
     inline Texture *getShadowMaskTexture() { return shadowMaskTexture; };
 
-    inline void setShadowViewProjectionMatrix(Matrix4 mShadowViewProjection) { this->mShadowViewProjection = mShadowViewProjection; }
+    inline void setShadowViewProjectionMatrix(const Matrix4 &mShadowViewProjection) { this->mShadowViewProjection = mShadowViewProjection; }
     inline Matrix4 getShadowViewProjectionMatrix() { return mShadowViewProjection; }
 
 protected:

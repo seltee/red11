@@ -7,14 +7,14 @@
 class Plain
 {
 public:
-    Plain(){};
-    Plain(Vector3 normal, float distance)
+    Plain() {};
+    Plain(const Vector3 &normal, float distance)
     {
         this->normal = normal;
         this->distance = distance;
     }
 
-    inline Vector3 getClosestPoint(Vector3 point)
+    inline Vector3 getClosestPoint(const Vector3 &point)
     {
         float t = glm::dot(normal, point) - distance;
         return point - t * normal;

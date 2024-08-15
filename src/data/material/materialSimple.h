@@ -61,8 +61,8 @@ public:
     inline MaterialDisplay getDisplayMode() { return display; }
 
     EXPORT void setDisplayMode(MaterialDisplay mode);
-    EXPORT void setAlbedoColor(Color albedoColor);
-    EXPORT void setEmissionColor(Color emissionColor);
+    EXPORT void setAlbedoColor(const Color &albedoColor);
+    EXPORT void setEmissionColor(const Color &emissionColor);
     EXPORT void setMetallic(float metallic);
     EXPORT void setRoughness(float roughness);
     EXPORT void setAlpha(float alpha);

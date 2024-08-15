@@ -4,7 +4,7 @@
 #include "actor.h"
 #include "scene/scene.h"
 
-Actor::Actor(std::string &name)
+Actor::Actor(const std::string &name)
 {
     this->name = name;
 }
@@ -14,7 +14,7 @@ Actor::~Actor()
     removeComponents();
 }
 
-void Actor::setActorName(std::string &name)
+void Actor::setActorName(const std::string &name)
 {
     this->name = name;
 }

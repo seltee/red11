@@ -11,13 +11,13 @@
 class Animation
 {
 public:
-    EXPORT Animation(std::string name);
+    EXPORT Animation(const std::string name);
 
-    EXPORT AnimationTarget *getAnimationTarget(std::string &targetName);
-    EXPORT AnimationTarget *createAnimationTarget(std::string &targetName);
-    EXPORT AnimationTarget *getTargetByName(std::string &targetName);
+    EXPORT AnimationTarget *getAnimationTarget(const std::string &targetName);
+    EXPORT AnimationTarget *createAnimationTarget(const std::string &targetName);
+    EXPORT AnimationTarget *getTargetByName(const std::string &targetName);
 
-    EXPORT bool getAnimationTransformation(std::string &name, float timeStamp, Entity *entity);
+    EXPORT bool getAnimationTransformation(const std::string &name, float timeStamp, Entity *entity);
 
     EXPORT void recalcAnimationLength();
 

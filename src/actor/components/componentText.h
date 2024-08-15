@@ -24,7 +24,7 @@ public:
 
     EXPORT void setFont(Font *font);
     EXPORT void setSize(int size);
-    EXPORT void setText(std::string text);
+    EXPORT void setText(const std::string &text);
 
 protected:
     EXPORT void rebuild();

@@ -18,7 +18,7 @@ public:
 
     EXPORT void process(float delta);
 
-    inline void setPosition(Vector3 vPosition) { this->vPosition = vPosition; }
+    inline void setPosition(const Vector3 &vPosition) { this->vPosition = vPosition; }
     inline Vector3 getPosition() { return this->vPosition; }
 
     inline void setVolume(float volume) { this->volume = volume; }
@@ -36,8 +36,8 @@ public:
 
     EXPORT void play(Sound *sound);
     EXPORT void playAndDie(Sound *sound);
-    EXPORT void play3d(Sound *sound, Vector3 vPosition);
-    EXPORT void play3dAndDie(Sound *sound, Vector3 vPosition);
+    EXPORT void play3d(Sound *sound, const Vector3 &vPosition);
+    EXPORT void play3dAndDie(Sound *sound, const Vector3 &vPosition);
     EXPORT void loop(Sound *sound);
     EXPORT void stop();
 

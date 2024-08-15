@@ -8,9 +8,9 @@
 class UIPropertyCursorIcon
 {
 public:
-    inline MouseCursorIcon getValue() { return value; }
-    inline bool isSet() { return bIsSet; }
-    inline bool isNotSet() { return !bIsSet; }
+    inline MouseCursorIcon getValue() const { return value; }
+    inline bool isSet() const { return bIsSet; }
+    inline bool isNotSet() const { return !bIsSet; }
     inline void unSet()
     {
         value = MouseCursorIcon::Default;

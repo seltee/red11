@@ -132,7 +132,7 @@ LRESULT CALLBACK WindowProcedure(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
     return 0;
 }
 
-WindowsWindow::WindowsWindow(std::string windowName, int width, int height, int flags)
+WindowsWindow::WindowsWindow(const std::string &windowName, int width, int height, int flags)
 {
     state.requesedWidth = width;
     state.requesedHeight = height;
@@ -471,7 +471,7 @@ void WindowsWindow::setMousePosition(int x, int y, bool generateMoveEvents)
     }
 }
 
-void WindowsWindow::setMousePosition(MousePosition position, bool generateMoveEvents)
+void WindowsWindow::setMousePosition(const MousePosition &position, bool generateMoveEvents)
 {
     setMousePosition(position.x, position.y);
 }
@@ -508,7 +508,7 @@ bool WindowsWindow::isFocused()
     return bIsFocused;
 }
 
-int WindowsWindow::getStyleForState(WindowState &state)
+int WindowsWindow::getStyleForState(const WindowState &state)
 {
     int style = WS_OVERLAPPEDWINDOW;
     if (state.bIsFullscreen)

@@ -21,7 +21,7 @@ struct AnimationKeyTranform
 class AnimationTarget
 {
 public:
-    EXPORT AnimationTarget(std::string targetName);
+    EXPORT AnimationTarget(const std::string targetName);
 
     EXPORT float getAnimationTimeLength();
 

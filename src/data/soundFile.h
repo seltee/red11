@@ -7,9 +7,9 @@
 class SoundFile : public Sound
 {
 public:
-    EXPORT SoundFile(std::string path, bool bForceMono = false);
+    EXPORT SoundFile(const std::string &path, bool bForceMono = false);
 
-    inline bool isPath(std::string path) { return this->path == path; }
+    inline bool isPath(const std::string &path) { return this->path == path; }
     EXPORT bool isStreamable() override;
     EXPORT bool isReady() override;
 

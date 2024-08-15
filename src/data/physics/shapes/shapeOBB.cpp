@@ -42,9 +42,9 @@ ShapeCollisionType ShapeOBB::getType()
     return ShapeCollisionType::OBB;
 }
 
-AABB ShapeOBB::getAABB(Matrix4 *model)
+AABB ShapeOBB::getAABB(const Matrix4 &model)
 {
-    Vector3 modelCenter = *model * Vector4(center, 1.0f);
+    Vector3 modelCenter = model * Vector4(center, 1.0f);
     return AABB(modelCenter - Vector3(halfWidth, halfHeight, halfDepth) * 1.4f, modelCenter + Vector3(halfWidth, halfHeight, halfDepth) * 1.4f);
 }
 
@@ -105,7 +105,7 @@ int ShapeOBB::castRay(const Segment &ray, PhysicsBodyPoint *newPoints, PhysicsBo
     return 0;
 }
 
-Vector3 ShapeOBB::getClosestPoint(Matrix4 &OBBTransformation, Vector3 point)
+Vector3 ShapeOBB::getClosestPoint(const Matrix4 &OBBTransformation, Vector3 point)
 {
     Matrix4 invTransformation = glm::inverse(OBBTransformation);
     Vector3 localPoint = Vector3(invTransformation * Vector4(point.x, point.y, point.z, 1.0f));

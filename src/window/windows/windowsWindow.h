@@ -14,7 +14,7 @@
 class WindowsWindow : public Window
 {
 public:
-    EXPORT WindowsWindow(std::string windowName, int width, int height, int flags = 0);
+    EXPORT WindowsWindow(const std::string &windowName, int width, int height, int flags = 0);
     inline HWND getHwnd() { return hWnd; }
 
     EXPORT void processWindow() override final;
@@ -28,7 +28,7 @@ public:
     EXPORT bool isResolutionAvailable(unsigned int width, unsigned int height, unsigned int refreshRate, bool bIsInFullscreen) override final;
 
     EXPORT void setMousePosition(int x, int y, bool generateMoveEvents = false) override final;
-    EXPORT void setMousePosition(MousePosition position, bool generateMoveEvents = false) override final;
+    EXPORT void setMousePosition(const MousePosition &position, bool generateMoveEvents = false) override final;
     EXPORT void updateMousePosition(int x, int y);
     EXPORT void updateMouseOverWindow(bool bState);
     EXPORT MousePosition getMousePosition() override final;
@@ -37,7 +37,7 @@ public:
 
     EXPORT bool isFocused() override final;
 
-    EXPORT int getStyleForState(WindowState &bState);
+    EXPORT int getStyleForState(const WindowState &bState);
 
     EXPORT void setIsFocused(bool state);
 

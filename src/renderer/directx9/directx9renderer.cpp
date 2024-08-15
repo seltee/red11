@@ -33,7 +33,7 @@ void DirectX9Renderer::prepareToRender(Texture *ambientTexture, Texture *radianc
     d3ddev->SetPixelShaderConstantF(19, (const float *)engineData, 1);
 }
 
-void DirectX9Renderer::clearBuffer(Color color)
+void DirectX9Renderer::clearBuffer(const Color &color)
 {
     d3ddev->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_XRGB(color.getRedAsUChar(), color.getGreenAsUChar(), color.getBlueAsUChar()), 1.0f, 0);
     d3ddev->Clear(0, NULL, D3DCLEAR_ZBUFFER, D3DCOLOR_XRGB(0, 0, 0), 1.0f, 0);
@@ -47,7 +47,7 @@ void DirectX9Renderer::renderCubeMap(Camera *camera, Entity *entity, Texture *hd
         d3ddev->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_BLUE | D3DCOLORWRITEENABLE_ALPHA);
         d3ddev->SetRenderState(D3DRS_ZWRITEENABLE, false);
 
-        Vector3 camPosition = Vector3(*entity->getModelMatrix() * Vector4(0.0f, 0.0f, 0.0f, 1.0f));
+        Vector3 camPosition = Vector3(entity->getModelMatrix() * Vector4(0.0f, 0.0f, 0.0f, 1.0f));
 
         Entity model;
         model.setPosition(camPosition);
@@ -62,24 +62,24 @@ void DirectX9Renderer::renderCubeMap(Camera *camera, Entity *entity, Texture *hd
 
         camera->updateViewMatrix(entity->getModelMatrix());
         d3ddev->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
-        renderMesh(camera, sphereSkySphere, model.getModelMatrix());
+        renderMesh(camera, sphereSkySphere, &model.getModelMatrix());
         d3ddev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
     }
 }
 
-void DirectX9Renderer::queueMesh(Mesh *mesh, Material *material, Matrix4 *model)
+void DirectX9Renderer::queueMesh(Mesh *mesh, Material *material, const Matrix4 *model)
 {
     material = material ? material : defaultMaterial;
     data.addMesh(mesh, material, model);
 }
 
-void DirectX9Renderer::queueMeshSkinned(Mesh *mesh, Material *material, Matrix4 *model, std::vector<BoneTransform> *bones)
+void DirectX9Renderer::queueMeshSkinned(Mesh *mesh, Material *material, const Matrix4 *model, std::vector<BoneTransform> *bones)
 {
     material = material ? material : defaultMaterial;
     data.addMeshSkinned(mesh, material, model, bones);
 }
 
-void DirectX9Renderer::queueLine(Vector3 vFrom, Vector3 vTo, Color color)
+void DirectX9Renderer::queueLine(const Vector3 &vFrom, const Vector3 &vTo, const Color &color)
 {
     data.addLine(vFrom, vTo, color);
 }
@@ -108,7 +108,7 @@ void DirectX9Renderer::clearQueue()
     lastMatrixStore = 0;
 }
 
-void DirectX9Renderer::renderMesh(Camera *camera, Mesh *mesh, Matrix4 *model)
+void DirectX9Renderer::renderMesh(Camera *camera, Mesh *mesh, const Matrix4 *model)
 {
     if (!mesh)
         return;
@@ -142,7 +142,7 @@ void DirectX9Renderer::renderMesh(Camera *camera, Mesh *mesh, Matrix4 *model)
     d3ddev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, meshData->vAmount, 0, meshData->iAmount);
 }
 
-void DirectX9Renderer::renderMeshSkinned(Camera *camera, Mesh *mesh, Matrix4 *model, std::vector<BoneTransform> *bones)
+void DirectX9Renderer::renderMeshSkinned(Camera *camera, Mesh *mesh, std::vector<BoneTransform> *bones)
 {
     if (!mesh)
         return;
@@ -171,7 +171,7 @@ void DirectX9Renderer::renderMeshSkinned(Camera *camera, Mesh *mesh, Matrix4 *mo
     d3ddev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, meshData->vAmount, 0, meshData->iAmount);
 }
 
-void DirectX9Renderer::renderLine(Camera *camera, Vector3 vFrom, Vector3 vTo)
+void DirectX9Renderer::renderLine(Camera *camera, const Vector3 &vFrom, const Vector3 &vTo)
 {
     Vector3 center = (vFrom + vTo) * 0.5f;
     Vector3 difference = vTo - vFrom;
@@ -187,10 +187,10 @@ void DirectX9Renderer::renderLine(Camera *camera, Vector3 vFrom, Vector3 vTo)
     entity.setScale(Vector3(0.0008f, 0.0008f, glm::length(difference)));
     entity.setRotation(Vector3(CONST_PI / 2 - x, -y - CONST_PI / 2.0f, 0.0f));
 
-    renderMesh(camera, sphereSkySphere, entity.getModelMatrix());
+    renderMesh(camera, sphereSkySphere, &entity.getModelMatrix());
 }
 
-void DirectX9Renderer::setupSpriteRendering(Matrix4 &mView, Matrix4 &mProjection)
+void DirectX9Renderer::setupSpriteRendering(const Matrix4 &mView, const Matrix4 &mProjection)
 {
     mSpriteViewProjection = mProjection * mView;
 
@@ -207,9 +207,9 @@ void DirectX9Renderer::setupSpriteRendering(Matrix4 &mView, Matrix4 &mProjection
     d3ddev->SetVertexDeclaration(pVertexDeclNormalUV);
 }
 
-void DirectX9Renderer::renderSpriteRect(Matrix4 *mModel, Color color)
+void DirectX9Renderer::renderSpriteRect(const Matrix4 &mModel, const Color &color)
 {
-    Matrix4 worldViewProjection = glm::transpose(mSpriteViewProjection * *mModel);
+    Matrix4 worldViewProjection = glm::transpose(mSpriteViewProjection * mModel);
     d3ddev->SetVertexShaderConstantF(0, (const float *)value_ptr(worldViewProjection), 4);
 
     Directx9MeshRenderData *meshData = data.getMeshRenderData(spriteMesh);
@@ -234,9 +234,9 @@ void DirectX9Renderer::renderSpriteRect(Matrix4 *mModel, Color color)
     d3ddev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, meshData->vAmount, 0, meshData->iAmount);
 }
 
-void DirectX9Renderer::renderSpriteMask(Matrix4 *mModel, Texture *texture, const Color color)
+void DirectX9Renderer::renderSpriteMask(const Matrix4 &mModel, Texture *texture, const Color &color)
 {
-    Matrix4 worldViewProjection = glm::transpose(mSpriteViewProjection * *mModel);
+    Matrix4 worldViewProjection = glm::transpose(mSpriteViewProjection * mModel);
     d3ddev->SetVertexShaderConstantF(0, (const float *)value_ptr(worldViewProjection), 4);
 
     Directx9MeshRenderData *meshData = data.getMeshRenderData(spriteMesh);
@@ -266,9 +266,9 @@ void DirectX9Renderer::renderSpriteMask(Matrix4 *mModel, Texture *texture, const
     d3ddev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, meshData->vAmount, 0, meshData->iAmount);
 }
 
-void DirectX9Renderer::renderSpriteImage(Matrix4 *mModel, Texture *texture)
+void DirectX9Renderer::renderSpriteImage(const Matrix4 &mModel, Texture *texture)
 {
-    Matrix4 worldViewProjection = glm::transpose(mSpriteViewProjection * *mModel);
+    Matrix4 worldViewProjection = glm::transpose(mSpriteViewProjection * mModel);
     d3ddev->SetVertexShaderConstantF(0, (const float *)value_ptr(worldViewProjection), 4);
 
     Directx9MeshRenderData *meshData = data.getMeshRenderData(spriteMesh);
@@ -320,7 +320,7 @@ void DirectX9Renderer::removeMeshByIndex(unsigned int index)
     data.destroyMeshRenderDataByIndex(index);
 }
 
-DirectX9Shader *DirectX9Renderer::createDirectX9Shader(std::string name, const DWORD *vsoCode, const DWORD *psoCode)
+DirectX9Shader *DirectX9Renderer::createDirectX9Shader(const std::string &name, const DWORD *vsoCode, const DWORD *psoCode)
 {
     return new DirectX9Shader(name, d3ddev, vsoCode, psoCode);
 }
@@ -475,7 +475,7 @@ void DirectX9Renderer::renderQueueLightDepthBuffer(Camera *camera)
     d3ddev->EndScene();
 }
 
-void DirectX9Renderer::renderQueueDepthEqual(Vector3 &cameraPosition, Camera *camera)
+void DirectX9Renderer::renderQueueDepthEqual(const Vector3 &cameraPosition, Camera *camera)
 {
     // Enable z buffer
     d3ddev->SetRenderState(D3DRS_ZENABLE, true);
@@ -565,7 +565,7 @@ void DirectX9Renderer::cleanD3D(void)
     }
 }
 
-void DirectX9Renderer::setupLights(Vector3 objectPosition, float objectRadius)
+void DirectX9Renderer::setupLights(const Vector3 &objectPosition, float objectRadius)
 {
     // registers for lights:
     // 20 - 84 - light data
@@ -734,7 +734,7 @@ void DirectX9Renderer::renderMeshColorData(Camera *camera, QueuedMeshRenderData 
             else
                 UVSkinnedShader->use();
         }
-        renderMeshSkinned(camera, mesh->mesh, mesh->model, &mesh->bones);
+        renderMeshSkinned(camera, mesh->mesh, &mesh->bones);
     }
     else
     {
@@ -760,7 +760,7 @@ void DirectX9Renderer::renderMeshDepthData(Camera *camera, QueuedMeshRenderData 
             mesh->material->getShaderDepthSkinned(RendererType::DirectX9)->use();
         else
             UVSkinnedShader->use();
-        renderMeshSkinned(camera, mesh->mesh, mesh->model, &mesh->bones);
+        renderMeshSkinned(camera, mesh->mesh, &mesh->bones);
     }
     else
     {
@@ -792,7 +792,7 @@ void DirectX9Renderer::renderMeshShadowDepthData(Camera *camera, QueuedMeshRende
             mesh->material->getShaderShadowSkinned(RendererType::DirectX9)->use();
         else
             UVShadowSkinnedShader->use();
-        renderMeshSkinned(camera, mesh->mesh, mesh->model, &mesh->bones);
+        renderMeshSkinned(camera, mesh->mesh, &mesh->bones);
     }
     else
     {
@@ -816,7 +816,7 @@ void DirectX9Renderer::renderMeshShadowDepthData(Camera *camera, QueuedMeshRende
     }
 }
 
-void DirectX9Renderer::renderShadowBuffers(Vector3 &cameraPosition, Vector3 &cameraFrowardVector)
+void DirectX9Renderer::renderShadowBuffers(const Vector3 &cameraPosition, const Vector3 &cameraFrowardVector)
 {
     for (int i = 0; i < data.queueActiveCurrentLight; i++)
     {
@@ -830,7 +830,7 @@ void DirectX9Renderer::renderShadowBuffers(Vector3 &cameraPosition, Vector3 &cam
     }
 }
 
-void DirectX9Renderer::renderShadowBuffersDirectional(Vector3 &cameraPosition, Vector3 &cameraFrowardVector, Light *light)
+void DirectX9Renderer::renderShadowBuffersDirectional(const Vector3 &cameraPosition, const Vector3 &cameraFrowardVector, Light *light)
 {
     IDirect3DSurface9 *originalRenderTarget = NULL;
     IDirect3DSurface9 *originalDepthStencil = NULL;

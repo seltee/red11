@@ -7,9 +7,9 @@
 class UIPropertyPositioning
 {
 public:
-    inline UIBlockPositioning getValue() { return value; }
-    inline bool isSet() { return bIsSet; }
-    inline bool isNotSet() { return !bIsSet; }
+    inline UIBlockPositioning getValue() const { return value; }
+    inline bool isSet() const { return bIsSet; }
+    inline bool isNotSet() const { return !bIsSet; }
     inline void unSet()
     {
         bIsSet = false;

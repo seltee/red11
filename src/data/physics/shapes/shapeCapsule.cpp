@@ -26,7 +26,7 @@ Matrix3 rotateInertiaTensor(const Matrix3 &inertiaTensor, const Quat &rotation)
     return rotationMatrix * inertiaTensor * glm::transpose(rotationMatrix);
 }
 
-ShapeCapsule::ShapeCapsule(Vector3 a, Vector3 b, float radius, float density)
+ShapeCapsule::ShapeCapsule(const Vector3 &a, const Vector3 &b, float radius, float density)
 {
     this->a = a;
     this->b = b;
@@ -66,10 +66,10 @@ ShapeCollisionType ShapeCapsule::getType()
     return ShapeCollisionType::Capsule;
 }
 
-AABB ShapeCapsule::getAABB(Matrix4 *model)
+AABB ShapeCapsule::getAABB(const Matrix4 &model)
 {
-    Vector3 pa = Vector3(*model * Vector4(a, 1.0f));
-    Vector3 pb = Vector3(*model * Vector4(b, 1.0f));
+    Vector3 pa = Vector3(model * Vector4(a, 1.0f));
+    Vector3 pb = Vector3(model * Vector4(b, 1.0f));
 
     Vector3 min = Vector3(
         fminf(pa.x, pb.x) - radius,

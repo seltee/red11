@@ -7,7 +7,7 @@
 class TextureFile : public Texture
 {
 public:
-    EXPORT TextureFile(std::string name, std::string filePath);
+    EXPORT TextureFile(const std::string &name, const std::string &filePath);
 
     EXPORT unsigned char *getBufferData() override;
     EXPORT unsigned char *setBufferSize(int width, int height) override;

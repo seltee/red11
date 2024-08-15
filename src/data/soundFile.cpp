@@ -27,7 +27,7 @@ struct WavChapterHeader
     unsigned int dataSize;
 };
 
-SoundFile::SoundFile(std::string path, bool bForceMono)
+SoundFile::SoundFile(const std::string &path, bool bForceMono)
 {
     this->path = path;
     this->bForceMono = bForceMono;

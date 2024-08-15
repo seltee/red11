@@ -29,7 +29,7 @@ Mesh *MeshObject::getTransformedMesh()
 {
     if (mesh)
     {
-        return new Mesh(mesh->getType(), mesh->getVerticies()->ptr, mesh->getVerticiesAmount(), mesh->getPolygons(), mesh->getPolygonsAmount(), getModelMatrix());
+        return new Mesh(mesh->getType(), mesh->getVerticies()->ptr, mesh->getVerticiesAmount(), mesh->getPolygons(), mesh->getPolygonsAmount(), &getModelMatrix());
     }
     return nullptr;
 }

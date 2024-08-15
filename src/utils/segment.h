@@ -9,7 +9,7 @@ class Segment
 {
 public:
     inline Segment() {}
-    inline Segment(Vector3 a, Vector3 b)
+    inline Segment(const Vector3 &a, const Vector3 &b)
     {
         this->a = a;
         this->b = b;
@@ -20,7 +20,7 @@ public:
     }
 
     // From Christer Ericson - Real-Time Collision Detection
-    inline Vector3 getClosestPoint(Vector3 p) const
+    inline Vector3 getClosestPoint(const Vector3 &p) const
     {
         Vector3 ab = b - a;
         // Project c onto ab, computing parameterized position d(t)=a+ t*(b – a)

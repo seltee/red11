@@ -55,7 +55,7 @@ void Scene::destroyAllActors()
         (*actor)->destroy();
 }
 
-std::vector<Actor *> Scene::getActorsByName(std::string name)
+std::vector<Actor *> Scene::getActorsByName(const std::string &name)
 {
     std::vector<Actor *> actorsList;
     for (auto actor = actors.begin(); actor != actors.end(); ++actor)
@@ -66,7 +66,7 @@ std::vector<Actor *> Scene::getActorsByName(std::string name)
     return actorsList;
 }
 
-Actor *Scene::getFirstActorByName(std::string name)
+Actor *Scene::getFirstActorByName(const std::string &name)
 {
     for (auto actor = actors.begin(); actor != actors.end(); ++actor)
     {

@@ -108,7 +108,7 @@ inline int getVertexDataTypeSize(VertexDataType type)
 class Mesh : public Usable
 {
 public:
-    Mesh(VertexDataType type, void *verticies, int vLength, PolygonTriPoints *polygons, int pLength, Matrix4 *transformation = nullptr);
+    Mesh(VertexDataType type, void *verticies, int vLength, PolygonTriPoints *polygons, int pLength, const Matrix4 *transformation = nullptr);
     virtual ~Mesh();
 
     void addDeform(Deform *deform);

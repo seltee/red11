@@ -22,13 +22,13 @@ struct Glyph
 class Font
 {
 public:
-    EXPORT Font(std::string path);
+    EXPORT Font(const std::string &path);
 
     EXPORT Glyph *getGlyph(unsigned int code, unsigned int size);
     EXPORT Texture *getGlyphTexture(unsigned int code, unsigned int size);
 
-    EXPORT unsigned int measureWidth(std::string string, unsigned int size);
-    EXPORT unsigned int measureHeight(std::string string, unsigned int size);
+    EXPORT unsigned int measureWidth(const std::string &string, unsigned int size);
+    EXPORT unsigned int measureHeight(const std::string &string, unsigned int size);
 
     inline bool isReady() { return bIsReady; }
 

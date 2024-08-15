@@ -8,13 +8,13 @@
 class Entity
 {
 public:
-    inline void setPosition(Vector3 v)
+    inline void setPosition(const Vector3 &v)
     {
         this->position = v;
         bIsTransformationDirty = true;
     }
 
-    inline void setPosition(Vector2 v)
+    inline void setPosition(const Vector2 &v)
     {
         this->position = Vector3(v.x, v.y, 0.0f);
         bIsTransformationDirty = true;
@@ -62,26 +62,26 @@ public:
         bIsTransformationDirty = true;
     }
 
-    inline void translate(Vector3 v)
+    inline void translate(const Vector3 &v)
     {
         this->position += v;
         bIsTransformationDirty = true;
     }
 
-    inline void translate(Vector2 v)
+    inline void translate(const Vector2 &v)
     {
         this->position += Vector3(v.x, v.y, 0.0f);
         bIsTransformationDirty = true;
     }
 
-    inline Vector3 getPosition() { return position; };
+    inline Vector3 getPosition() const { return position; };
 
-    inline void setRotation(Vector3 r)
+    inline void setRotation(const Vector3 &r)
     {
         this->rotation = Quat(r);
         bIsTransformationDirty = true;
     }
-    inline void setRotation(Quat r)
+    inline void setRotation(const Quat &r)
     {
         this->rotation = r;
         bIsTransformationDirty = true;
@@ -96,31 +96,31 @@ public:
         this->rotation *= Quat(Vector3(0.0f, 0.0f, z));
         bIsTransformationDirty = true;
     }
-    inline void rotate(Vector3 r)
+    inline void rotate(const Vector3 &r)
     {
         this->rotation *= Quat(r);
         bIsTransformationDirty = true;
     }
-    inline void rotate(Quat r)
+    inline void rotate(const Quat &r)
     {
         this->rotation *= r;
         bIsTransformationDirty = true;
     }
-    inline void rotateByNormal(Vector3 normal, Vector3 up = Vector3(0.0f, 1.0f, 0.0f))
+    inline void rotateByNormal(const Vector3 &normal, const Vector3 &up = Vector3(0.0f, 1.0f, 0.0f))
     {
         this->rotation = glm::rotation(up, normal);
         bIsTransformationDirty = true;
     }
 
-    inline Quat getRotation() { return rotation; };
-    inline Vector3 getRotationEuler() { return glm::eulerAngles(rotation); };
+    inline Quat getRotation() const { return rotation; };
+    inline Vector3 getRotationEuler() const { return glm::eulerAngles(rotation); };
 
-    inline void setScale(Vector3 v)
+    inline void setScale(const Vector3 &v)
     {
         this->scale = v;
         bIsTransformationDirty = true;
     }
-    inline void setScale(Vector2 v)
+    inline void setScale(const Vector2 &v)
     {
         this->scale = Vector3(v.x, v.y, 1.0f);
         bIsTransformationDirty = true;
@@ -140,24 +140,24 @@ public:
         this->scale = Vector3(xyz, xyz, xyz);
         bIsTransformationDirty = true;
     }
-    inline Vector3 getScale() { return scale; };
+    inline Vector3 getScale() const { return scale; };
 
     inline Vector3 getForwardVector()
     {
-        return glm::normalize(Matrix3(*getModelMatrix()) * Vector3(0.0f, 0.0f, -1.0f));
+        return glm::normalize(Matrix3(getModelMatrix()) * Vector3(0.0f, 0.0f, -1.0f));
     }
 
-    inline bool isTransformationDirty()
+    inline bool isTransformationDirty() const
     {
         return bIsTransformationDirty || (transformationParent && (transformationParent->getTIteration() != tIteration || transformationParent->isTransformationDirty()));
     }
 
-    inline int getTIteration()
+    inline int getTIteration() const
     {
         return tIteration;
     }
 
-    EXPORT Matrix4 *getModelMatrix();
+    EXPORT const Matrix4 &getModelMatrix();
 
 protected:
     Vector3 position = Vector3(0.0f);

@@ -5,7 +5,7 @@
 #include "utils/image/stb_image.h"
 #include "renderer/renderer.h"
 
-TextureFile::TextureFile(std::string sName, std::string sFilePath) : Texture(sName, TextureType::Normal)
+TextureFile::TextureFile(const std::string &sName, const std::string &sFilePath) : Texture(sName, TextureType::Normal)
 {
     this->sFilePath = sFilePath;
     this->bStaticBuffer = false;

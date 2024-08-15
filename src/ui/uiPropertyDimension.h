@@ -7,11 +7,11 @@
 class UIPropertyDimension
 {
 public:
-    inline float getValue() { return value; }
-    inline bool isUsingPercentage() { return bIsUsingPercentage; }
-    inline bool isUsingNumber() { return !bIsUsingPercentage; }
-    inline bool isSet() { return bIsSet; }
-    inline bool isNotSet() { return !bIsSet; }
+    inline float getValue() const { return value; }
+    inline bool isUsingPercentage() const { return bIsUsingPercentage; }
+    inline bool isUsingNumber() const { return !bIsUsingPercentage; }
+    inline bool isSet() const { return bIsSet; }
+    inline bool isNotSet() const { return !bIsSet; }
     inline void unSet()
     {
         value = 0.0f;

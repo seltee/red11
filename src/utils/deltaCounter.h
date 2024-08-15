@@ -10,7 +10,7 @@ public:
     EXPORT DeltaCounter();
 
     EXPORT float getDeltaFrameCounter(bool clearCounter = true);
-    inline int getFPS() { return fps; }
+    inline int getFPS() const { return fps; }
 
 protected:
     unsigned long long lastTime;

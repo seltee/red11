@@ -11,10 +11,10 @@ class PhysicsWorld;
 class ShapeCapsule : public Shape
 {
 public:
-    EXPORT ShapeCapsule(Vector3 a, Vector3 b, float radius, float density);
+    EXPORT ShapeCapsule(const Vector3 &a, const Vector3 &b, float radius, float density);
 
     EXPORT ShapeCollisionType getType() override final;
-    EXPORT AABB getAABB(Matrix4 *model) override final;
+    EXPORT AABB getAABB(const Matrix4 &model) override final;
 
     EXPORT int castRay(const Segment &ray, PhysicsBodyPoint *newPoints, PhysicsBodyCache *cache) override final;
 

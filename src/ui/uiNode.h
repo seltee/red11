@@ -70,7 +70,7 @@ public:
     inline UIContentAlign getCalculatedAlignV() { return calculatedAlignV; }
     inline UIContentDirection getCalculatedDirection() { return calculatedDirection; }
     inline bool hasCalculatedText() { return text.isSet() && text.getValue().size() > 0; }
-    inline std::string &getCalculatedText() { return text.getValue(); }
+    inline const std::string &getCalculatedText() { return text.getValue(); }
     inline Font *getCalculatedFont() { return calculatedFont; }
     inline unsigned int getCalcualtedFontSize() { return calculatedFontSize; }
     inline float getCalculatedLetterSpacing() { return calculatedLetterSpacing; }

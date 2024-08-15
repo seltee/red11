@@ -4,7 +4,7 @@
 #include "logger.h"
 #include <stdio.h>
 
-Logger::Logger(std::string filePath)
+Logger::Logger(const std::string &filePath)
 {
     pLogFile = fopen(filePath.c_str(), "w");
     if (pLogFile != nullptr)

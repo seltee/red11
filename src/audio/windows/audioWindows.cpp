@@ -58,7 +58,7 @@ bool AudioWindows::setup()
     return setup("");
 }
 
-bool AudioWindows::setup(std::string deviceName)
+bool AudioWindows::setup(const std::string &deviceName)
 {
     if (bIsReady)
         return true;

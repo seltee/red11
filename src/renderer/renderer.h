@@ -25,30 +25,30 @@ public:
     virtual RendererType getType() = 0;
 
     virtual void prepareToRender(Texture *ambientTexture = nullptr, Texture *radianceTexture = nullptr) = 0;
-    virtual void clearBuffer(Color color) = 0;
-    virtual void renderCubeMap(Camera *camera, Entity *entity,Texture *hdr) = 0;
+    virtual void clearBuffer(const Color &color) = 0;
+    virtual void renderCubeMap(Camera *camera, Entity *entity, Texture *hdr) = 0;
 
     // This function queues everything by pointers without any copies. Be carefull not to pass a temporary object
-    virtual void queueMesh(Mesh *mesh, Material *material, Matrix4 *model) = 0;
+    virtual void queueMesh(Mesh *mesh, Material *material, const Matrix4 *model) = 0;
 
     // This function uses small internal store to convert temporary matrix into a permanent
     // This means you can use temporary calculated matrix with this function but mesh and material should be percictent unto render is complete
     // This is made to avoid saving the entire matrix in the queue for most of the objects but sometimes it's nessasary and functionality provided by this function
-    void queueMesh(Mesh *mesh, Material *material, Matrix4 &model);
+    void queueMesh(Mesh *mesh, Material *material, const Matrix4 &model);
 
-    virtual void queueMeshSkinned(Mesh *mesh, Material *material, Matrix4 *model, std::vector<BoneTransform> *bones) = 0;
-    virtual void queueLine(Vector3 vFrom, Vector3 vTo, Color color) = 0;
+    virtual void queueMeshSkinned(Mesh *mesh, Material *material, const Matrix4 *model, std::vector<BoneTransform> *bones) = 0;
+    virtual void queueLine(const Vector3 &vFrom, const Vector3 &vTo, const Color &color) = 0;
     virtual void queueLight(Light *light) = 0;
     virtual void renderQueue(Camera *camera) = 0;
     virtual void clearQueue() = 0;
-    virtual void renderMesh(Camera *camera, Mesh *mesh, Matrix4 *model) = 0;
-    virtual void renderMeshSkinned(Camera *camera, Mesh *mesh, Matrix4 *model, std::vector<BoneTransform> *bones) = 0;
+    virtual void renderMesh(Camera *camera, Mesh *mesh, const Matrix4 *model) = 0;
+    virtual void renderMeshSkinned(Camera *camera, Mesh *mesh, std::vector<BoneTransform> *bones) = 0;
     virtual void setAmbientLight(const Color &ambientColor) = 0;
     virtual void present() = 0;
-    virtual void setupSpriteRendering(Matrix4 &mView, Matrix4 &mProjection) = 0;
-    virtual void renderSpriteRect(Matrix4 *mModel, const Color color) = 0;
-    virtual void renderSpriteMask(Matrix4 *mModel, Texture *texture, const Color color) = 0;
-    virtual void renderSpriteImage(Matrix4 *mModel, Texture *texture) = 0;
+    virtual void setupSpriteRendering(const Matrix4 &mView, const Matrix4 &mProjection) = 0;
+    virtual void renderSpriteRect(const Matrix4 &mModel, const Color &color) = 0;
+    virtual void renderSpriteMask(const Matrix4 &mModel, Texture *texture, const Color &color) = 0;
+    virtual void renderSpriteImage(const Matrix4 &mModel, Texture *texture) = 0;
 
     inline int getViewWidth() { return viewWidth; }
     inline int getViewHeight() { return viewHeight; }

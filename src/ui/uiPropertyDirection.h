@@ -7,9 +7,9 @@
 class UIPropertyDirection
 {
 public:
-    inline UIContentDirection getValue() { return value; }
-    inline bool isSet() { return bIsSet; }
-    inline bool isNotSet() { return !bIsSet; }
+    inline UIContentDirection getValue() const { return value; }
+    inline bool isSet() const { return bIsSet; }
+    inline bool isNotSet() const { return !bIsSet; }
     inline void unSet()
     {
         value = UIContentDirection::Horizontal;

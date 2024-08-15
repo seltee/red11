@@ -99,9 +99,9 @@ ShapeCollisionType ShapeConvex::getType()
     return ShapeCollisionType::Convex;
 }
 
-AABB ShapeConvex::getAABB(Matrix4 *model)
+AABB ShapeConvex::getAABB(const Matrix4 &model)
 {
-    Vector3 modelCenter = Vector3(*model * Vector4(center, 1.0f));
+    Vector3 modelCenter = Vector3(model * Vector4(center, 1.0f));
     return AABB(modelCenter - Vector3(aabbRadius, aabbRadius, aabbRadius), modelCenter + Vector3(aabbRadius, aabbRadius, aabbRadius));
 }
 

@@ -24,7 +24,7 @@ struct QueuedMeshRenderData
     Mesh *mesh;
     std::vector<BoneTransform> bones;
     Material *material;
-    Matrix4 *model;
+    const Matrix4 *model;
     Vector3 centroid;
     float distance;
 };

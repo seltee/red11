@@ -19,7 +19,7 @@ public:
     EXPORT std::vector<AudioDevice> getDevicesList() override final;
 
     EXPORT bool setup() override final;
-    EXPORT bool setup(std::string deviceName) override final;
+    EXPORT bool setup(const std::string &deviceName) override final;
     virtual void fillBuffers() override final;
 
 protected:

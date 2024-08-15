@@ -15,7 +15,7 @@ public:
     EXPORT ShapeMesh(float simScale, VertexDataUV *verticies, int verticiesAmount, PolygonTriPoints *polygons, int polygonsAmount, float density);
 
     EXPORT ShapeCollisionType getType() override;
-    EXPORT AABB getAABB(Matrix4 *model) override final;
+    EXPORT AABB getAABB(const Matrix4 &model) override final;
 
     EXPORT int castRay(const Segment &ray, PhysicsBodyPoint *newPoints, PhysicsBodyCache *cache) override final;
 

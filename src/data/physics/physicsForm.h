@@ -21,18 +21,18 @@ public:
     EXPORT ~PhysicsForm();
     EXPORT void destroy();
 
-    EXPORT ShapePlain *createPlain(Vector3 normal, float distance);
-    EXPORT ShapePlain *createPlain(Vector3 normal, Vector3 point);
-    EXPORT ShapeSphere *createSphere(Vector3 center, float radius, float density = 22.0f);
-    EXPORT ShapeOBB *createOBB(Vector3 center, float width, float height, float depth, float density = 22.0f);
-    EXPORT ShapeOBB *createOBB(Vector3 center, float size, float density = 22.0f);
-    EXPORT ShapeCapsule *createCapsule(Vector3 a, Vector3 b, float radius, float density = 22.0f);
+    EXPORT ShapePlain *createPlain(const Vector3 &normal, float distance);
+    EXPORT ShapePlain *createPlain(const Vector3 &normal, const Vector3 &point);
+    EXPORT ShapeSphere *createSphere(const Vector3 &center, float radius, float density = 22.0f);
+    EXPORT ShapeOBB *createOBB(const Vector3 &center, float width, float height, float depth, float density = 22.0f);
+    EXPORT ShapeOBB *createOBB(const Vector3 &center, float size, float density = 22.0f);
+    EXPORT ShapeCapsule *createCapsule(const Vector3 &a, const Vector3 &b, float radius, float density = 22.0f);
     EXPORT ShapeConvex *createConvex(Vector3 *verticies, int verticiesAmount, HullPolygon *polygons, int polygonsAmount, float density = 22.0f);
     EXPORT ShapeConvex *createConvex(Mesh *mesh, int limitToVerticies, float density = 22.0f);
     EXPORT ShapeMesh *createMesh(Mesh *mesh, float density = 22.0f);
     EXPORT void recalcParameters();
 
-    EXPORT AABB getAABB(Matrix4 *model);
+    EXPORT AABB getAABB(const Matrix4 &model);
 
     EXPORT int castRay(const Segment &ray, PhysicsBodyPoint *newPoints, PhysicsBodyCache *cache);
 

@@ -12,21 +12,21 @@ class ComponentLight : public Component
 {
 public:
     EXPORT void setupDirectional(
-        Vector3 directionalNormal,
-        Color directionalColor,
+        const Vector3 directionalNormal,
+        const Color directionalColor,
         bool bEnableShadow = false,
         LightShadowQuality shadowQuality = LightShadowQuality::Low);
 
-    EXPORT void setupOmni(Attenuation omniAttenuation,
-                          Color omniColor,
+    EXPORT void setupOmni(const Attenuation omniAttenuation,
+                          const Color omniColor,
                           bool bEnableShadow = false,
                           LightShadowQuality shadowQuality = LightShadowQuality::Low);
 
-    EXPORT void setupSpot(Vector3 spotDirection,
-                          Attenuation spotAttenuation,
+    EXPORT void setupSpot(const Vector3 spotDirection,
+                          const Attenuation spotAttenuation,
                           float spotInnerRadius,
                           float spotOuterRadius,
-                          Color spotColor,
+                          const Color spotColor,
                           bool bEnableShadow = false,
                           LightShadowQuality shadowQuality = LightShadowQuality::Low);
 

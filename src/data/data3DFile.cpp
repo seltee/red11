@@ -5,7 +5,7 @@
 #include "utils/FBX/loaderFBX.h"
 #include "utils/meshCombiner.h"
 
-Data3DFile::Data3DFile(std::string path, bool bLoadMeshData)
+Data3DFile::Data3DFile(const std::string &path, bool bLoadMeshData)
 {
     this->path = path;
     this->bLoadMeshData = bLoadMeshData;

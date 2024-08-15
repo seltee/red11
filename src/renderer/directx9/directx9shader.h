@@ -16,7 +16,7 @@
 class DirectX9Shader : public Shader
 {
 public:
-    DirectX9Shader(std::string name, LPDIRECT3DDEVICE9 d3ddev, const DWORD *vsoCode, const DWORD *psoCode);
+    DirectX9Shader(const std::string &name, LPDIRECT3DDEVICE9 d3ddev, const DWORD *vsoCode, const DWORD *psoCode);
     RendererType getType() override final;
     void use() override final;
 

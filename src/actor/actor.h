@@ -23,10 +23,10 @@ class Scene;
 class Actor : public Entity, public Destroyable
 {
 public:
-    EXPORT Actor(std::string &name);
+    EXPORT Actor(const std::string &name);
     EXPORT virtual ~Actor();
 
-    EXPORT void setActorName(std::string &name);
+    EXPORT void setActorName(const std::string &name);
     EXPORT const std::string &getActorName();
 
     EXPORT void assignPhysicsWorld(PhysicsWorld *physicsWorld);
@@ -43,7 +43,7 @@ public:
     EXPORT void removeComponent(Component *component);
     EXPORT void prepareNewComponent(Component *component);
 
-    inline ComponentMesh *createComponentMesh(Mesh *mesh, Vector3 position = Vector3(0.0f), Vector3 rotation = Vector3(0.0f), Vector3 scale = Vector3(1.0f))
+    inline ComponentMesh *createComponentMesh(Mesh *mesh, const Vector3 position = Vector3(0.0f), const Vector3 rotation = Vector3(0.0f), const Vector3 scale = Vector3(1.0f))
     {
         auto component = createComponent<ComponentMesh>();
         component->setPosition(position);
@@ -53,7 +53,7 @@ public:
         return component;
     }
 
-    inline ComponentMeshGroup *createComponentMeshGroup(std::vector<MeshObject *> *list, Vector3 position = Vector3(0.0f), Vector3 rotation = Vector3(0.0f), Vector3 scale = Vector3(1.0f))
+    inline ComponentMeshGroup *createComponentMeshGroup(std::vector<MeshObject *> *list, const Vector3 position = Vector3(0.0f), const Vector3 rotation = Vector3(0.0f), const Vector3 scale = Vector3(1.0f))
     {
         auto component = createComponent<ComponentMeshGroup>();
         component->setPosition(position);
@@ -63,7 +63,7 @@ public:
         return component;
     }
 
-    inline ComponentText *createComponentText(std::string text, Font *font, int size, Vector3 position = Vector3(0.0f), Vector3 rotation = Vector3(0.0f), Vector3 scale = Vector3(1.0f))
+    inline ComponentText *createComponentText(std::string text, Font *font, int size, const Vector3 position = Vector3(0.0f), const Vector3 rotation = Vector3(0.0f), const Vector3 scale = Vector3(1.0f))
     {
         auto component = createComponent<ComponentText>();
         component->setFont(font);

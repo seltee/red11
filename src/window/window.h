@@ -73,7 +73,7 @@ public:
     EXPORT void udpateRealSize(int width, int height);
 
     virtual void setMousePosition(int x, int y, bool generateMoveEvents = false) = 0;
-    virtual void setMousePosition(MousePosition position, bool generateMoveEvents = false) = 0;
+    virtual void setMousePosition(const MousePosition &position, bool generateMoveEvents = false) = 0;
     virtual MousePosition getMousePosition() = 0;
     virtual void setCursorVisibility(bool bState) = 0;
     virtual bool isFocused() = 0;

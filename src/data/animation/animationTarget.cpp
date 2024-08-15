@@ -3,7 +3,7 @@
 
 #include "animationTarget.h"
 
-AnimationTarget::AnimationTarget(std::string targetName)
+AnimationTarget::AnimationTarget(const std::string targetName)
 {
     this->targetName = targetName;
 }

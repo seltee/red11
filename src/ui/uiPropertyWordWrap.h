@@ -7,9 +7,9 @@
 class UIPropertyWordWrap
 {
 public:
-    inline UIWordWrap getValue() { return value; }
-    inline bool isSet() { return bIsSet; }
-    inline bool isNotSet() { return !bIsSet; }
+    inline UIWordWrap getValue() const { return value; }
+    inline bool isSet() const { return bIsSet; }
+    inline bool isNotSet() const { return !bIsSet; }
     inline void unSet()
     {
         bIsSet = false;

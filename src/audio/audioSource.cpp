@@ -198,14 +198,14 @@ void AudioSource::playAndDie(Sound *sound)
     bDestroyAfterPlaying = true;
 }
 
-void AudioSource::play3d(Sound *sound, Vector3 vPosition)
+void AudioSource::play3d(Sound *sound, const Vector3 &vPosition)
 {
     play(sound);
     this->vPosition = vPosition;
     bIs3dPositioned = true;
 }
 
-void AudioSource::play3dAndDie(Sound *sound, Vector3 vPosition)
+void AudioSource::play3dAndDie(Sound *sound, const Vector3 &vPosition)
 {
     play(sound);
     this->vPosition = vPosition;

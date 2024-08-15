@@ -9,8 +9,8 @@ PhysicsBody::PhysicsBody(
     PhysicsForm *form,
     PhysicsWorld *world,
     Entity *entity,
-    Vector3 initialPosition,
-    Quat initialRotation,
+    const Vector3 &initialPosition,
+    const Quat &initialRotation,
     bool simulatePhysics)
 {
     this->motionType = motionType;
@@ -39,9 +39,9 @@ void PhysicsBody::prepareForSimulation()
     }
     else
     {
-        Matrix4 *model = entity->getModelMatrix();
-        this->position = Vector3(*model * Vector4(0.0f, 0.0f, 0.0f, 1.0f));
-        this->rotation = glm::quat_cast(*model);
+        const Matrix4 &model = entity->getModelMatrix();
+        this->position = Vector3(model * Vector4(0.0f, 0.0f, 0.0f, 1.0f));
+        this->rotation = glm::quat_cast(model);
     }
     updateAABB();
     updateCache();
@@ -56,7 +56,7 @@ void PhysicsBody::finishSimulation()
     }
 }
 
-void PhysicsBody::processStep(float delta, Vector3 &gravity)
+void PhysicsBody::processStep(float delta, const Vector3 &gravity)
 {
     if (!bIsEnabled || !bSimulatePhysics)
         return;
@@ -131,21 +131,21 @@ void PhysicsBody::applyStep(float delta)
     }
 }
 
-void PhysicsBody::translate(Vector3 v)
+void PhysicsBody::translate(const Vector3 &v)
 {
     lock.lock();
     translationAccumulator += v;
     lock.unlock();
 }
 
-void PhysicsBody::addLinearVelocity(Vector3 velocity)
+void PhysicsBody::addLinearVelocity(const Vector3 &velocity)
 {
     lock.lock();
     linearVelocity += velocity;
     lock.unlock();
 }
 
-void PhysicsBody::addAngularVelocity(Vector3 velocity)
+void PhysicsBody::addAngularVelocity(const Vector3 &velocity)
 {
     lock.lock();
     angularVelocity += velocity;

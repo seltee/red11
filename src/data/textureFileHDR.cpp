@@ -6,7 +6,7 @@
 #include "renderer/renderer.h"
 #include "red11.h"
 
-TextureFileHDR::TextureFileHDR(std::string sName, std::string sFilePath, float fLdrScale, float fLdrGamma) : Texture(sName, TextureType::Normal)
+TextureFileHDR::TextureFileHDR(const std::string &sName, const std::string &sFilePath, float fLdrScale, float fLdrGamma) : Texture(sName, TextureType::Normal)
 {
     this->sFilePath = sFilePath;
     this->bStaticBuffer = false;

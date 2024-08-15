@@ -12,7 +12,7 @@
 #include <locale>
 #include <codecvt>
 
-Font::Font(std::string path)
+Font::Font(const std::string &path)
 {
     this->path = path;
     int fileSize = getFileByteSize(path.c_str());
@@ -76,7 +76,7 @@ Texture *Font::getGlyphTexture(unsigned int code, unsigned int size)
     return nullptr;
 }
 
-unsigned int Font::measureWidth(std::string string, unsigned int size)
+unsigned int Font::measureWidth(const std::string &string, unsigned int size)
 {
     std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> convert;
     std::u32string text32 = convert.from_bytes(string);
@@ -90,7 +90,7 @@ unsigned int Font::measureWidth(std::string string, unsigned int size)
     return width;
 }
 
-unsigned int Font::measureHeight(std::string string, unsigned int size)
+unsigned int Font::measureHeight(const std::string &string, unsigned int size)
 {
     return size;
 }
