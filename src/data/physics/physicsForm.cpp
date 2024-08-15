@@ -83,6 +83,15 @@ ShapeConvex *PhysicsForm::createConvex(Vector3 *verticies, int verticiesAmount, 
     return newConvex;
 }
 
+ShapeConvex *PhysicsForm::createConvex(Mesh *mesh, int limitToVerticies, float density)
+{
+    ShapeConvex *newConvex = new ShapeConvex(simScale, mesh, limitToVerticies, density);
+    shapes.push_back(newConvex);
+    isDataDirty = true;
+    recalcParameters();
+    return newConvex;
+}
+
 ShapeMesh *PhysicsForm::createMesh(Mesh *mesh, float density)
 {
     int verticiesAmount = mesh->getVerticiesAmount();

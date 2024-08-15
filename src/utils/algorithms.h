@@ -89,17 +89,12 @@ inline bool pointInTriangle(Vector3 triV1, Vector3 triV2, Vector3 triV3, Vector3
     return false;
 }
 
-inline Vector3 getPolygonNormal(Vector3 pA, Vector3 pB, Vector3 pC)
+inline Vector3 calculateNormal(Vector3 pA, Vector3 pB, Vector3 pC)
 {
-    Vector3 vA = (pB - pA);
-    Vector3 vB = (pC - pA);
-
-    Vector3 n;
-    n.x = (vA.y * vB.z) - (vA.z * vB.y);
-    n.y = -((vB.z * vA.x) - (vB.x * vA.z));
-    n.z = (vA.x * vB.y) - (vA.y * vB.x);
-
-    return glm::normalize(n);
+    Vector3 normal = glm::normalize(glm::cross(pB - pA, pC - pA));
+    if (glm::length2(normal) < 1e-6f)
+        return Vector3(0.0f);
+    return glm::normalize(normal);
 }
 
 // From Gregorius Dirk - The Separating Axis Test

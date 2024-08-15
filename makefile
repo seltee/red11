@@ -62,7 +62,7 @@ OBJ_FILES = ${OBJDIR}/red11.o \
 			${OBJDIR}/actor.o ${OBJDIR}/actorTemporary.o \
 			${OBJDIR}/component.o ${OBJDIR}/componentMesh.o ${OBJDIR}/componentText.o ${OBJDIR}/componentLight.o ${OBJDIR}/componentMeshGroup.o ${OBJDIR}/componentCamera.o \
 			${OBJDIR}/utils.o ${OBJDIR}/resourceManager.o ${OBJDIR}/sysinfo.o ${OBJDIR}/color.o ${OBJDIR}/meshBuilder.o ${OBJDIR}/meshCombiner.o ${OBJDIR}/destroyable.o \
-			${OBJDIR}/stb_image.o ${OBJDIR}/stb_vorbis.o ${OBJDIR}/stb_truetype.o \
+			${OBJDIR}/stb_image.o ${OBJDIR}/stb_vorbis.o ${OBJDIR}/stb_truetype.o ${OBJDIR}/convhull_3d.o \
 			${OBJDIR}/deltaCounter.o ${OBJDIR}/jobQueue.o ${OBJDIR}/logger.o ${OBJDIR}/hullCliping.o \
 			${OBJDIR}/loaderFBX.o ${OBJDIR}/FBXNode.o ${OBJDIR}/FBXAnimationStack.o ${OBJDIR}/FBXAnimationLayer.o ${OBJDIR}/FBXAnimationCurve.o ${OBJDIR}/FBXAnimationCurveNode.o \
 			${OBJDIR}/FBXDeform.o ${OBJDIR}/FBXGeometry.o ${OBJDIR}/FBXModel.o ${OBJDIR}/FBXAttribute.o
@@ -294,6 +294,9 @@ ${OBJDIR}/stb_vorbis.o: ${SRCDIR}/utils/sound/stb_vorbis.cpp
 
 ${OBJDIR}/stb_truetype.o: ${SRCDIR}/utils/font/stb_truetype.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/stb_truetype.o ${SRCDIR}/utils/font/stb_truetype.cpp
+
+${OBJDIR}/convhull_3d.o: ${SRCDIR}/utils/convex/convhull_3d.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/convhull_3d.o ${SRCDIR}/utils/convex/convhull_3d.cpp
 
 ${OBJDIR}/deltaCounter.o: ${SRCDIR}/utils/deltaCounter.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/deltaCounter.o ${SRCDIR}/utils/deltaCounter.cpp

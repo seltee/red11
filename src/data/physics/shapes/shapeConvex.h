@@ -8,11 +8,16 @@
 #include "data/mesh.h"
 
 class PhysicsWorld;
+class Mesh;
 
 class ShapeConvex : public Shape
 {
 public:
     EXPORT ShapeConvex(float simScale, Vector3 *verticies, int verticiesAmount, HullPolygon *polygons, int polygonsAmount, float density);
+    EXPORT ShapeConvex(float simScale, Mesh *mesh, int limitToNumber, float density);
+
+    EXPORT void recalcCenter();
+    EXPORT void recalcAABB();
 
     EXPORT ShapeCollisionType getType() override;
     EXPORT AABB getAABB(Matrix4 *model) override final;
@@ -28,7 +33,9 @@ public:
     inline HullEdge *getEdges() { return hullEdges; };
     inline int getEdgesAmount() { return hullEdgesAmount; };
 
-protected:    
+protected:
+    void buildHull(Mesh *mesh, int limitToNumber, float simScale);
+
     Vector3 center;
     Vector3 *verticies;
     int verticiesAmount;

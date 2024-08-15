@@ -42,6 +42,11 @@ APPMAIN
     auto hdr = new TextureFileHDR("HDR", "./data/meadow.hdr", 1.8f, 2.9f);
     auto radiance = hdr->getRadianceTexture();
 
+    auto asteroidAlbedoTexture = new TextureFile("Albedo", "./data/asteroid_base.jpg");
+    auto asteroidNormalTexture = new TextureFile("Normal", "./data/asteroid_nor.jpg");
+    auto asteroidRoughnessTexture = new TextureFile("Roughness", "./data/asteroid_rough.jpg");
+    auto asteroidMaterial = new MaterialSimple(asteroidAlbedoTexture, asteroidNormalTexture, nullptr, nullptr, asteroidRoughnessTexture);
+
     // Meshes
     auto cubeMesh = Red11::getMeshBuilder()->createCube(0.1f);
     auto cubeMeshBig = Red11::getMeshBuilder()->createCube(0.25f);
@@ -50,6 +55,8 @@ APPMAIN
     auto capsuleMesh = Red11::getMeshBuilder()->createCapsule(Vector3(0, -0.2f, 0), Vector3(0, 0.2f, 0), 0.09f, 16);
     auto polyMeshFileData = new Data3DFile("./data/poly_mesh.fbx");
     auto polyMesh = polyMeshFileData->getAsMesh();
+    auto asteroidMeshFileData = new Data3DFile("./data/asteroid.fbx");
+    auto asteroidMesh = asteroidMeshFileData->getAsMesh();
 
     // Font
     Font *font = new Font("./data/Roboto-Medium.ttf");
@@ -135,13 +142,26 @@ APPMAIN
     auto capsuleFrom = world->createPhysicsForm(0.9f, 0.15f);
     capsuleFrom->createCapsule(Vector3(0, -0.2f, 0), Vector3(0, 0.2f, 0), 0.09f, 20.0f);
 
-    for (int i = 0; i < 1; i++)
+    for (int i = 0; i < 3; i++)
     {
         auto capsuleComponent = objectContainer->createComponentMesh(capsuleMesh);
         capsuleComponent->setMaterial(capsuleMaterial);
         capsuleComponent->setPosition(randf(-3.0f, 3.0f), 1.0f, randf(-3.0f, 3.0f));
         capsuleComponent->enableCollisions(PhysicsMotionType::Dynamic, capsuleFrom);
         capsuleComponent->setRenderDebugPhysicsBody(true);
+    }
+
+    // Asteroids
+    auto asteroidFrom = world->createPhysicsForm(0.9f, 0.1f);
+    asteroidFrom->createConvex(asteroidMesh, 40, 16.0f);
+
+    for (int i = 0; i < 5; i++)
+    {
+        auto asteroidComponent = objectContainer->createComponentMesh(asteroidMesh);
+        asteroidComponent->setMaterial(asteroidMaterial);
+        asteroidComponent->setPosition(randf(-3.0f, 3.0f), 1.0f, randf(-3.0f, 3.0f));
+        asteroidComponent->enableCollisions(PhysicsMotionType::Dynamic, asteroidFrom);
+        // asteroidComponent->setRenderDebugPhysicsBody(true);
     }
 
     // Static Mesh

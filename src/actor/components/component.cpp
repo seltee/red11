@@ -149,6 +149,32 @@ void Component::onRenderDebug(Renderer *renderer)
             return;
         }
 
+        if (form->getType() == ShapeCollisionType::Convex)
+        {
+            ShapeConvex *convex = (ShapeConvex *)physicsBody->getForm()->getSimpleShape();
+            auto data = physicsBody->getCacheConvex(0);
+
+            HullPolygon *polygons = convex->getPolygons();
+            int polygonsAmount = convex->getPolygonsAmount();
+
+            if (data->verticies)
+            {
+                Matrix4 m;
+                for (int p = 0; p < polygonsAmount; p++)
+                {
+                    for (int i = 0; i < polygons[p].pointsAmount; i++)
+                    {
+                        int a = polygons[p].points[i];
+                        int b = polygons[p].points[(i + 1) % polygons[p].pointsAmount];
+
+                        m = debugEntities->makeDebugCubeIntoLineMatrix(data->verticies[a], data->verticies[b]);
+                        renderer->queueMesh(debugEntities->debugCubeMesh, debugEntities->matPhysics, m);
+                    }
+                }
+            }
+            return;
+        }
+
         if (form->getType() == ShapeCollisionType::Capsule)
         {
             Matrix4 m1;

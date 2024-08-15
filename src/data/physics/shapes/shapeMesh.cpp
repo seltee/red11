@@ -25,7 +25,7 @@ ShapeMesh::ShapeMesh(float simScale, VertexDataUV *verticies, int verticiesAmoun
     for (int i = 0; i < polygonsAmount; i++)
     {
         auto &poly = this->polygons[i];
-        this->normals[i] = getPolygonNormal(this->verticies[poly.a], this->verticies[poly.b], this->verticies[poly.c]);
+        this->normals[i] = calculateNormal(this->verticies[poly.a], this->verticies[poly.b], this->verticies[poly.c]);
     }
 
     // aabb radius

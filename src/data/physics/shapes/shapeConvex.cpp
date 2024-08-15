@@ -1,11 +1,20 @@
 #include "shapeConvex.h"
+#include "data/mesh.h"
+#include "utils/algorithms.h"
+#include "utils/convex/convhull_3d.h"
 #include <string>
+#include <vector>
+#include "red11.h"
+
+struct QuickHullFace
+{
+    int vertices[3];
+};
 
 ShapeConvex::ShapeConvex(float simScale, Vector3 *verticies, int verticiesAmount, HullPolygon *polygons, int polygonsAmount, float density)
 {
     this->verticies = new Vector3[verticiesAmount];
     this->verticiesAmount = verticiesAmount;
-    this->center = Vector3(0.0f);
     for (int i = 0; i < verticiesAmount; i++)
     {
         this->verticies[i] = verticies[i] * simScale;
@@ -17,15 +26,11 @@ ShapeConvex::ShapeConvex(float simScale, Vector3 *verticies, int verticiesAmount
     this->polygons = new HullPolygon[polygonsAmount];
     this->polygonsAmount = polygonsAmount;
     memcpy(this->polygons, polygons, sizeof(HullPolygon) * polygonsAmount);
-    for (int i = 0; i < verticiesAmount; i++)
-    {
-        float dist = glm::length2(this->verticies[i]);
-        if (dist > aabbRadius)
-            aabbRadius = dist;
-    }
-    aabbRadius = sqrtf(aabbRadius) * 1.4f;
 
     hullEdgesAmount = rebuildEdges(this->polygons, polygonsAmount, &hullEdges);
+
+    recalcAABB();
+    recalcCenter();
 
     /*
         BOX
@@ -53,6 +58,40 @@ ShapeConvex::ShapeConvex(float simScale, Vector3 *verticies, int verticiesAmount
         printf("%f %f %f\n", inertia[1][0], inertia[1][1], inertia[1][2]);
         printf("%f %f %f\n", inertia[2][0], inertia[2][1], inertia[2][2]);
     */
+}
+ShapeConvex::ShapeConvex(float simScale, Mesh *mesh, int limitToNumber, float density)
+{
+    buildHull(mesh, limitToNumber, simScale);
+    if (this->verticiesAmount && this->polygonsAmount)
+    {
+        mass = getConvexHullVolume(this->verticies, this->verticiesAmount) * density;
+        inertia = getConvexHullInertia(this->verticies, this->verticiesAmount, density);
+
+        hullEdgesAmount = rebuildEdges(this->polygons, this->polygonsAmount, &hullEdges);
+
+        recalcAABB();
+        recalcCenter();
+    }
+}
+
+void ShapeConvex::recalcCenter()
+{
+    float add = 1.0f / static_cast<float>(this->verticiesAmount);
+    this->center = Vector3(0.0f);
+    for (int i = 0; i < this->verticiesAmount; i++)
+        this->center += this->verticies[i] * add;
+}
+
+void ShapeConvex::recalcAABB()
+{
+    aabbRadius = 0.0f;
+    for (int i = 0; i < verticiesAmount; i++)
+    {
+        float dist = glm::length2(this->verticies[i]);
+        if (dist > aabbRadius)
+            aabbRadius = dist;
+    }
+    aabbRadius = sqrtf(aabbRadius) * 1.4f;
 }
 
 ShapeCollisionType ShapeConvex::getType()
@@ -127,4 +166,148 @@ int ShapeConvex::castRay(const Segment &ray, PhysicsBodyPoint *newPoints, Physic
     newPoints[0] = PhysicsBodyPoint({nullptr, ray.a + pointfirst * direction, normalOut, pointfirst * length});
     newPoints[1] = PhysicsBodyPoint({nullptr, ray.a + pointlast * direction, normalOut, pointlast * length});
     return 2;
+}
+
+void ShapeConvex::buildHull(Mesh *mesh, int limitToNumber, float simScale)
+{
+    VertexDataUV *meshVertices = mesh->getVerticies()->vertexPositionUV;
+    int meshVerticesAmount = mesh->getVerticiesAmount();
+
+    this->verticiesAmount = 0;
+    this->polygonsAmount = 0;
+
+    if (limitToNumber < 4)
+        limitToNumber = 4;
+    if (meshVerticesAmount < 4)
+    {
+        Red11::getLogger()->logFileAndConsole("Convex hull requires at least 4 points");
+        return;
+    }
+    if (limitToNumber > meshVerticesAmount)
+        limitToNumber = meshVerticesAmount;
+
+    // Build initial hull
+    Vector3 *vertices = new Vector3[meshVerticesAmount];
+    for (int i = 0; i < meshVerticesAmount; i++)
+        vertices[i] = meshVertices[i].position * 0.001f;
+
+    int *faceIndices = NULL;
+    int nFaces;
+    convhull_3d_build((ch_vertex *)vertices, meshVerticesAmount, &faceIndices, &nFaces);
+
+    // Reduce amount of verticies
+    std::vector<int> newVerticiesIndicies;
+    std::vector<QuickHullFace> newFaces;
+    auto getVerticeNumber = [&](int point)
+    {
+        for (int i = 0; i < newVerticiesIndicies.size(); i++)
+        {
+            if (newVerticiesIndicies[i] == point)
+                return i;
+        }
+
+        newVerticiesIndicies.push_back(point);
+        return static_cast<int>(newVerticiesIndicies.size()) - 1;
+    };
+
+    for (int i = 0; i < nFaces; i++)
+    {
+        QuickHullFace hullFace;
+        hullFace.vertices[0] = getVerticeNumber(faceIndices[i * 3]);
+        hullFace.vertices[1] = getVerticeNumber(faceIndices[i * 3 + 1]);
+        hullFace.vertices[2] = getVerticeNumber(faceIndices[i * 3 + 2]);
+        newFaces.push_back(hullFace);
+    }
+
+    std::vector<Vector3> newVerticies;
+    for (int i = 0; i < newVerticiesIndicies.size(); i++)
+        newVerticies.push_back(vertices[newVerticiesIndicies[i]] / 0.001f);
+
+    // reducing amount of verticies
+    while (newVerticies.size() > limitToNumber)
+    {
+        int a = newFaces[0].vertices[0], b = newFaces[0].vertices[1];
+        float minLength = glm::length(newVerticies[a] - newVerticies[b]);
+
+        for (const auto &face : newFaces)
+        {
+            for (int i = 0; i < 3; i++)
+            {
+                int v1 = face.vertices[i];
+                int v2 = face.vertices[(i + 1) % 3];
+
+                float length = glm::length(newVerticies[v1] - newVerticies[v2]);
+                if (length < minLength)
+                {
+                    a = v1;
+                    b = v2;
+                    minLength = length;
+                }
+            }
+        }
+
+        // newVerticies[a] = (newVerticies[a] + newVerticies[b]) * 0.5f;
+        for (auto &face : newFaces)
+        {
+            for (int i = 0; i < 3; i++)
+            {
+                if (face.vertices[i] == b)
+                    face.vertices[i] = a;
+            }
+        }
+        newVerticies.erase(newVerticies.begin() + b);
+
+        for (auto &face : newFaces)
+        {
+            for (int i = 0; i < 3; i++)
+            {
+                if (face.vertices[i] > b)
+                    face.vertices[i]--;
+            }
+        }
+
+        // Remove degenerate faces
+        newFaces.erase(
+            std::remove_if(newFaces.begin(), newFaces.end(),
+                           [](const QuickHullFace &face)
+                           {
+                               return face.vertices[0] == face.vertices[1] ||
+                                      face.vertices[1] == face.vertices[2] ||
+                                      face.vertices[2] == face.vertices[0];
+                           }),
+            newFaces.end());
+    }
+
+    delete[] vertices;
+    free(faceIndices);
+
+    // reduced convex hull might not be convex anymore so rebuild convex hull around reduced convex
+    vertices = new Vector3[newVerticies.size()];
+    for (int i = 0; i < newVerticies.size(); i++)
+        vertices[i] = newVerticies[i];
+    convhull_3d_build((ch_vertex *)vertices, newVerticies.size(), &faceIndices, &nFaces);
+
+    // Set the final data
+    this->verticiesAmount = newVerticies.size();
+    this->verticies = new Vector3[this->verticiesAmount];
+    for (int i = 0; i < this->verticiesAmount; i++)
+        this->verticies[i] = newVerticies[i] * simScale;
+
+    this->polygonsAmount = nFaces;
+    this->polygons = new HullPolygon[this->polygonsAmount];
+    for (int i = 0; i < nFaces; i++)
+    {
+        this->polygons[i].index = i;
+        this->polygons[i].normal = calculateNormal(
+            newVerticies[faceIndices[i * 3]],
+            newVerticies[faceIndices[i * 3 + 1]],
+            newVerticies[faceIndices[i * 3 + 2]]);
+
+        this->polygons[i].pointsAmount = 3;
+        for (int v = 0; v < 3; v++)
+            this->polygons[i].points[v] = faceIndices[i * 3 + v];
+    }
+
+    delete[] vertices;
+    free(faceIndices);
 }
