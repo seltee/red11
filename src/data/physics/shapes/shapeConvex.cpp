@@ -113,7 +113,10 @@ int ShapeConvex::castRay(const Segment &ray, PhysicsBodyPoint *newPoints, Physic
     // Set initial interval to being the whole segment.
     float pointfirst = 0.0f;
     float pointlast = 1.0f;
-    Vector3 normalOut = Vector3(0.0f, 1.0f, 0.0f);
+
+    // Out Normals
+    Vector3 normalFirst = Vector3(0.0f);
+    Vector3 normalLast = Vector3(0.0f);
 
     // Intersect segment against each polygon
     for (int p = 0; p < polygonsAmount; p++)
@@ -141,7 +144,7 @@ int ShapeConvex::castRay(const Segment &ray, PhysicsBodyPoint *newPoints, Physic
                 // Entering halfspace
                 if (t > pointfirst)
                 {
-                    normalOut = normal;
+                    normalFirst = normal;
                     pointfirst = t;
                 }
             }
@@ -150,7 +153,7 @@ int ShapeConvex::castRay(const Segment &ray, PhysicsBodyPoint *newPoints, Physic
                 // Exiting halfspace
                 if (t < pointlast)
                 {
-                    normalOut = normal;
+                    normalLast = normal;
                     pointlast = t;
                 }
             }
@@ -163,9 +166,19 @@ int ShapeConvex::castRay(const Segment &ray, PhysicsBodyPoint *newPoints, Physic
     // The segment intersects the polyhedron, return first and last point
     // For polygedron there are always will be only 2 points
     float length = glm::length(direction);
-    newPoints[0] = PhysicsBodyPoint({nullptr, ray.a + pointfirst * direction, normalOut, pointfirst * length});
-    newPoints[1] = PhysicsBodyPoint({nullptr, ray.a + pointlast * direction, normalOut, pointlast * length});
-    return 2;
+    if (pointfirst < 0.0f)
+    {
+        // Ray starts inside the convex hull; return only the exit point
+        newPoints[0] = PhysicsBodyPoint({nullptr, ray.a + pointlast * direction, normalLast, pointlast * length});
+        return 1;
+    }
+    else
+    {
+        // Ray intersects the convex hull at two points
+        newPoints[0] = PhysicsBodyPoint({nullptr, ray.a + pointfirst * direction, normalFirst, pointfirst * length});
+        newPoints[1] = PhysicsBodyPoint({nullptr, ray.a + pointlast * direction, normalLast, pointlast * length});
+        return 2;
+    }
 }
 
 void ShapeConvex::buildHull(Mesh *mesh, int limitToNumber, float simScale)

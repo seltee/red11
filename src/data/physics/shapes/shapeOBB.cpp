@@ -50,7 +50,6 @@ AABB ShapeOBB::getAABB(Matrix4 *model)
 
 int ShapeOBB::castRay(const Segment &ray, PhysicsBodyPoint *newPoints, PhysicsBodyCache *cache)
 {
-    Vector3 &center = cache->OBB.center;
     Matrix4 inverseTransformMatrix = glm::inverse(cache->OBB.transformation);
 
     Vector3 localRayStart = Vector3(inverseTransformMatrix * glm::vec4(ray.a, 1.0f));
@@ -77,8 +76,9 @@ int ShapeOBB::castRay(const Segment &ray, PhysicsBodyPoint *newPoints, PhysicsBo
     if (tNear < 0.0f)
     {
         // Ray starts inside the box
+        Vector3 normal = getRayPointNormal(tFar, tMin, tMax, -invDir, cache->OBB.transformation);
         Vector3 point = Vector3(cache->OBB.transformation * Vector4(localRayStart + tFar * bMinusA, 1.0f));
-        newPoints[0] = PhysicsBodyPoint({nullptr, point, glm::normalize(center - point), tFar});
+        newPoints[0] = PhysicsBodyPoint({nullptr, point, normal, glm::length(point - ray.a)});
         return 1;
     }
     else
@@ -87,14 +87,16 @@ int ShapeOBB::castRay(const Segment &ray, PhysicsBodyPoint *newPoints, PhysicsBo
         int out = 0;
         if (tNear <= length)
         {
+            Vector3 normal = getRayPointNormal(tNear, tMin, tMax, invDir, cache->OBB.transformation);
             Vector3 point = Vector3(cache->OBB.transformation * Vector4(localRayStart + tNear * bMinusA, 1.0f));
-            newPoints[0] = PhysicsBodyPoint({nullptr, point, glm::normalize(center - point), tNear});
+            newPoints[0] = PhysicsBodyPoint({nullptr, point, normal, glm::length(point - ray.a)});
             out++;
         }
         if (tFar <= length)
         {
+            Vector3 normal = getRayPointNormal(tFar, tMin, tMax, -invDir, cache->OBB.transformation);
             Vector3 point = Vector3(cache->OBB.transformation * Vector4(localRayStart + tFar * bMinusA, 1.0f));
-            newPoints[out] = PhysicsBodyPoint({nullptr, point, glm::normalize(center - point), tFar});
+            newPoints[out] = PhysicsBodyPoint({nullptr, point, normal, glm::length(point - ray.a)});
             out++;
         }
         return out;
@@ -181,4 +183,28 @@ void ShapeOBB::rebuildPolygons()
     hullPolygonsStatic[5].normal = Vector3(0.0f, 0.0f, -1.0f);
 
     hullEdgesAmountStatic = rebuildEdges(hullPolygonsStatic, 6, &hullEdgesStatic);
+}
+
+Vector3 ShapeOBB::getRayPointNormal(float tDistance, Vector3 &tMin, Vector3 &tMax, const Vector3 &invDir, Matrix4 &transformation)
+{
+    Vector3 normal(0.0f);
+
+    // Determine which axis was hit based on the inverse direction
+    if (tDistance == tMin.x || tDistance == tMax.x)
+    {
+        normal = invDir.x < 0.0f ? Vector3(1.0f, 0.0f, 0.0f) : Vector3(-1.0f, 0.0f, 0.0f);
+    }
+    else if (tDistance == tMin.y || tDistance == tMax.y)
+    {
+        normal = invDir.y < 0.0f ? Vector3(0.0f, 1.0f, 0.0f) : Vector3(0.0f, -1.0f, 0.0f);
+    }
+    else if (tDistance == tMin.z || tDistance == tMax.z)
+    {
+        normal = invDir.z < 0.0f ? Vector3(0.0f, 0.0f, 1.0f) : Vector3(0.0f, 0.0f, -1.0f);
+    }
+
+    // Transform the normal to world space
+    normal = Vector3(transformation * Vector4(normal, 0.0f));
+
+    return glm::normalize(normal);
 }

@@ -147,8 +147,8 @@ APPMAIN
         auto capsuleComponent = objectContainer->createComponentMesh(capsuleMesh);
         capsuleComponent->setMaterial(capsuleMaterial);
         capsuleComponent->setPosition(randf(-3.0f, 3.0f), 1.0f, randf(-3.0f, 3.0f));
-        capsuleComponent->enableCollisions(PhysicsMotionType::Dynamic, capsuleFrom);
-        capsuleComponent->setRenderDebugPhysicsBody(true);
+        capsuleComponent->enableCollisions(PhysicsMotionType::Dynamic, capsuleFrom, capsuleComponent);
+        // capsuleComponent->setRenderDebugPhysicsBody(true);
     }
 
     // Asteroids
@@ -160,7 +160,7 @@ APPMAIN
         auto asteroidComponent = objectContainer->createComponentMesh(asteroidMesh);
         asteroidComponent->setMaterial(asteroidMaterial);
         asteroidComponent->setPosition(randf(-3.0f, 3.0f), 1.0f, randf(-3.0f, 3.0f));
-        asteroidComponent->enableCollisions(PhysicsMotionType::Dynamic, asteroidFrom);
+        asteroidComponent->enableCollisions(PhysicsMotionType::Dynamic, asteroidFrom, asteroidComponent);
         // asteroidComponent->setRenderDebugPhysicsBody(true);
     }
 
@@ -170,7 +170,7 @@ APPMAIN
 
     auto polyMeshComponent = objectContainer->createComponentMesh(polyMesh);
     polyMeshComponent->setMaterial(buildingMaterial);
-    polyMeshComponent->enableCollisions(PhysicsMotionType::Static, meshFrom, nullptr, CHANNEL_SIMULATION);
+    polyMeshComponent->enableCollisions(PhysicsMotionType::Static, meshFrom, polyMeshComponent, CHANNEL_SIMULATION);
     polyMeshComponent->setRenderDebugPhysicsBody(true);
     polyMeshComponent->setScale(0.0012f);
     polyMeshComponent->setPosition(Vector3(0, 0, -2));

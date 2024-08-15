@@ -34,6 +34,7 @@ public:
 
 protected:
     void rebuildPolygons();
+    Vector3 getRayPointNormal(float tDistance, Vector3 &tMin, Vector3 &tMax, const Vector3 &invDir, Matrix4 &transformation);
 
     float width, height, depth;
     float halfWidth, halfHeight, halfDepth;

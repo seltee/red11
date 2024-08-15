@@ -74,6 +74,10 @@ public:
                     auto pointCubeMesh = debugActor->createComponentMesh(debugEntities->debugCubeMesh);
                     pointCubeMesh->setMaterial(debugEntities->matNegative);
                     debugEntities->makeDebugCubeIntoPoint(pointCubeMesh, point.point, &ray.b);
+
+                    auto lineNormalMesh = debugActor->createComponentMesh(debugEntities->debugCubeMesh);
+                    lineNormalMesh->setMaterial(debugEntities->matNormal);
+                    debugEntities->makeDebugCubeIntoLine(lineNormalMesh, point.point, point.point + point.normal * 0.2f);
                 }
             }
             else

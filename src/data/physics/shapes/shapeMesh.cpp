@@ -78,7 +78,7 @@ int ShapeMesh::castRay(const Segment &ray, PhysicsBodyPoint *newPoints, PhysicsB
 
         if (testRayAgainstTriangle(v, locRay, distance, point))
         {
-            Vector3 normalOut = glm::normalize(rotationScaleMatrix * normals[i]);
+            Vector3 normalOut = glm::normalize(-rotationScaleMatrix * normals[i]);
             Vector3 pountOut = Vector3(cache->mesh.transformation * Vector4(point, 1.0f));
 
             newPoints[pCount] = PhysicsBodyPoint({nullptr, pountOut, normalOut, glm::length(ray.a - pountOut)});

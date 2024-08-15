@@ -5,8 +5,9 @@ DebugEntities::DebugEntities()
 {
     debugCubeMesh = Red11::getMeshBuilder()->createCube(1.0f);
     debugCubeMesh->setCastsShadow(false);
-    matPositive = new MaterialSimple(Color(0.0, 0.0, 0.0), Color(0.0, 0.8, 0.0));
-    matNegative = new MaterialSimple(Color(0.0, 0.0, 0.0), Color(0.8, 0.0, 0.0));
+    matPositive = new MaterialSimple(Color(0.0, 0.0, 0.0), Color(0.0f, 0.8f, 0.0f));
+    matNegative = new MaterialSimple(Color(0.0, 0.0, 0.0), Color(0.8f, 0.0f, 0.0f));
+    matNormal = new MaterialSimple(Color(0.0, 0.0, 0.0), Color(0.0f, 0.0f, 0.8f));
     matPhysics = new MaterialSimple(Color(0.0, 0.0, 0.0), Color(0.960f, 0.843f, 0.182f));
 }
 

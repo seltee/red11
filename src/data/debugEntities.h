@@ -18,6 +18,7 @@ public:
     Mesh *debugCubeMesh = nullptr;
     MaterialSimple *matPositive = nullptr;
     MaterialSimple *matNegative = nullptr;
+    MaterialSimple *matNormal = nullptr;
     MaterialSimple *matPhysics = nullptr;
 
     float debugScale = 0.004f;

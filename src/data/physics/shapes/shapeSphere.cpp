@@ -59,7 +59,7 @@ int ShapeSphere::castRay(const Segment &ray, PhysicsBodyPoint *newPoints, Physic
         if (t2 <= length)
         {
             Vector3 point = ray.a + t2 * normal;
-            newPoints[0] = PhysicsBodyPoint({nullptr, point, glm::normalize(center - point), t2});
+            newPoints[0] = PhysicsBodyPoint({nullptr, point, glm::normalize(point - center), t2});
             return 1;
         }
     }
@@ -69,13 +69,13 @@ int ShapeSphere::castRay(const Segment &ray, PhysicsBodyPoint *newPoints, Physic
         if (t1 <= length)
         {
             Vector3 point = ray.a + t1 * normal;
-            newPoints[0] = PhysicsBodyPoint({nullptr, point, glm::normalize(center - point), t1});
+            newPoints[0] = PhysicsBodyPoint({nullptr, point, glm::normalize(point - center), t1});
             out++;
         }
         if (t2 <= length)
         {
             Vector3 point = ray.a + t2 * normal;
-            newPoints[out] = PhysicsBodyPoint({nullptr, point, glm::normalize(center - point), t2});
+            newPoints[out] = PhysicsBodyPoint({nullptr, point, glm::normalize(point - center), t2});
             out++;
         }
         return out;
