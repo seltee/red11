@@ -136,7 +136,7 @@ inline float3 CaclLightWithShadow(
         if (type == 1.0f)
         {
             float bias = max(0.0012 * (1.0 - dot(polygonNormal, L)), 0.0001);
-            shadow = 1.0 - ShadowCalculation(lightShadowTexSampler, shadowCoords, light.type[2], bias);
+            shadow = min(1.0 - ShadowCalculation(lightShadowTexSampler, shadowCoords, light.type[2], bias), 1);
         }
         if (type == 3.0f)
         {
