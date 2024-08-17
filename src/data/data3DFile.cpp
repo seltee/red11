@@ -34,6 +34,19 @@ Mesh *Data3DFile::getAsMesh()
     return mesh;
 }
 
+Spline *Data3DFile::getSplineByName(const std::string &name, SplineInterpolation interpolation, bool bIsLooped)
+{
+    for (auto &object : meshObjectList)
+    {
+        if (*object->getNamePointer() == name)
+        {
+            printf("Mesh found %i\n", object->getVerticesAmount());
+            return new Spline(object->getVertices(), object->getVerticesAmount(), interpolation, bIsLooped);
+        }
+    }
+    return nullptr;
+}
+
 std::vector<MeshObject *> *Data3DFile::getMeshObjectList()
 {
     if (!bLoaded)

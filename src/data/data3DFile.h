@@ -5,6 +5,7 @@
 #include "data/mesh.h"
 #include "data/animation/animation.h"
 #include "data/meshObject.h"
+#include "data/spline.h"
 #include <vector>
 #include <string>
 
@@ -19,6 +20,8 @@ public:
     EXPORT Data3DFile(const std::string &path, bool bLoadMeshData = true);
 
     EXPORT Mesh *getAsMesh();
+    EXPORT Spline *getSplineByName(const std::string &name, SplineInterpolation interpolation = SplineInterpolation::Linear, bool bIsLooped = false);
+
     EXPORT std::vector<MeshObject *> *getMeshObjectList();
     EXPORT std::vector<Animation *> *getAnimationsList();
 

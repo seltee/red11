@@ -25,6 +25,11 @@ public:
 
     EXPORT MeshObject *clone();
 
+    EXPORT void setVertices(const Vector3 *list, int amount, const Matrix4 &transformation);
+    EXPORT void setVertices(const VertexDataUV *list, int amount, const Matrix4 &transformation);
+    inline const Vector3 *getVertices() const { return vertices; }
+    inline int getVerticesAmount() const { return verticesAmount; }
+
     inline MeshObject *getParent() { return parent; }
 
     inline std::string *getNamePointer() { return &name; }
@@ -37,6 +42,10 @@ public:
 protected:
     Mesh *mesh = nullptr;
     MeshObject *parent = nullptr;
+
+    Vector3 *vertices = nullptr;
+    int verticesAmount = 0;
+
     std::string name;
     bool bIsBone;
 

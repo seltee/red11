@@ -48,3 +48,21 @@ MeshObject *MeshObject::clone()
     obj->setParent(getParent());
     return obj;
 }
+
+void MeshObject::setVertices(const Vector3 *list, int amount, const Matrix4 &transformation)
+{
+    this->vertices = new Vector3[amount];
+    this->verticesAmount = amount;
+
+    for (int i = 0; i < amount; i++)
+        this->vertices[i] = Vector3(transformation * Vector4(list[i], 1.0f));
+}
+
+void MeshObject::setVertices(const VertexDataUV *list, int amount, const Matrix4 &transformation)
+{
+    this->vertices = new Vector3[amount];
+    this->verticesAmount = amount;
+
+    for (int i = 0; i < amount; i++)
+        this->vertices[i] = Vector3(transformation * Vector4(list[i].position, 1.0f));
+}

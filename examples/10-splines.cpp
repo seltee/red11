@@ -3,8 +3,6 @@
 
 #include "red11.h"
 #include <string>
-#include "shaders/FragmentShader.pso.h"
-#include "shaders/VertexShader.vso.h"
 #include "renderer/directx9/directx9renderer.h"
 
 #define WINDOW_WIDTH 1800
@@ -22,7 +20,7 @@ APPMAIN
 {
     Red11::openConsole();
 
-    auto window = Red11::createWindow("Custom Shaders", WINDOW_WIDTH, WINDOW_HEIGHT, 0);
+    auto window = Red11::createWindow("Splines", WINDOW_WIDTH, WINDOW_HEIGHT, 0);
     auto renderer = (DirectX9Renderer *)Red11::createRenderer(window, RendererType::DirectX9);
 
     // Textures & Materials
@@ -30,33 +28,32 @@ APPMAIN
     auto concreteMaterial = new MaterialSimple(concreteTexture);
     concreteMaterial->setRoughness(0.6f);
 
-    Shader *sparcleShader = renderer->createDirectX9Shader("Super Color Shader", (const DWORD *)VertexShader_vso, (const DWORD *)FragmentShader_pso);
-    auto rippleTexture = new TextureFile("Ripple", "./data/noise.jpg");
-
-    auto crateTexture = new TextureFile("Crate", "./data/crate.jpg");
-    auto crateMaterial = new MaterialSimple(crateTexture, nullptr, rippleTexture);
-    crateMaterial->setRoughness(0.7f);
-    crateMaterial->setMetallic(0.2f);
-    crateMaterial->setShaderColor(sparcleShader);
+    auto hdr = new TextureFileHDR("HDR", "./data/meadow.hdr", 1.8f, 2.9f);
+    auto radiance = hdr->getRadianceTexture();
 
     // Meshes
     auto cubeMesh = Red11::getMeshBuilder()->createCube(0.1f);
-    auto cubeMeshBig = Red11::getMeshBuilder()->createCube(0.25f);
+    auto trackMeshFileData = new Data3DFile("./data/track.fbx");
+    auto trackMesh = trackMeshFileData->getAsMesh();
+    Spline *spline = trackMeshFileData->getSplineByName("track_spline", SplineInterpolation::Smooth, true);
 
     // Scene
     auto scene = Red11::createScene();
-    scene->setAmbientLight(Color(0.4f, 0.4f, 0.6f));
+    scene->setAmbientLight(Color(0.1f, 0.12f, 0.14f));
 
     // Objects
     auto objectContainer = scene->createActor<Actor>();
 
-    // Boxes
-    for (int i = 0; i < 16; i++)
-    {
-        auto boxComponent = objectContainer->createComponentMesh(cubeMeshBig);
-        boxComponent->setMaterial(crateMaterial);
-        boxComponent->setPosition(randf(-3.0f, 3.0f), randf(0.1f, 0.8f), randf(-3.0f, 3.0f));
-    }
+    // Track
+    auto trackComponent = objectContainer->createComponentMesh(trackMesh);
+    trackComponent->setMaterial(new MaterialSimple(Color(0.8f, 0.8f, 0.8f)));
+
+    auto splineComponent = objectContainer->createComponentSpline(spline);
+    splineComponent->showDebugSpline(true);
+
+    auto carComponent = objectContainer->createComponentMesh(cubeMesh);
+    carComponent->setMaterial(new MaterialSimple(Color(0.9f, 0.2f, 0.2f)));
+    carComponent->setScale(0.4f, 0.4f, 0.6f);
 
     // Floor
     for (int iy = 0; iy < 9; iy++)
@@ -125,10 +122,15 @@ APPMAIN
     float cameraRX = 0, cameraRY = 0;
     float time = 0.0f;
 
+    float distance = 0.0f;
     while (!window->isCloseRequested())
     {
         float delta = deltaCounter.getDeltaFrameCounter();
         time += delta * 0.001f;
+        distance += delta * 0.8f;
+
+        while (distance > spline->getLength())
+            distance -= spline->getLength();
 
         window->processWindow();
 
@@ -137,9 +139,10 @@ APPMAIN
 
         auto engineData = renderer->getShaderEngineDataPtr();
         engineData[0] = time;
-        renderer->prepareToRender();
+        renderer->prepareToRender(hdr, radiance);
         cameraComponent->setupAsPerspective(renderer->getViewWidth(), renderer->getViewHeight());
         renderer->clearBuffer(Color(0.4, 0.5, 0.8));
+        renderer->renderCubeMap(cameraComponent->getCamera(), cameraComponent, hdr);
 
         cameraRX += inputControl.rotateY * 0.0015f;
         cameraRY += inputControl.rotateX * 0.0015f;
@@ -150,6 +153,10 @@ APPMAIN
         camera->translate(forward * delta * inputControl.move);
         auto side = camera->getRotation() * Vector3(0.8f, 0, 0);
         camera->translate(side * delta * inputControl.sideMove);
+
+        const Vector3 upShift = Vector3(0, 0.008f, 0);
+        carComponent->setPosition(splineComponent->getPointOnSpline(distance) + upShift);
+        carComponent->lookAt(splineComponent->getPointOnSpline(distance + 0.008f) + upShift);
 
         scene->process(delta);
         scene->render(renderer, cameraComponent->getCamera());

@@ -20,7 +20,7 @@ Mesh *combineMeshList(std::vector<MeshObject *> &list)
     }
 
     for (auto &it : list)
-        if (it->getMesh())
+        if (it->getMesh() && it->getMesh()->getPolygonsAmount() > 0 && it->getMesh()->getVerticiesAmount() > 0)
             transformedList.push_back(it->getTransformedMesh());
 
     // collect amount of data and create arrays

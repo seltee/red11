@@ -8,13 +8,14 @@
 #include "components/component.h"
 #include "components/componentMesh.h"
 #include "components/componentMeshGroup.h"
+#include "components/componentSpline.h"
 #include "components/componentText.h"
 #include "components/componentLight.h"
 #include "components/componentCamera.h"
 #include "data/mesh.h"
-#include "renderer/renderer.h"
 #include "data/entity.h"
 #include "data/physics/physicsWorld.h"
+#include "renderer/renderer.h"
 #include <string>
 #include <list>
 
@@ -72,6 +73,16 @@ public:
         component->setPosition(position);
         component->setRotation(rotation);
         component->setScale(scale);
+        return component;
+    }
+
+    inline ComponentSpline *createComponentSpline(Spline *spline, const Vector3 position = Vector3(0.0f), const Vector3 rotation = Vector3(0.0f), const Vector3 scale = Vector3(1.0f))
+    {
+        auto component = createComponent<ComponentSpline>();
+        component->setPosition(position);
+        component->setRotation(rotation);
+        component->setScale(scale);
+        component->setSpline(spline);
         return component;
     }
 

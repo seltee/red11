@@ -187,7 +187,7 @@ void DirectX9Renderer::renderLine(Camera *camera, const Vector3 &vFrom, const Ve
     entity.setScale(Vector3(0.0008f, 0.0008f, glm::length(difference)));
     entity.setRotation(Vector3(CONST_PI / 2 - x, -y - CONST_PI / 2.0f, 0.0f));
 
-    renderMesh(camera, sphereSkySphere, &entity.getModelMatrix());
+    renderMesh(camera, cubeMesh, &entity.getModelMatrix());
 }
 
 void DirectX9Renderer::setupSpriteRendering(const Matrix4 &mView, const Matrix4 &mProjection)

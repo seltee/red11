@@ -18,11 +18,11 @@ ComponentMesh::~ComponentMesh()
 void ComponentMesh::setMesh(Mesh *mesh)
 {
     if (this->mesh)
-        this->mesh->addUser();
+        this->mesh->removeUser();
 
     this->mesh = mesh;
     if (this->mesh)
-        this->mesh->removeUser();
+        this->mesh->addUser();
 }
 
 void ComponentMesh::setMaterial(Material *material)

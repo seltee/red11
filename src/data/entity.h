@@ -111,6 +111,7 @@ public:
         this->rotation = glm::rotation(up, normal);
         bIsTransformationDirty = true;
     }
+    EXPORT void lookAt(const Vector3 &point);
 
     inline Quat getRotation() const { return rotation; };
     inline Vector3 getRotationEuler() const { return glm::eulerAngles(rotation); };

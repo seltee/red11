@@ -102,7 +102,6 @@ bool LoaderFBX::loadFBXFile(std::string path, std::vector<MeshObject *> *meshObj
 
     if (!objects || !connections)
     {
-        // logger->logff("Objects or connections weren't found for %s\n", path.c_str());
         printf("Objects or connections weren't found for %s\n", path.c_str());
         return false;
     }
@@ -381,20 +380,17 @@ bool LoaderFBX::loadFBXFile(std::string path, std::vector<MeshObject *> *meshObj
             newObject->setRotation(model->rotation);
             newObject->setScale(model->scale);
             newObject->setName(model->getName());
+            if (model->geometry)
+            {
+                Entity transformation;
+                transformation.setPosition(model->position);
+                transformation.setRotation(model->rotation);
+                transformation.setScale(model->scale);
+                newObject->setVertices(model->geometry->getOriginalVerteces(), model->geometry->getOriginalVertexAmount(), transformation.getModelMatrix());
+            }
 
             model->meshObject = newObject;
-
             meshObjectsList->push_back(newObject);
-
-            /*
-                printf("- %s (%llu)\n", model->getName().c_str(), model->id);
-                if (model->geometry)
-                    printf("  Has geometry\n");
-                if (model->isLimb())
-                    printf("  Is limb\n");
-                if (model->parentId)
-                    printf("  Parent %ll u\n", model->parentId);
-            */
         }
 
         // Parent Mesh Objects

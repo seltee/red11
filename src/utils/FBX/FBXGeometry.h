@@ -37,7 +37,7 @@ public:
 
     inline std::vector<FBXDeform *> *getDeforms() { return &deforms; }
 
-    inline VertexDataUV *getVertexes()
+    inline VertexDataUV *getVerteces()
     {
         rebuild();
         return outVertex;
@@ -58,6 +58,9 @@ public:
         return outPolygonsAmount;
     }
 
+    inline const Vector3 *getOriginalVerteces() const { return verteces; }
+    inline int getOriginalVertexAmount() const { return vertexAmount; }
+
     unsigned long long id;
 
 protected:
@@ -70,10 +73,10 @@ protected:
     EXPORT void provideNormals(double *list, int countOfDoubles);
 
     void rebuild();
-    unsigned int getIndex(VertexDataUV &newVertex, std::vector<VertexDataUV> *vecOutVertexes);
+    unsigned int getIndex(const VertexDataUV &newVertex, std::vector<VertexDataUV> *vecOutVerteces);
     bool dirty = true;
 
-    Vector3 *vertexes = nullptr;
+    Vector3 *verteces = nullptr;
     int vertexAmount = 0;
 
     Vector3 *normals = nullptr;

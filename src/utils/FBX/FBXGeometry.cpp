@@ -50,8 +50,8 @@ FBXGeometry::FBXGeometry(FBXNode *node)
 
 FBXGeometry::~FBXGeometry()
 {
-    if (vertexes)
-        delete[] vertexes;
+    if (verteces)
+        delete[] verteces;
     if (normals)
         delete[] normals;
     if (uvs)
@@ -71,7 +71,7 @@ Mesh *FBXGeometry::getMesh()
     rebuild();
     if (!mesh)
     {
-        mesh = new Mesh(VertexDataType::PositionUV, getVertexes(), getVertexAmount(), getPolygons(), getPolygonsAmount());
+        mesh = new Mesh(VertexDataType::PositionUV, getVerteces(), getVertexAmount(), getPolygons(), getPolygonsAmount());
         if (deforms.size() > 0)
         {
             for (auto &it : deforms)
@@ -117,18 +117,18 @@ void FBXGeometry::processDeformToMesh(Mesh *mesh, FBXDeform *deform)
 
 void FBXGeometry::provideVertex(double *list, int countOfDoubles)
 {
-    if (vertexes)
-        delete[] vertexes;
+    if (verteces)
+        delete[] verteces;
 
     vertexAmount = countOfDoubles / 3;
-    vertexes = new Vector3[vertexAmount];
+    verteces = new Vector3[vertexAmount];
 
     for (int i = 0; i < vertexAmount; i++)
     {
         int s = i * 3;
-        vertexes[i].x = list[s];
-        vertexes[i].y = list[s + 1];
-        vertexes[i].z = list[s + 2];
+        verteces[i].x = static_cast<float>(list[s]);
+        verteces[i].y = static_cast<float>(list[s + 1]);
+        verteces[i].z = static_cast<float>(list[s + 2]);
     }
 
     dirty = true;
@@ -189,11 +189,11 @@ void FBXGeometry::provideNormals(double *list, int countOfDoubles)
 
 void FBXGeometry::rebuild()
 {
-    if (dirty && vertexes && normals && uvs && uvIndexes)
+    if (dirty && verteces && normals && uvs && uvIndexes)
     {
         dirty = false;
 
-        std::vector<VertexDataUV> vecOutVertexes;
+        std::vector<VertexDataUV> vecOutVerteces;
         std::vector<PolygonTriPoints> vecOutPolygons;
 
         std::vector<PolygonTriPointsUV> vecPolygons;
@@ -280,14 +280,14 @@ void FBXGeometry::rebuild()
             unsigned int indexUVB = vecPolygons.at(i).UVa;
             unsigned int indexUVC = vecPolygons.at(i).UVc;
 
-            VertexDataUV vecOutVertexA = VertexDataUV(indexA, vertexes[indexA], uvs[indexUVA], normals[normalA]);
-            VertexDataUV vecOutVertexB = VertexDataUV(indexB, vertexes[indexB], uvs[indexUVB], normals[normalB]);
-            VertexDataUV vecOutVertexC = VertexDataUV(indexC, vertexes[indexC], uvs[indexUVC], normals[normalC]);
+            VertexDataUV vecOutVertexA = VertexDataUV(indexA, verteces[indexA], uvs[indexUVA], normals[normalA]);
+            VertexDataUV vecOutVertexB = VertexDataUV(indexB, verteces[indexB], uvs[indexUVB], normals[normalB]);
+            VertexDataUV vecOutVertexC = VertexDataUV(indexC, verteces[indexC], uvs[indexUVC], normals[normalC]);
 
             PolygonTriPoints tri;
-            tri.a = getIndex(vecOutVertexA, &vecOutVertexes);
-            tri.b = getIndex(vecOutVertexB, &vecOutVertexes);
-            tri.c = getIndex(vecOutVertexC, &vecOutVertexes);
+            tri.a = getIndex(vecOutVertexA, &vecOutVerteces);
+            tri.b = getIndex(vecOutVertexB, &vecOutVerteces);
+            tri.c = getIndex(vecOutVertexC, &vecOutVerteces);
             vecOutPolygons.push_back(tri);
         }
 
@@ -297,37 +297,37 @@ void FBXGeometry::rebuild()
         if (outPolygons)
             delete[] outPolygons;
 
-        outVertexAmount = vecOutVertexes.size();
+        outVertexAmount = vecOutVerteces.size();
         outVertex = new VertexDataUV[outVertexAmount];
 
         outPolygonsAmount = vecOutPolygons.size();
         outPolygons = new PolygonTriPoints[outPolygonsAmount];
 
         for (int i = 0; i < outVertexAmount; i++)
-            outVertex[i] = vecOutVertexes.at(i);
+            outVertex[i] = vecOutVerteces.at(i);
         for (int i = 0; i < outPolygonsAmount; i++)
             outPolygons[i] = vecOutPolygons.at(i);
     }
 }
 
-unsigned int FBXGeometry::getIndex(VertexDataUV &newVertex, std::vector<VertexDataUV> *vecOutVertexes)
+unsigned int FBXGeometry::getIndex(const VertexDataUV &newVertex, std::vector<VertexDataUV> *vecOutVerteces)
 {
-    int len = vecOutVertexes->size();
+    int len = vecOutVerteces->size();
     for (int index = 0; index < len; index++)
     {
-        if (vecOutVertexes->at(index).position.x == newVertex.position.x &&
-            vecOutVertexes->at(index).position.y == newVertex.position.y &&
-            vecOutVertexes->at(index).position.z == newVertex.position.z &&
-            vecOutVertexes->at(index).normal.x == newVertex.normal.x &&
-            vecOutVertexes->at(index).normal.y == newVertex.normal.y &&
-            vecOutVertexes->at(index).normal.z == newVertex.normal.z &&
-            vecOutVertexes->at(index).uv.x == newVertex.uv.x &&
-            vecOutVertexes->at(index).uv.y == newVertex.uv.y &&
-            vecOutVertexes->at(index).index == newVertex.index)
+        if (vecOutVerteces->at(index).position.x == newVertex.position.x &&
+            vecOutVerteces->at(index).position.y == newVertex.position.y &&
+            vecOutVerteces->at(index).position.z == newVertex.position.z &&
+            vecOutVerteces->at(index).normal.x == newVertex.normal.x &&
+            vecOutVerteces->at(index).normal.y == newVertex.normal.y &&
+            vecOutVerteces->at(index).normal.z == newVertex.normal.z &&
+            vecOutVerteces->at(index).uv.x == newVertex.uv.x &&
+            vecOutVerteces->at(index).uv.y == newVertex.uv.y &&
+            vecOutVerteces->at(index).index == newVertex.index)
         {
             return index;
         }
     }
-    vecOutVertexes->push_back(newVertex);
-    return vecOutVertexes->size() - 1;
+    vecOutVerteces->push_back(newVertex);
+    return vecOutVerteces->size() - 1;
 }

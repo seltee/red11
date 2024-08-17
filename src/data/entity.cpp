@@ -33,3 +33,17 @@ const Matrix4 &Entity::getModelMatrix()
 
     return mModelWithParent;
 }
+
+void Entity::lookAt(const Vector3 &point)
+{
+    bIsTransformationDirty = true;
+
+    Vector3 absolutePosition = Vector3(getModelMatrix() * Vector4(0.0f, 0.0f, 0.0f, 1.0f));
+    Vector3 normal = glm::normalize(point - absolutePosition);
+
+    float y = atan2f(normal.z, normal.x);
+    float len = sqrtf(normal.x * normal.x + normal.z * normal.z);
+    float x = atan2(len, normal.y);
+
+    setRotation(Vector3(CONST_PI / 2 - x, -y - CONST_PI / 2.0f, 0.0f));
+}

@@ -49,9 +49,11 @@ OBJ_FILES = ${OBJDIR}/red11.o \
 			${OBJDIR}/renderer.o \
 			${OBJDIR}/directx9renderer.o ${OBJDIR}/directx9meshRenderData.o ${OBJDIR}/directx9textureRenderData.o ${OBJDIR}/directx9materialRenderData.o  \
 			${OBJDIR}/directx9data.o ${OBJDIR}/directx9shader.o \
-			${OBJDIR}/mesh.o ${OBJDIR}/meshObject.o ${OBJDIR}/entity.o ${OBJDIR}/light.o ${OBJDIR}/camera.o ${OBJDIR}/inputProvider.o \
+			${OBJDIR}/mesh.o ${OBJDIR}/meshObject.o ${OBJDIR}/entity.o ${OBJDIR}/light.o ${OBJDIR}/camera.o ${OBJDIR}/spline.o \
+			${OBJDIR}/inputProvider.o \
 			${OBJDIR}/texture.o ${OBJDIR}/textureFile.o ${OBJDIR}/textureFileHDR.o \
-			${OBJDIR}/sound.o ${OBJDIR}/soundFile.o ${OBJDIR}/font.o \
+			${OBJDIR}/sound.o ${OBJDIR}/soundFile.o \
+			${OBJDIR}/font.o \
 			${OBJDIR}/deform.o ${OBJDIR}/boneTransform.o ${OBJDIR}/animation.o ${OBJDIR}/animationTarget.o ${OBJDIR}/animator.o ${OBJDIR}/animationTrack.o \
 			${OBJDIR}/physicsWorld.o ${OBJDIR}/physicsBody.o ${OBJDIR}/physicsForm.o ${OBJDIR}/physicsUtils.o \
 			${OBJDIR}/constraint.o ${OBJDIR}/constraintAxis.o \
@@ -61,6 +63,7 @@ OBJ_FILES = ${OBJDIR}/red11.o \
 			${OBJDIR}/material.o ${OBJDIR}/materialSimple.o \
 			${OBJDIR}/actor.o ${OBJDIR}/actorTemporary.o \
 			${OBJDIR}/component.o ${OBJDIR}/componentMesh.o ${OBJDIR}/componentText.o ${OBJDIR}/componentLight.o ${OBJDIR}/componentMeshGroup.o ${OBJDIR}/componentCamera.o \
+			${OBJDIR}/componentSpline.o \
 			${OBJDIR}/utils.o ${OBJDIR}/resourceManager.o ${OBJDIR}/sysinfo.o ${OBJDIR}/color.o ${OBJDIR}/meshBuilder.o ${OBJDIR}/meshCombiner.o ${OBJDIR}/destroyable.o \
 			${OBJDIR}/stb_image.o ${OBJDIR}/stb_vorbis.o ${OBJDIR}/stb_truetype.o ${OBJDIR}/convhull_3d.o \
 			${OBJDIR}/deltaCounter.o ${OBJDIR}/jobQueue.o ${OBJDIR}/logger.o ${OBJDIR}/hullCliping.o \
@@ -68,7 +71,7 @@ OBJ_FILES = ${OBJDIR}/red11.o \
 			${OBJDIR}/FBXDeform.o ${OBJDIR}/FBXGeometry.o ${OBJDIR}/FBXModel.o ${OBJDIR}/FBXAttribute.o
 
 EXAMPLES = 	1-window${EXT} 2-textures${EXT} 3-animation${EXT} 4-bones${EXT} 5-physics${EXT} 6-collisionEvents${EXT} 7-ui${EXT} 8-resourceManagment${EXT} 9-customShaders${EXT} \
-			demo-1${EXT}
+			10-splines${EXT} demo-1${EXT}
 
 all: engine examples
 
@@ -141,6 +144,9 @@ ${OBJDIR}/light.o: ${SRCDIR}/data/light.cpp
 
 ${OBJDIR}/camera.o: ${SRCDIR}/data/camera.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/camera.o ${SRCDIR}/data/camera.cpp
+
+${OBJDIR}/spline.o: ${SRCDIR}/data/spline.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/spline.o ${SRCDIR}/data/spline.cpp
 
 ${OBJDIR}/texture.o: ${SRCDIR}/data/texture.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/texture.o ${SRCDIR}/data/texture.cpp
@@ -264,6 +270,9 @@ ${OBJDIR}/componentMeshGroup.o: ${SRCDIR}/actor/components/componentMeshGroup.cp
 
 ${OBJDIR}/componentCamera.o: ${SRCDIR}/actor/components/componentCamera.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/componentCamera.o ${SRCDIR}/actor/components/componentCamera.cpp
+
+${OBJDIR}/componentSpline.o: ${SRCDIR}/actor/components/componentSpline.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/componentSpline.o ${SRCDIR}/actor/components/componentSpline.cpp
 
 ${OBJDIR}/utils.o: ${SRCDIR}/utils/utils.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/utils.o ${SRCDIR}/utils/utils.cpp
@@ -407,6 +416,13 @@ ${OBJDIR}/9-customShaders.o: ${EXMDIR}/9-customShaders.cpp
 9-customShaders${EXT}: ${OBJDIR}/9-customShaders.o
 	$(LD) ${EFLAGS} ${OBJDIR}/9-customShaders.o -o 9-customShaders${EXT}
 	${MOVE} 9-customShaders${EXT} ${BINDIR}/9-customShaders${EXT}
+
+${OBJDIR}/10-splines.o: ${EXMDIR}/10-splines.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/10-splines.o ${EXMDIR}/10-splines.cpp
+
+10-splines${EXT}: ${OBJDIR}/10-splines.o
+	$(LD) ${EFLAGS} ${OBJDIR}/10-splines.o -o 10-splines${EXT}
+	${MOVE} 10-splines${EXT} ${BINDIR}/10-splines${EXT}
 
 ${OBJDIR}/demo-1.o: ${EXMDIR}/demo-1.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/demo-1.o ${EXMDIR}/demo-1.cpp
