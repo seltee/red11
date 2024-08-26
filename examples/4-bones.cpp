@@ -23,7 +23,7 @@ APPMAIN
 
     auto window = Red11::createWindow("Bones Example", WINDOW_WIDTH, WINDOW_HEIGHT, 0);
     window->setCursorVisibility(false);
-    auto renderer = Red11::createRenderer(window, RendererType::DirectX9);
+    auto renderer = Red11::createRenderer(window, RendererType::DirectX9, false);
 
     // Textures & Materials
     auto monTexture = new TextureFile("MonsterDefuse", "./data/miner_defuse.png");

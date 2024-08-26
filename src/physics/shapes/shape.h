@@ -4,7 +4,7 @@
 #pragma once
 #include "utils/utils.h"
 #include "utils/math.h"
-#include "data/physics/physicsUtils.h"
+#include "physics/physicsUtils.h"
 #include <string>
 #include <vector>
 

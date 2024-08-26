@@ -9,10 +9,10 @@
 
 const Color defaultAmbientColor = Color(1.0f, 1.0f, 1.0f, 1.0f);
 
-DirectX9Renderer::DirectX9Renderer(Window *window) : Renderer(window)
+DirectX9Renderer::DirectX9Renderer(Window *window, bool bVSync) : Renderer(window)
 {
     WindowsWindow *winWindow = (WindowsWindow *)window;
-    initD3D(winWindow->getHwnd(), false, window->getWidth(), window->getHeight());
+    initD3D(winWindow->getHwnd(), false, window->getWidth(), window->getHeight(), bVSync);
 }
 
 RendererType DirectX9Renderer::getType()
@@ -326,7 +326,7 @@ DirectX9Shader *DirectX9Renderer::createDirectX9Shader(const std::string &name, 
 }
 
 // function prototypes
-void DirectX9Renderer::initD3D(HWND hWnd, bool bIsFullscreen, int width, int height)
+void DirectX9Renderer::initD3D(HWND hWnd, bool bIsFullscreen, int width, int height, bool bVSync)
 {
     d3d = Direct3DCreate9(D3D_SDK_VERSION); // create the Direct3D interface
 
@@ -343,6 +343,7 @@ void DirectX9Renderer::initD3D(HWND hWnd, bool bIsFullscreen, int width, int hei
     d3dpp.BackBufferHeight = displayHeight;   // set the height of the buffer
     d3dpp.EnableAutoDepthStencil = true;
     d3dpp.AutoDepthStencilFormat = D3DFMT_D24S8;
+    d3dpp.PresentationInterval = bVSync ? D3DPRESENT_INTERVAL_DEFAULT : D3DPRESENT_INTERVAL_IMMEDIATE;
     d3d->CreateDevice(D3DADAPTER_DEFAULT,
                       D3DDEVTYPE_HAL,
                       hWnd,

@@ -187,53 +187,53 @@ ${OBJDIR}/animator.o: ${SRCDIR}/data/animation/animator.cpp
 ${OBJDIR}/animationTrack.o: ${SRCDIR}/data/animation/animationTrack.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/animationTrack.o ${SRCDIR}/data/animation/animationTrack.cpp
 
-${OBJDIR}/physicsWorld.o: ${SRCDIR}/data/physics/physicsWorld.cpp
-	$(CC) $(CFLAGS) -o ${OBJDIR}/physicsWorld.o ${SRCDIR}/data/physics/physicsWorld.cpp
+${OBJDIR}/physicsWorld.o: ${SRCDIR}/physics/physicsWorld.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/physicsWorld.o ${SRCDIR}/physics/physicsWorld.cpp
 
-${OBJDIR}/physicsBody.o: ${SRCDIR}/data/physics/physicsBody.cpp
-	$(CC) $(CFLAGS) -o ${OBJDIR}/physicsBody.o ${SRCDIR}/data/physics/physicsBody.cpp
+${OBJDIR}/physicsBody.o: ${SRCDIR}/physics/physicsBody.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/physicsBody.o ${SRCDIR}/physics/physicsBody.cpp
 
-${OBJDIR}/physicsForm.o: ${SRCDIR}/data/physics/physicsForm.cpp
-	$(CC) $(CFLAGS) -o ${OBJDIR}/physicsForm.o ${SRCDIR}/data/physics/physicsForm.cpp
+${OBJDIR}/physicsForm.o: ${SRCDIR}/physics/physicsForm.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/physicsForm.o ${SRCDIR}/physics/physicsForm.cpp
 
-${OBJDIR}/physicsUtils.o: ${SRCDIR}/data/physics/physicsUtils.cpp
-	$(CC) $(CFLAGS) -o ${OBJDIR}/physicsUtils.o ${SRCDIR}/data/physics/physicsUtils.cpp
+${OBJDIR}/physicsUtils.o: ${SRCDIR}/physics/physicsUtils.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/physicsUtils.o ${SRCDIR}/physics/physicsUtils.cpp
 
-${OBJDIR}/constraint.o: ${SRCDIR}/data/physics/constraints/constraint.cpp
-	$(CC) $(CFLAGS) -o ${OBJDIR}/constraint.o ${SRCDIR}/data/physics/constraints/constraint.cpp
+${OBJDIR}/constraint.o: ${SRCDIR}/physics/constraints/constraint.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/constraint.o ${SRCDIR}/physics/constraints/constraint.cpp
 
-${OBJDIR}/constraintAxis.o: ${SRCDIR}/data/physics/constraints/constraintAxis.cpp
-	$(CC) $(CFLAGS) -o ${OBJDIR}/constraintAxis.o ${SRCDIR}/data/physics/constraints/constraintAxis.cpp
+${OBJDIR}/constraintAxis.o: ${SRCDIR}/physics/constraints/constraintAxis.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/constraintAxis.o ${SRCDIR}/physics/constraints/constraintAxis.cpp
 
-${OBJDIR}/collisionDispatcher.o: ${SRCDIR}/data/physics/collisionDispatcher.cpp
-	$(CC) $(CFLAGS) -o ${OBJDIR}/collisionDispatcher.o ${SRCDIR}/data/physics/collisionDispatcher.cpp
+${OBJDIR}/collisionDispatcher.o: ${SRCDIR}/physics/collisionDispatcher.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/collisionDispatcher.o ${SRCDIR}/physics/collisionDispatcher.cpp
 
-${OBJDIR}/collisionSolver.o: ${SRCDIR}/data/physics/collisionSolver.cpp
-	$(CC) $(CFLAGS) -o ${OBJDIR}/collisionSolver.o ${SRCDIR}/data/physics/collisionSolver.cpp
+${OBJDIR}/collisionSolver.o: ${SRCDIR}/physics/collisionSolver.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/collisionSolver.o ${SRCDIR}/physics/collisionSolver.cpp
 
-${OBJDIR}/collisionHandler.o: ${SRCDIR}/data/physics/collisionHandler.cpp
-	$(CC) $(CFLAGS) -o ${OBJDIR}/collisionHandler.o ${SRCDIR}/data/physics/collisionHandler.cpp
+${OBJDIR}/collisionHandler.o: ${SRCDIR}/physics/collisionHandler.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/collisionHandler.o ${SRCDIR}/physics/collisionHandler.cpp
 
-${OBJDIR}/shape.o: ${SRCDIR}/data/physics/shapes/shape.cpp
-	$(CC) $(CFLAGS) -o ${OBJDIR}/shape.o ${SRCDIR}/data/physics/shapes/shape.cpp
+${OBJDIR}/shape.o: ${SRCDIR}/physics/shapes/shape.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/shape.o ${SRCDIR}/physics/shapes/shape.cpp
 
-${OBJDIR}/shapePlain.o: ${SRCDIR}/data/physics/shapes/shapePlain.cpp
-	$(CC) $(CFLAGS) -o ${OBJDIR}/shapePlain.o ${SRCDIR}/data/physics/shapes/shapePlain.cpp
+${OBJDIR}/shapePlain.o: ${SRCDIR}/physics/shapes/shapePlain.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/shapePlain.o ${SRCDIR}/physics/shapes/shapePlain.cpp
 
-${OBJDIR}/shapeSphere.o: ${SRCDIR}/data/physics/shapes/shapeSphere.cpp
-	$(CC) $(CFLAGS) -o ${OBJDIR}/shapeSphere.o ${SRCDIR}/data/physics/shapes/shapeSphere.cpp
+${OBJDIR}/shapeSphere.o: ${SRCDIR}/physics/shapes/shapeSphere.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/shapeSphere.o ${SRCDIR}/physics/shapes/shapeSphere.cpp
 
-${OBJDIR}/shapeOBB.o: ${SRCDIR}/data/physics/shapes/shapeOBB.cpp
-	$(CC) $(CFLAGS) -o ${OBJDIR}/shapeOBB.o ${SRCDIR}/data/physics/shapes/shapeOBB.cpp
+${OBJDIR}/shapeOBB.o: ${SRCDIR}/physics/shapes/shapeOBB.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/shapeOBB.o ${SRCDIR}/physics/shapes/shapeOBB.cpp
 
-${OBJDIR}/shapeCapsule.o: ${SRCDIR}/data/physics/shapes/shapeCapsule.cpp
-	$(CC) $(CFLAGS) -o ${OBJDIR}/shapeCapsule.o ${SRCDIR}/data/physics/shapes/shapeCapsule.cpp
+${OBJDIR}/shapeCapsule.o: ${SRCDIR}/physics/shapes/shapeCapsule.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/shapeCapsule.o ${SRCDIR}/physics/shapes/shapeCapsule.cpp
 
-${OBJDIR}/shapeConvex.o: ${SRCDIR}/data/physics/shapes/shapeConvex.cpp
-	$(CC) $(CFLAGS) -o ${OBJDIR}/shapeConvex.o ${SRCDIR}/data/physics/shapes/shapeConvex.cpp
+${OBJDIR}/shapeConvex.o: ${SRCDIR}/physics/shapes/shapeConvex.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/shapeConvex.o ${SRCDIR}/physics/shapes/shapeConvex.cpp
 
-${OBJDIR}/shapeMesh.o: ${SRCDIR}/data/physics/shapes/shapeMesh.cpp
-	$(CC) $(CFLAGS) -o ${OBJDIR}/shapeMesh.o ${SRCDIR}/data/physics/shapes/shapeMesh.cpp
+${OBJDIR}/shapeMesh.o: ${SRCDIR}/physics/shapes/shapeMesh.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/shapeMesh.o ${SRCDIR}/physics/shapes/shapeMesh.cpp
 
 ${OBJDIR}/data3DFile.o: ${SRCDIR}/data/data3DFile.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/data3DFile.o ${SRCDIR}/data/data3DFile.cpp

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 
 #pragma once
-#include "data/physics/collisionManifold.h"
+#include "physics/collisionManifold.h"
 
 #define MAX_VERTS 1024
 

@@ -5,8 +5,8 @@
 #include "actor/actor.h"
 #include "actor/actorTemporary.h"
 #include "renderer/renderer.h"
+#include "physics/physicsWorld.h"
 #include "data/camera.h"
-#include "data/physics/physicsWorld.h"
 #include "data/debugEntities.h"
 #include <string>
 

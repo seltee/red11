@@ -6,7 +6,7 @@
 #include "utils/destroyable.h"
 #include "renderer/renderer.h"
 #include "data/entity.h"
-#include "data/physics/physicsWorld.h"
+#include "physics/physicsWorld.h"
 
 class Actor;
 

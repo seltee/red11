@@ -43,7 +43,7 @@
 class DirectX9Renderer : public Renderer
 {
 public:
-    EXPORT DirectX9Renderer(Window *window);
+    EXPORT DirectX9Renderer(Window *window, bool bVSync);
 
     EXPORT RendererType getType() override final;
 
@@ -78,7 +78,7 @@ public:
     inline float *getShaderEngineDataPtr() { return engineData; }
 
 protected:
-    void initD3D(HWND hWnd, bool bIsFullscreen, int width, int height); // sets up and initializes Direct3D
+    void initD3D(HWND hWnd, bool bIsFullscreen, int width, int height, bool bVSync); // sets up and initializes Direct3D
     void resizeD3D(int width, int height);
     void renderQueueDepthBuffer(Camera *camera);
     void renderQueueLightDepthBuffer(Camera *camera);
