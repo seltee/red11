@@ -455,7 +455,7 @@ float UINode::getContentWidth()
         for (auto &child : children)
             width = fmaxf(width, child->getCalculatedFullWidth());
     }
-    if (text.isSet())
+    if (text.isSet() && text.getValue().length() > 0)
     {
         Font *font = getFont();
         if (font)
