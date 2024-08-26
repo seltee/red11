@@ -61,6 +61,7 @@ public:
     EXPORT void renderLine(Camera *camera, const Vector3 &vFrom, const Vector3 &vTo);
 
     EXPORT void setupSpriteRendering(const Matrix4 &mView, const Matrix4 &mProjection) override final;
+    EXPORT void endSpriteRendering() override final;
     EXPORT void renderSpriteRect(const Matrix4 &mModel, const Color &color) override final;
     EXPORT void renderSpriteMask(const Matrix4 &mModel, Texture *texture, const Color &color) override final;
     EXPORT void renderSpriteImage(const Matrix4 &mModel, Texture *texture) override final;

@@ -46,6 +46,7 @@ public:
     virtual void setAmbientLight(const Color &ambientColor) = 0;
     virtual void present() = 0;
     virtual void setupSpriteRendering(const Matrix4 &mView, const Matrix4 &mProjection) = 0;
+    virtual void endSpriteRendering() = 0;
     virtual void renderSpriteRect(const Matrix4 &mModel, const Color &color) = 0;
     virtual void renderSpriteMask(const Matrix4 &mModel, Texture *texture, const Color &color) = 0;
     virtual void renderSpriteImage(const Matrix4 &mModel, Texture *texture) = 0;

@@ -257,6 +257,7 @@ void UI::render()
             }
         }
     }
+    renderer->endSpriteRendering();
 }
 
 void UI::processMouseClick(float value)

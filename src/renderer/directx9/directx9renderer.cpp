@@ -194,6 +194,8 @@ void DirectX9Renderer::setupSpriteRendering(const Matrix4 &mView, const Matrix4 
 {
     mSpriteViewProjection = mProjection * mView;
 
+    d3ddev->BeginScene();
+
     d3ddev->SetRenderState(D3DRS_ZENABLE, false);
     d3ddev->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_BLUE | D3DCOLORWRITEENABLE_ALPHA);
     d3ddev->SetRenderState(D3DRS_ZWRITEENABLE, false);
@@ -205,6 +207,11 @@ void DirectX9Renderer::setupSpriteRendering(const Matrix4 &mView, const Matrix4 
     spriteShader->use();
 
     d3ddev->SetVertexDeclaration(pVertexDeclNormalUV);
+}
+
+void DirectX9Renderer::endSpriteRendering()
+{
+    d3ddev->EndScene();
 }
 
 void DirectX9Renderer::renderSpriteRect(const Matrix4 &mModel, const Color &color)
