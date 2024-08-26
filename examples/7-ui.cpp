@@ -234,6 +234,8 @@ APPMAIN
     helpModal->horizontalAlign.set(UIContentAlign::Middle);
     helpModal->verticalAlign.set(UIContentAlign::Middle);
     helpModal->contentDirection.set(UIContentDirection::Vertical);
+    helpModal->setBorderNumber(2.0f);
+    helpModal->setBorderColor(Color(0.4f, 0.4f, 0.4f, 1.0f), Color(0.4f, 0.4f, 0.4f, 1.0f), Color(0.6f, 0.6f, 0.6f, 1.0f), Color(0.6f, 0.6f, 0.6f, 1.0f));
 
     UINode *title = helpModal->createUINodeChild<UINode>();
     title->text.set("Title");

@@ -213,8 +213,13 @@ bool UINode::hasDisplayableData()
         return false;
     if (calculatedWidth != 0.0f && calculatedHeight != 0.0f && children.size() > 0)
         return true;
-    if (calculatedColorBackground.a != 0.0f || calculatedColorBorder.a != 0.0f)
+    if (calculatedColorBackground.a != 0.0f)
         return true;
+    for (int i = 0; i < 4; i++)
+    {
+        if (calculatedColorBorder[i].a > 0.0f && calculatedBorder[i] > 0.0f)
+            return true;
+    }
     if (text.isSet() && text.getValue().size() > 0)
         return true;
     if (image.isSet() && image.getValue())
@@ -604,7 +609,10 @@ void UINode::rebuild()
 
     // Element View
     calculatedColorBackground = style.colorBackground.isSet() ? style.colorBackground.getValue() : Color(0, 0, 0, 0);
-    calculatedColorBorder = style.colorBorder.isSet() ? style.colorBorder.getValue() : Color(0, 0, 0, 0);
+    calculatedColorBorder[UI_TOP] = style.colorBorder[UI_TOP].isSet() ? style.colorBorder[UI_TOP].getValue() : Color(0, 0, 0, 0);
+    calculatedColorBorder[UI_BOTTOM] = style.colorBorder[UI_BOTTOM].isSet() ? style.colorBorder[UI_BOTTOM].getValue() : Color(0, 0, 0, 0);
+    calculatedColorBorder[UI_LEFT] = style.colorBorder[UI_LEFT].isSet() ? style.colorBorder[UI_LEFT].getValue() : Color(0, 0, 0, 0);
+    calculatedColorBorder[UI_RIGHT] = style.colorBorder[UI_RIGHT].isSet() ? style.colorBorder[UI_RIGHT].getValue() : Color(0, 0, 0, 0);
 
     // Font / Text
     calculatedFont = getFont();

@@ -132,10 +132,13 @@ bool UINodeDisplay::insertFrom(UINodeDisplay *nodeDisplay)
         colorBackground.set(nodeDisplay->colorBackground.getValue());
         out = true;
     }
-    if (nodeDisplay->colorBorder.isSet())
+    for (int i = 0; i < 4; i++)
     {
-        colorBorder.set(nodeDisplay->colorBorder.getValue());
-        out = true;
+        if (nodeDisplay->colorBorder[i].isSet())
+        {
+            colorBorder[i].set(nodeDisplay->colorBorder[i].getValue());
+            out = true;
+        }
     }
     if (nodeDisplay->colorText.isSet())
     {
@@ -228,7 +231,8 @@ void UINodeDisplay::clear()
     text.unSet();
     wordWrap.unSet();
     colorBackground.unSet();
-    colorBorder.unSet();
+    for (int i = 0; i < 4; i++)
+        colorBorder[i].unSet();
     colorText.unSet();
     colorSelection.unSet();
     colorImageMask.unSet();

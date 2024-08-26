@@ -10,6 +10,8 @@
 #include <locale>
 #include <codecvt>
 
+const float fZShift = -0.5f;
+
 UI::UI(Window *window, Renderer *renderer, Font *defaultFont)
 {
     uiContext = new UIContext(window, renderer, defaultFont);
@@ -126,15 +128,54 @@ void UI::render()
 
         if (node->hasDisplayableData())
         {
-            float posX = block.x + node->getCalculatedMarginLeft() + node->getCalculatedBorderLeft();
-            float posY = block.y + node->getCalculatedMarginTop() + node->getCalculatedBorderTop();
+            float posX = block.x + node->getCalculatedMarginLeft();
+            float posY = block.y + node->getCalculatedMarginTop();
+            float posXWithBorder = posX + node->getCalculatedBorderLeft();
+            float posYWithBorder = posY + node->getCalculatedBorderTop();
+            float borderWidth = node->getCalculatedBorderLeft() + node->getCalculatedBorderRight();
+            float borderHeight = node->getCalculatedBorderTop() + node->getCalculatedBorderBottom();
 
+            // Background
             if (node->getCalculatedColorBackground().a != 0.0f)
             {
-                entity.setPosition(posX, posY, -0.5f);
+                entity.setPosition(posXWithBorder, posYWithBorder, fZShift);
                 entity.setScale(node->getCalculatedFilledWidth(), node->getCalculatedFilledHeight());
                 renderer->renderSpriteRect(entity.getModelMatrix(), node->getCalculatedColorBackground());
             }
+
+            // Borders
+            // Left
+            if (node->getCalculatedBorderLeft() > 0.0f)
+            {
+                entity.setPosition(posX, posY, fZShift);
+                entity.setScale(node->getCalculatedBorderLeft(), node->getCalculatedFilledHeight() + borderHeight);
+                renderer->renderSpriteRect(entity.getModelMatrix(), node->getCalculatedColorBorder(UI_LEFT));
+            }
+
+            // Right
+            if (node->getCalculatedBorderLeft() > 0.0f)
+            {
+                entity.setPosition(posXWithBorder + node->getCalculatedFilledWidth(), posY, fZShift);
+                entity.setScale(node->getCalculatedBorderLeft(), node->getCalculatedFilledHeight() + borderHeight);
+                renderer->renderSpriteRect(entity.getModelMatrix(), node->getCalculatedColorBorder(UI_RIGHT));
+            }
+
+            // Top
+            if (node->getCalculatedBorderTop() > 0.0f)
+            {
+                entity.setPosition(posX, posY, fZShift);
+                entity.setScale(node->getCalculatedFilledWidth() + borderWidth, node->getCalculatedBorderTop());
+                renderer->renderSpriteRect(entity.getModelMatrix(), node->getCalculatedColorBorder(UI_TOP));
+            }
+
+            // Bottom
+            if (node->getCalculatedBorderBottom() > 0.0f)
+            {
+                entity.setPosition(posX, posYWithBorder + node->getCalculatedFilledHeight(), fZShift);
+                entity.setScale(node->getCalculatedFilledWidth() + borderWidth, node->getCalculatedBorderTop());
+                renderer->renderSpriteRect(entity.getModelMatrix(), node->getCalculatedColorBorder(UI_BOTTOM));
+            }
+
             if (node->hasCalculatedText())
             {
                 const std::string &text = node->getCalculatedText();
@@ -145,9 +186,9 @@ void UI::render()
                 float letterSpacing = node->getCalculatedLetterSpacing() / interfaceZoom;
                 float lineSpacing = node->getCalculatedLineSpacing() / interfaceZoom;
 
-                float startPos = posX + node->getCalculatedPaddingLeft() + block.textShiftX;
+                float startPos = posXWithBorder + node->getCalculatedPaddingLeft() + block.textShiftX;
                 float xPosIterator = startPos;
-                float yPosIterator = posY + node->getCalculatedPaddingTop() + block.textShiftY;
+                float yPosIterator = posYWithBorder + node->getCalculatedPaddingTop() + block.textShiftY;
 
                 std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> convert;
                 std::u32string text32 = convert.from_bytes(text);
@@ -189,7 +230,7 @@ void UI::render()
                             entity.setPosition(
                                 roundf(xPosIterator + static_cast<float>(glyph->shiftX) / interfaceZoom),
                                 roundf(yPosIterator + static_cast<float>(glyph->shiftY) / interfaceZoom + static_cast<float>(fontSize) * 0.8f),
-                                -0.5f);
+                                fZShift);
                             entity.setScale(localScale, localScale);
                             renderer->renderSpriteMask(entity.getModelMatrix(), glyph->texture, textColor);
                             xPosIterator += glyphWidth + letterSpacing;
@@ -206,7 +247,7 @@ void UI::render()
                 entity.setPosition(
                     posX + node->getCalculatedPaddingLeft() + block.imageShiftX,
                     posY + node->getCalculatedPaddingTop() + block.imageShiftY,
-                    -0.5f);
+                    fZShift);
                 entity.setScale(image->getWidth(), image->getHeight());
 
                 if (useMask)

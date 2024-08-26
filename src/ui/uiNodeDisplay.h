@@ -91,6 +91,29 @@ public:
         border[UI_RIGHT].setAsNumber(leftTopRightBottom);
         border[UI_BOTTOM].setAsNumber(leftTopRightBottom);
     }
+    inline void setColorBorderLeft(Color color)
+    {
+        colorBorder[UI_LEFT].set(color);
+    }
+    inline void setColorBorderRight(Color color)
+    {
+        colorBorder[UI_RIGHT].set(color);
+    }
+    inline void setColorBorderTop(Color color)
+    {
+        colorBorder[UI_TOP].set(color);
+    }
+    inline void setColorBorderBottom(Color color)
+    {
+        colorBorder[UI_BOTTOM].set(color);
+    }
+    inline void setBorderColor(Color colorLeft, Color colorTop, Color colorRight, Color colorBottom)
+    {
+        colorBorder[UI_LEFT].set(colorLeft);
+        colorBorder[UI_TOP].set(colorTop);
+        colorBorder[UI_RIGHT].set(colorRight);
+        colorBorder[UI_BOTTOM].set(colorBottom);
+    }
 
     inline UIPropertyDimension &getMarginLeft() { return margin[UI_LEFT]; }
     inline UIPropertyDimension &getMarginTop() { return margin[UI_TOP]; }
@@ -123,7 +146,7 @@ public:
     UIPropertyText text;
     UIPropertyWordWrap wordWrap;
     UIPropertyColor colorBackground;
-    UIPropertyColor colorBorder;
+    UIPropertyColor colorBorder[4];
     UIPropertyColor colorText;
     UIPropertyColor colorSelection;
     UIPropertyColor colorImageMask;

@@ -62,7 +62,7 @@ public:
     inline float getCalculatedFilledWidth() { return calculatedWidth + calculatedPadding[UI_LEFT] + calculatedPadding[UI_RIGHT]; }
     inline float getCalculatedFilledHeight() { return calculatedHeight + calculatedPadding[UI_TOP] + calculatedPadding[UI_BOTTOM]; }
     inline Color &getCalculatedColorBackground() { return calculatedColorBackground; }
-    inline Color &getCalculatedColorBorder() { return calculatedColorBorder; }
+    inline Color &getCalculatedColorBorder(int side) { return calculatedColorBorder[side]; }
     inline Color &getCalculatedColorText() { return calculatedColorText; }
     inline Color &getCalculatedColorSelection() { return calculatedColorSelection; }
     inline Color &getCalculatedColorImageMask() { return calculatedColorImageMask; }
@@ -142,7 +142,7 @@ protected:
     float calculatedPadding[4] = {0, 0, 0, 0};
     float calculatedBorder[4] = {0, 0, 0, 0};
     Color calculatedColorBackground = Color(0, 0, 0, 0);
-    Color calculatedColorBorder = Color(0, 0, 0, 1);
+    Color calculatedColorBorder[4] = {Color(0, 0, 0, 1), Color(0, 0, 0, 1), Color(0, 0, 0, 1), Color(0, 0, 0, 1)};
     Color calculatedColorText = Color(0, 0, 0, 1);
     Color calculatedColorSelection = Color(0.4, 0.4, 0.9f, 1);
     Color calculatedColorImageMask = Color(0.4, 0.4, 0.9f, 1);
