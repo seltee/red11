@@ -91,6 +91,11 @@ public:
         this->rotation = Quat(Vector3(0.0f, 0.0f, z));
         bIsTransformationDirty = true;
     }
+    inline void setRotationAlongNormal(const Vector3 &normal, const Vector3 &up = Vector3(0.0f, 1.0f, 0.0f))
+    {
+        this->rotation = glm::rotation(up, normal);
+        bIsTransformationDirty = true;
+    }
     inline void rotate(float z)
     {
         this->rotation *= Quat(Vector3(0.0f, 0.0f, z));
@@ -106,9 +111,9 @@ public:
         this->rotation *= r;
         bIsTransformationDirty = true;
     }
-    inline void rotateByNormal(const Vector3 &normal, const Vector3 &up = Vector3(0.0f, 1.0f, 0.0f))
+    inline void rotateByAxis(const Vector3 &axis, float fRads)
     {
-        this->rotation = glm::rotation(up, normal);
+        this->rotation = glm::normalize(this->rotation * glm::angleAxis(fRads, glm::normalize(axis)));
         bIsTransformationDirty = true;
     }
     EXPORT void lookAt(const Vector3 &point);

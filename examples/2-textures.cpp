@@ -188,7 +188,7 @@ APPMAIN
         cameraComponent->setupAsPerspective(renderer->getViewWidth(), renderer->getViewHeight());
         renderer->clearBuffer(Color(0.4, 0.5, 0.8));
 
-        cube->rotate(Vector3(0.0f, 0.5f * delta, 0.0f));
+        cube->rotateByAxis(Vector3(1.0f, 1.0f, 1.0f), delta);
         cube2->rotate(Vector3(0.5f * delta, 0.0f, 0.0f));
         cube3->rotate(Vector3(0.0f, 0.0f, 0.5f * delta));
 
