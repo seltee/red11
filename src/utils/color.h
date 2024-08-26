@@ -23,5 +23,68 @@ public:
     }
     inline const float *getAsFloatArray() const { return &r; }
 
-    EXPORT Color &operator=(const Color &other);
+    inline void normalize()
+    {
+        this->r = fmaxf(fminf(this->r, 1.0f), 0.0f);
+        this->g = fmaxf(fminf(this->g, 1.0f), 0.0f);
+        this->b = fmaxf(fminf(this->b, 1.0f), 0.0f);
+        this->a = fmaxf(fminf(this->a, 1.0f), 0.0f);
+    }
+
+    inline Color &operator=(const Color &other)
+    {
+        if (this != &other) // not a self-assignment
+        {
+            this->r = other.r;
+            this->g = other.g;
+            this->b = other.b;
+            this->a = other.a;
+        }
+        return *this;
+    }
+
+    inline Color &operator-(const Color &other)
+    {
+        if (this != &other) // not a self-assignment
+        {
+            this->r = this->r - other.r;
+            this->g = this->g - other.g;
+            this->b = this->b - other.b;
+            this->a = this->a - other.a;
+        }
+        return *this;
+    }
+
+    inline Color &operator+(const Color &other)
+    {
+        if (this != &other) // not a self-assignment
+        {
+            this->r = this->r + other.r;
+            this->g = this->g + other.g;
+            this->b = this->b + other.b;
+            this->a = this->a + other.a;
+        }
+        return *this;
+    }
+
+    inline Color &operator*(float value)
+    {
+        this->r = this->r * value;
+        this->g = this->g * value;
+        this->b = this->b * value;
+        this->a = this->a * value;
+        return *this;
+    }
+
+    inline Color &operator/(const Color &other)
+    {
+        if (this != &other) // not a self-assignment
+        {
+            this->r = this->r / other.r;
+            this->g = this->g / other.g;
+            this->b = this->b / other.b;
+            this->a = this->a / other.a;
+        }
+        return *this;
+    }
 };

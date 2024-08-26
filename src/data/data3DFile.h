@@ -25,6 +25,9 @@ public:
     EXPORT std::vector<MeshObject *> *getMeshObjectList();
     EXPORT std::vector<Animation *> *getAnimationsList();
 
+    EXPORT MeshObject *getMeshObjectByName(std::string name);
+    EXPORT Animation *getAnimationByName(std::string name);
+
     EXPORT void load();
     EXPORT void freeCache();
 

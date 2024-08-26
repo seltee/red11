@@ -29,6 +29,9 @@ class Material : public Usable
 public:
     EXPORT Material();
     EXPORT virtual ~Material();
+
+    inline void destroy() { delete this; }
+
     virtual MaterialType getType() = 0;
     virtual MaterialDisplay getDisplay() = 0;
     virtual bool isUsingNormalMap() = 0;

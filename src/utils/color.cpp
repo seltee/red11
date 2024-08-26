@@ -27,15 +27,3 @@ Color::Color(float r, float g, float b, float a)
     this->b = b;
     this->a = a;
 }
-
-Color &Color::operator=(const Color &other)
-{
-    if (this != &other) // not a self-assignment
-    {
-        this->r = other.r;
-        this->g = other.g;
-        this->b = other.b;
-        this->a = other.a;
-    }
-    return *this;
-}

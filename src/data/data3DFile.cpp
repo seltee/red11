@@ -36,6 +36,8 @@ Mesh *Data3DFile::getAsMesh()
 
 Spline *Data3DFile::getSplineByName(const std::string &name, SplineInterpolation interpolation, bool bIsLooped)
 {
+    if (!bLoaded)
+        load();
     for (auto &object : meshObjectList)
     {
         if (*object->getNamePointer() == name)
@@ -62,6 +64,36 @@ std::vector<Animation *> *Data3DFile::getAnimationsList()
         load();
     if (bLoaded)
         return &animationsList;
+    return nullptr;
+}
+
+MeshObject *Data3DFile::getMeshObjectByName(std::string name)
+{
+    if (!bLoaded)
+        load();
+    if (bLoaded)
+    {
+        for (auto &mesh : meshObjectList)
+        {
+            if (*mesh->getNamePointer() == name)
+                return mesh;
+        }
+    }
+    return nullptr;
+}
+
+Animation *Data3DFile::getAnimationByName(std::string name)
+{
+    if (!bLoaded)
+        load();
+    if (bLoaded)
+    {
+        for (auto &animation : animationsList)
+        {
+            if (animation->getName() == name)
+                return animation;
+        }
+    }
     return nullptr;
 }
 
