@@ -6,10 +6,14 @@
 
 const Matrix4 &Entity::getModelMatrix()
 {
-    if (bIsTransformationDirty)
+    if (bIsTransformationDirty || bRotationIsDirty)
     {
         bIsTransformationDirty = false;
+        bRotationIsDirty = false;
         tIteration++;
+
+        if (bRotationIsDirty)
+            rotation = glm::normalize(rotation);
 
         mModelLocal = glm::translate(Matrix4(1.0f), position);
         mModelLocal *= glm::toMat4(rotation);

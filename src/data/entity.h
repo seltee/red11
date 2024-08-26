@@ -79,36 +79,43 @@ public:
     inline void setRotation(const Vector3 &r)
     {
         this->rotation = Quat(r);
+        bRotationIsDirty = true;
         bIsTransformationDirty = true;
     }
     inline void setRotation(const Quat &r)
     {
         this->rotation = r;
+        bRotationIsDirty = true;
         bIsTransformationDirty = true;
     }
     inline void setRotation(float z)
     {
         this->rotation = Quat(Vector3(0.0f, 0.0f, z));
+        bRotationIsDirty = true;
         bIsTransformationDirty = true;
     }
     inline void setRotationAlongNormal(const Vector3 &normal, const Vector3 &up = Vector3(0.0f, 1.0f, 0.0f))
     {
         this->rotation = glm::rotation(up, normal);
+        bRotationIsDirty = true;
         bIsTransformationDirty = true;
     }
     inline void rotate(float z)
     {
         this->rotation *= Quat(Vector3(0.0f, 0.0f, z));
+        bRotationIsDirty = true;
         bIsTransformationDirty = true;
     }
     inline void rotate(const Vector3 &r)
     {
         this->rotation *= Quat(r);
+        bRotationIsDirty = true;
         bIsTransformationDirty = true;
     }
     inline void rotate(const Quat &r)
     {
         this->rotation *= r;
+        bRotationIsDirty = true;
         bIsTransformationDirty = true;
     }
     inline void rotateByAxis(const Vector3 &axis, float fRads)
@@ -170,6 +177,7 @@ protected:
     Quat rotation = Quat(1.0f, 0.0f, 0.0f, 0.0f);
     Vector3 scale = Vector3(1.0f, 1.0f, 1.0f);
     bool bIsTransformationDirty = true;
+    bool bRotationIsDirty = true;
 
     Matrix4 mModelLocal;
     Matrix4 mModelWithParent;
