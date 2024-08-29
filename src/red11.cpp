@@ -98,12 +98,12 @@ ResourceManager *Red11::getResourceManager()
     return resourceManager;
 }
 
-Server *Red11::createServer(NetworkApi &networkApi, int port, FuncMessageReceiverCreator funcCreateMessageReceiver)
+Server *Red11::createServer(NetworkApi &networkApi, int port, FuncMessageProcessorCreator funcCreateMessageProcessor)
 {
-    return new WindowsServer(networkApi, port, funcCreateMessageReceiver);
+    return new WindowsServer(networkApi, port, funcCreateMessageProcessor);
 }
 
-Client *Red11::createClient(NetworkApi &networkApi, MessageReceiver &messageReceiver, const std::string &address, int port)
+Client *Red11::createClient(NetworkApi &networkApi, MessageProcessor &messageProcessor, const std::string &address, int port)
 {
-    return new WindowsClient(networkApi, messageReceiver, address, port);
+    return new WindowsClient(networkApi, messageProcessor, address, port);
 }

@@ -7,10 +7,13 @@
 #include "networkMessage.h"
 #include <mutex>
 
-class MessageReceiver
+class MessageProcessor
 {
 public:
+    EXPORT virtual ~MessageProcessor();
+
     virtual void receiveMessage(NetworkApiCall code, int size, const char *body) = 0;
+    EXPORT virtual void doAction(NetworkActionCode actionCode, const char *data, unsigned int size);
 
     EXPORT void sendRequest(NetworkApiCall apiCall, const void *data, unsigned int size);
 
@@ -32,4 +35,4 @@ private:
     std::vector<NetworkMessage *> messages;
 };
 
-typedef MessageReceiver *(*FuncMessageReceiverCreator)();
+typedef MessageProcessor *(*FuncMessageProcessorCreator)();

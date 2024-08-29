@@ -69,7 +69,8 @@ OBJ_FILES = ${OBJDIR}/red11.o \
 			${OBJDIR}/deltaCounter.o ${OBJDIR}/jobQueue.o ${OBJDIR}/logger.o ${OBJDIR}/hullCliping.o \
 			${OBJDIR}/loaderFBX.o ${OBJDIR}/FBXNode.o ${OBJDIR}/FBXAnimationStack.o ${OBJDIR}/FBXAnimationLayer.o ${OBJDIR}/FBXAnimationCurve.o ${OBJDIR}/FBXAnimationCurveNode.o \
 			${OBJDIR}/FBXDeform.o ${OBJDIR}/FBXGeometry.o ${OBJDIR}/FBXModel.o ${OBJDIR}/FBXAttribute.o \
-			${OBJDIR}/networkMessage.o ${OBJDIR}/messageReceiver.o ${OBJDIR}/networkApi.o ${OBJDIR}/client.o ${OBJDIR}/server.o ${OBJDIR}/windowsClient.o ${OBJDIR}/windowsServer.o
+			${OBJDIR}/networkMessage.o ${OBJDIR}/messageProcessor.o ${OBJDIR}/networkApi.o ${OBJDIR}/client.o ${OBJDIR}/server.o ${OBJDIR}/connection.o \
+			${OBJDIR}/windowsClient.o ${OBJDIR}/windowsServer.o ${OBJDIR}/windowsConnection.o
 
 EXAMPLES = 	1-window${EXT} 2-textures${EXT} 3-animation${EXT} 4-bones${EXT} 5-physics${EXT} 6-collisionEvents${EXT} 7-ui${EXT} 8-resourceManagment${EXT} 9-customShaders${EXT} \
 			10-splines${EXT} 11-networkServer${EXT} 12-networkClient${EXT} demo-1${EXT}
@@ -353,8 +354,8 @@ ${OBJDIR}/FBXAttribute.o: ${SRCDIR}/utils/FBX/FBXAttribute.cpp
 ${OBJDIR}/networkMessage.o: ${SRCDIR}/network/networkMessage.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/networkMessage.o ${SRCDIR}/network/networkMessage.cpp
 
-${OBJDIR}/messageReceiver.o: ${SRCDIR}/network/messageReceiver.cpp
-	$(CC) $(CFLAGS) -o ${OBJDIR}/messageReceiver.o ${SRCDIR}/network/messageReceiver.cpp
+${OBJDIR}/messageProcessor.o: ${SRCDIR}/network/messageProcessor.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/messageProcessor.o ${SRCDIR}/network/messageProcessor.cpp
 
 ${OBJDIR}/networkApi.o: ${SRCDIR}/network/networkApi.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/networkApi.o ${SRCDIR}/network/networkApi.cpp
@@ -365,14 +366,17 @@ ${OBJDIR}/client.o: ${SRCDIR}/network/client.cpp
 ${OBJDIR}/server.o: ${SRCDIR}/network/server.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/server.o ${SRCDIR}/network/server.cpp
 
-${OBJDIR}/server.o: ${SRCDIR}/network/server.cpp
-	$(CC) $(CFLAGS) -o ${OBJDIR}/server.o ${SRCDIR}/network/server.cpp
+${OBJDIR}/connection.o: ${SRCDIR}/network/connection.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/connection.o ${SRCDIR}/network/connection.cpp
 
 ${OBJDIR}/windowsClient.o: ${SRCDIR}/network/windows/windowsClient.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/windowsClient.o ${SRCDIR}/network/windows/windowsClient.cpp
 
 ${OBJDIR}/windowsServer.o: ${SRCDIR}/network/windows/windowsServer.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/windowsServer.o ${SRCDIR}/network/windows/windowsServer.cpp
+
+${OBJDIR}/windowsConnection.o: ${SRCDIR}/network/windows/windowsConnection.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/windowsConnection.o ${SRCDIR}/network/windows/windowsConnection.cpp
 
 $(TARGET): ${OBJ_FILES}
 	$(LD) ${LFLAGS} ${LIBRARIES} ${OBJ_FILES} -o $(TARGET)

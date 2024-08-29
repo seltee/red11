@@ -4,9 +4,10 @@
 #pragma once
 #include "utils/utils.h"
 
-#define NETWORK_BUFFER_LENGTH (1024 * 16)
+#define NETWORK_BUFFER_LENGTH (32 * 1024)
 
 typedef unsigned int NetworkApiCall;
+typedef unsigned int NetworkActionCode;
 
 struct NetworkMessageHeader
 {
@@ -17,6 +18,7 @@ struct NetworkMessageHeader
 enum class NetworkMessageType
 {
     None,
+    Action,
     SetupConnection,
     SendMessage,
     RecvMessage

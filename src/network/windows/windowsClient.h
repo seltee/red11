@@ -13,7 +13,7 @@ struct NetworkControlData
 {
     std::vector<NetworkMessage *> *requests;
     std::vector<NetworkError> *errors;
-    MessageReceiver *messageReceiver;
+    MessageProcessor *messageProcessor;
     std::mutex *mutex;
     NetworkApi *networkApi;
     SOCKET connectSocket;
@@ -23,7 +23,7 @@ struct NetworkControlData
 class WindowsClient : public Client
 {
 public:
-    EXPORT WindowsClient(NetworkApi &networkApi, MessageReceiver &messageReceiver, const std::string &address, int port);
+    EXPORT WindowsClient(NetworkApi &networkApi, MessageProcessor &messageProcessor, const std::string &address, int port);
     EXPORT ~WindowsClient();
 
     bool isConnected() override final;

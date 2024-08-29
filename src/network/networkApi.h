@@ -10,6 +10,7 @@
 struct NetworkApiDescriptor
 {
     int nSize;
+    bool bIsVolatile = false;
 };
 
 class NetworkApi
@@ -17,6 +18,7 @@ class NetworkApi
 public:
     EXPORT NetworkApi(int nVersion);
     EXPORT NetworkApiCall addFixedSizeApiCall(int nSize);
+    EXPORT NetworkApiCall addVolatileSizeApiCall();
     EXPORT NetworkApiDescriptor getDescriptor(int number);
 
     inline NetworkApiDescriptor *getNetworkApiDescriptor(NetworkApiCall apiCall)

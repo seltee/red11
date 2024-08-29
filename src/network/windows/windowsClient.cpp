@@ -9,7 +9,7 @@
 void sendingFunction(NetworkControlData *networkControlData);
 void receivingFunction(NetworkControlData *networkControlData);
 
-WindowsClient::WindowsClient(NetworkApi &networkApi, MessageReceiver &messageReceiver, const std::string &address, int port) : Client(networkApi, messageReceiver, address, port)
+WindowsClient::WindowsClient(NetworkApi &networkApi, MessageProcessor &messageProcessor, const std::string &address, int port) : Client(networkApi, messageProcessor, address, port)
 {
     memset(&networkControlData, 0, sizeof(NetworkControlData));
 }
@@ -30,11 +30,9 @@ bool WindowsClient::isConnected()
 
 void WindowsClient::runSendingReceivingTask()
 {
-    Red11::getLogger()->logConsole("Start service");
-
     networkControlData.requests = &this->requests;
     networkControlData.errors = &this->errors;
-    networkControlData.messageReceiver = this->messageReceiver;
+    networkControlData.messageProcessor = this->messageProcessor;
     networkControlData.networkApi = this->networkApi;
     networkControlData.mutex = &this->mutex;
     networkControlData.isConnected = false;
@@ -63,19 +61,19 @@ void sendingFunction(NetworkControlData *networkControlData)
 
     while (1)
     {
-        mutex->lock();
         if (requests->size() > 0)
         {
+            mutex->lock();
             NetworkMessage *request = requests->at(0);
             requests->erase(requests->begin());
-            if (!request)
-                continue;
 
             // Send message to server
             if (request->getType() == NetworkMessageType::SendMessage)
             {
                 // Send a message
+                mutex->unlock();
                 int nResult = send(networkControlData->connectSocket, request->getFullMessageData(), request->getFullMessageSize(), 0);
+                mutex->lock();
                 if (nResult == SOCKET_ERROR)
                 {
                     Red11::getLogger()->logFileAndConsole("Send failed: %i", WSAGetLastError());
@@ -87,7 +85,6 @@ void sendingFunction(NetworkControlData *networkControlData)
             }
             else if (request->getType() == NetworkMessageType::SetupConnection)
             {
-                Red11::getLogger()->logConsole("Setup connection");
                 // Setup connection to server
                 NetworkSetupData *data = (NetworkSetupData *)request->getData();
                 int port = data->port;
@@ -126,13 +123,15 @@ void sendingFunction(NetworkControlData *networkControlData)
                 inet_pton(AF_INET, address.c_str(), &serverAddr.sin_addr); // Server IP address (localhost in this case)
 
                 // Connect to the server
+                mutex->unlock();
                 nResult = connect(connectSocket, (sockaddr *)&serverAddr, sizeof(serverAddr));
+                mutex->lock();
+
                 if (nResult == SOCKET_ERROR)
                 {
                     Red11::getLogger()->logFileAndConsole("Connect failed: %i", WSAGetLastError());
                     closesocket(connectSocket);
                     WSACleanup();
-                    mutex->lock();
                     errors->push_back({std::string("Connect failed"), NetworkCode::FailedToConnect});
                     mutex->unlock();
                     break;
@@ -144,13 +143,10 @@ void sendingFunction(NetworkControlData *networkControlData)
                 networkControlData->isConnected = true;
             }
             request->destroy();
+            mutex->unlock();
         }
         else
-        {
-            mutex->unlock();
-            std::this_thread::sleep_for(std::chrono::microseconds(100));
-        }
-        mutex->unlock();
+            std::this_thread::sleep_for(std::chrono::microseconds(50));
     }
 
     mutex->lock();
@@ -163,7 +159,7 @@ void receivingFunction(NetworkControlData *networkControlData)
     networkControlData->mutex->lock();
     std::vector<NetworkMessage *> *requests = networkControlData->requests;
     std::vector<NetworkError> *errors = networkControlData->errors;
-    MessageReceiver *messageReceiver = networkControlData->messageReceiver;
+    MessageProcessor *messageProcessor = networkControlData->messageProcessor;
     NetworkApi *networkApi = networkControlData->networkApi;
     std::mutex *mutex = networkControlData->mutex;
     mutex->unlock();
@@ -180,13 +176,12 @@ void receivingFunction(NetworkControlData *networkControlData)
             int nResult = recv(networkControlData->connectSocket, cBuff, NETWORK_BUFFER_LENGTH, 0);
             if (nResult > 0)
             {
-                Red11::getLogger()->logFileAndConsole("Received response from server");
                 if (nResult >= sizeof(NetworkMessageHeader))
                 {
                     NetworkApiDescriptor networkApiDescriptor = networkApi->getDescriptor(header->code);
-                    if (networkApiDescriptor.nSize == header->size)
+                    if (networkApiDescriptor.bIsVolatile || networkApiDescriptor.nSize == header->size)
                     {
-                        messageReceiver->receiveMessage(header->code, header->size, body);
+                        messageProcessor->receiveMessage(header->code, header->size, body);
                     }
                 }
             }

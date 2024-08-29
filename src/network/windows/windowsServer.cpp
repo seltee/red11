@@ -6,13 +6,13 @@
 
 #pragma comment(lib, "Ws2_32.lib")
 
-void clientConnectionReceiver(ClientControlData *clientControlData);
-void clientConnectionSender(ClientControlData *clientControlData);
-void acceptConnections(ServerControlData *serverControlData);
+void clientConnectionReceiver(WindowsConnection *clientControlData);
+void clientConnectionSender(WindowsConnection *clientControlData);
+void acceptConnections(AcceptConnectionsControlData *acceptConnectionsControlData);
 
-WindowsServer::WindowsServer(NetworkApi &networkApi, int port, FuncMessageReceiverCreator funcCreateMessageReceiver) : Server(networkApi, port, funcCreateMessageReceiver)
+WindowsServer::WindowsServer(NetworkApi &networkApi, int port, FuncMessageProcessorCreator funcCreateMessageProcessor) : Server(networkApi, port, funcCreateMessageProcessor)
 {
-    memset(&serverControlData, 0, sizeof(ServerControlData));
+    memset(&acceptConnectionsControlData, 0, sizeof(AcceptConnectionsControlData));
 }
 
 bool WindowsServer::isRunning()
@@ -69,15 +69,15 @@ void WindowsServer::setupServer()
     Red11::getLogger()->logFileAndConsole("Server is listening on port %i ...", port);
 
     // Start a thread to accept connections
-    serverControlData.errors = &this->errors;
-    serverControlData.connections = &this->connections;
-    serverControlData.mutex = &this->mutex;
-    serverControlData.connectSocket = connectSocket;
-    serverControlData.networkApi = networkApi;
-    serverControlData.funcCreateMessageReceiver = funcCreateMessageReceiver;
+    acceptConnectionsControlData.errors = &this->errors;
+    acceptConnectionsControlData.connections = &this->connections;
+    acceptConnectionsControlData.mutex = &this->mutex;
+    acceptConnectionsControlData.connectSocket = connectSocket;
+    acceptConnectionsControlData.networkApi = networkApi;
+    acceptConnectionsControlData.funcCreateMessageProcessor = funcCreateMessageProcessor;
 
     mutex.lock();
-    connectThread = new std::thread(acceptConnections, &serverControlData);
+    connectThread = new std::thread(acceptConnections, &acceptConnectionsControlData);
     bIsRunning = true;
     mutex.unlock();
 }
@@ -90,16 +90,12 @@ void WindowsServer::cleanUp()
     bIsRunning = false;
 }
 
-void clientConnectionReceiver(ClientControlData *clientControlData)
+void clientConnectionReceiver(WindowsConnection *connection)
 {
-    clientControlData->mutex->lock();
-    SOCKET clientSocket = clientControlData->clientSocket;
-    // std::vector<NetworkError> *errors = clientControlData->errors;
-    std::mutex *mutex = clientControlData->mutex;
-    NetworkApi *networkApi = clientControlData->networkApi;
-    MessageReceiver *messageReceiver = clientControlData->messageReceiver;
-    clientControlData->isConnected = true;
-    mutex->unlock();
+    std::mutex *mutex = connection->mutex;
+    SOCKET clientSocket = connection->clientSocket;
+    NetworkApi *networkApi = connection->getNetworkApi();
+    MessageProcessor *messageProcessor = connection->getMessageProcessor();
 
     char cBuff[NETWORK_BUFFER_LENGTH];
 
@@ -115,9 +111,9 @@ void clientConnectionReceiver(ClientControlData *clientControlData)
             if (nResult >= sizeof(NetworkMessageHeader))
             {
                 NetworkApiDescriptor networkApiDescriptor = networkApi->getDescriptor(header->code);
-                if (networkApiDescriptor.nSize == header->size)
+                if (networkApiDescriptor.bIsVolatile || networkApiDescriptor.nSize == header->size)
                 {
-                    messageReceiver->receiveMessage(header->code, header->size, body);
+                    messageProcessor->receiveMessage(header->code, header->size, body);
                 }
             }
         }
@@ -136,33 +132,30 @@ void clientConnectionReceiver(ClientControlData *clientControlData)
     Red11::getLogger()->logConsole("Client disconnected");
 
     mutex->lock();
-    clientControlData->isConnected = false;
+    connection->setConnectionState(false);
     mutex->unlock();
 }
 
-void clientConnectionSender(ClientControlData *clientControlData)
+void clientConnectionSender(WindowsConnection *connection)
 {
-    clientControlData->mutex->lock();
-    SOCKET clientSocket = clientControlData->clientSocket;
-    std::vector<NetworkError> *errors = clientControlData->errors;
-    std::mutex *mutex = clientControlData->mutex;
-    NetworkApi *networkApi = clientControlData->networkApi;
-    MessageReceiver *messageReceiver = clientControlData->messageReceiver;
-    clientControlData->mutex->unlock();
+    std::vector<NetworkError> *errors = connection->getErrorsList();
+    // NetworkApi *networkApi = connection->getNetworkApi();
+    MessageProcessor *messageProcessor = connection->getMessageProcessor();
+    std::mutex *mutex = connection->mutex;
+    SOCKET clientSocket = connection->clientSocket;
 
     char cBuff[NETWORK_BUFFER_LENGTH];
-    int nBuffSize = NETWORK_BUFFER_LENGTH;
 
-    NetworkMessageHeader *header = reinterpret_cast<NetworkMessageHeader *>(cBuff);
-    char *body = cBuff + sizeof(NetworkMessageHeader);
+    // NetworkMessageHeader *header = reinterpret_cast<NetworkMessageHeader *>(cBuff);
+    // char *body = cBuff + sizeof(NetworkMessageHeader);
 
     // Receive until the peer closes the connection
     while (true)
     {
-        if (messageReceiver->isHasMessages())
+        if (messageProcessor->isHasMessages())
         {
             mutex->lock();
-            NetworkMessage *networkMessage = messageReceiver->getNetworkMessage();
+            NetworkMessage *networkMessage = messageProcessor->getNetworkMessage();
 
             if (networkMessage)
             {
@@ -192,21 +185,19 @@ void clientConnectionSender(ClientControlData *clientControlData)
     }
 }
 
-void acceptConnections(ServerControlData *serverControlData)
+void acceptConnections(AcceptConnectionsControlData *acceptConnectionsControlData)
 {
-    serverControlData->mutex->lock();
-    std::vector<NetworkError> *errors = serverControlData->errors;
-    std::vector<ConnectionData *> *connections = serverControlData->connections;
-    std::mutex *mutex = serverControlData->mutex;
-    NetworkApi *networkApi = serverControlData->networkApi;
-    FuncMessageReceiverCreator funcCreateMessageReceiver = serverControlData->funcCreateMessageReceiver;
-    serverControlData->mutex->unlock();
+    std::vector<NetworkError> *errors = acceptConnectionsControlData->errors;
+    std::vector<Connection *> *connections = acceptConnectionsControlData->connections;
+    std::mutex *mutex = acceptConnectionsControlData->mutex;
+    NetworkApi *networkApi = acceptConnectionsControlData->networkApi;
+    FuncMessageProcessorCreator funcCreateMessageProcessor = acceptConnectionsControlData->funcCreateMessageProcessor;
 
     while (true)
     {
         Red11::getLogger()->logFileAndConsole("Waiting for connection");
 
-        SOCKET clientSocket = accept(serverControlData->connectSocket, nullptr, nullptr);
+        SOCKET clientSocket = accept(acceptConnectionsControlData->connectSocket, nullptr, nullptr);
         if (clientSocket == INVALID_SOCKET)
         {
             Red11::getLogger()->logFileAndConsole("Accept failed: %i", WSAGetLastError());
@@ -215,19 +206,16 @@ void acceptConnections(ServerControlData *serverControlData)
 
         Red11::getLogger()->logFileAndConsole("Client connected, creating thread...");
 
-        // Create a thread to handle the client
-        ClientControlData *clientControlData = new ClientControlData();
-        clientControlData->mutex = mutex;
-        clientControlData->errors = errors;
-        clientControlData->clientSocket = clientSocket;
-        clientControlData->networkApi = networkApi;
-        clientControlData->messageReceiver = funcCreateMessageReceiver();
+        WindowsConnection *connection = new WindowsConnection(
+            funcCreateMessageProcessor(),
+            networkApi,
+            errors,
+            mutex,
+            clientSocket,
+            true);
 
-        ConnectionData *connection = new ConnectionData();
-        connection->bIsConnected = true;
-        connection->userData = nullptr;
-        connection->clientThreadReceiver = new std::thread(clientConnectionReceiver, clientControlData);
-        connection->clientThreadReceiver = new std::thread(clientConnectionSender, clientControlData);
+        connection->clientThreadReceiver = new std::thread(clientConnectionReceiver, connection);
+        connection->clientThreadSender = new std::thread(clientConnectionSender, connection);
 
         mutex->lock();
         connections->push_back(connection);

@@ -5,17 +5,23 @@
 #include "networkApi.h"
 #include "networkUtils.h"
 #include "utils/utils.h"
-#include "messageReceiver.h"
+#include "messageProcessor.h"
+#include "connection.h"
 #include <vector>
 #include <mutex>
+
+typedef bool (*IsQualifyForBroadcast)(Connection *connection);
 
 class Server
 {
 public:
-    EXPORT Server(NetworkApi &networkApi, int port, FuncMessageReceiverCreator funcCreateMessageReceiver);
+    EXPORT Server(NetworkApi &networkApi, int port, FuncMessageProcessorCreator funcCreateMessageProcessor);
 
     EXPORT void startServer();
     virtual bool isRunning() = 0;
+
+    EXPORT void broadcast(NetworkActionCode actionCode, const char *data, unsigned int size, IsQualifyForBroadcast checkIfQualify = nullptr);
+    EXPORT void filterDisconnected();
 
     inline bool hasErrors() { return errors.size() > 0; }
     inline NetworkError fetchError()
@@ -34,6 +40,18 @@ public:
         return error;
     }
 
+    inline int getConnectionsAmount()
+    {
+        return connections.size();
+    }
+    inline const std::vector<Connection *> *getConnectionsList()
+    {
+        return &connections;
+    };
+
+    EXPORT void lockConnections();
+    EXPORT void unlockConnections();
+
 protected:
     virtual void setupServer() = 0;
     virtual void cleanUp() = 0;
@@ -44,5 +62,7 @@ protected:
     int port;
 
     std::mutex mutex;
-    FuncMessageReceiverCreator funcCreateMessageReceiver;
+    FuncMessageProcessorCreator funcCreateMessageProcessor;
+
+    std::vector<Connection *> connections;
 };

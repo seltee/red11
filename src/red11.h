@@ -76,9 +76,9 @@ public:
 
     EXPORT static ResourceManager *getResourceManager();
 
-    EXPORT static Server *createServer(NetworkApi &networkApi, int port, FuncMessageReceiverCreator funcCreateMessageReceiver);
+    EXPORT static Server *createServer(NetworkApi &networkApi, int port, FuncMessageProcessorCreator funcCreateMessageProcessor);
 
-    EXPORT static Client *createClient(NetworkApi &networkApi, MessageReceiver &messageReceiver, const std::string &address, int port);
+    EXPORT static Client *createClient(NetworkApi &networkApi, MessageProcessor &messageProcessor, const std::string &address, int port);
 
 protected:
     static MeshBuilder *meshBuilder;

@@ -2,58 +2,113 @@
 // SPDX-License-Identifier: MIT
 
 #include "red11.h"
+#include "shared.h"
 #include <string>
 
 #define WINDOW_WIDTH 1800
 #define WINDOW_HEIGHT 1000
 
-struct UserRequest
+struct UserDataListItem
 {
-    char userName[16];
+    int index;
+    Vector3 position;
+    Quat rotation;
 };
 
-struct UserResponse
+struct User
 {
-    char responseToUser[32];
+    int index;
+    Actor *actor;
 };
 
-struct InputControl
-{
-    float move;
-    float sideMove;
-    float rotateX;
-    float rotateY;
-};
-
-struct ApiFunctions
-{
-    NetworkApiCall userRequest;
-    NetworkApiCall userResponse;
-};
-
-class MessageReceiverUser : public MessageReceiver
+class MessageProcessorUser : public MessageProcessor
 {
 public:
-    MessageReceiverUser()
+    MessageProcessorUser()
     {
     }
 
     void receiveMessage(NetworkApiCall code, int size, const char *body) override final
     {
-        if (code == apiFunctions.userResponse)
+        if (code == apiFunctions->getDataResponse)
         {
-            std::string answer = std::string(body);
-            Red11::getLogger()->logConsole("Received: %s", answer.c_str());
+            const GetDataResponseData *response = reinterpret_cast<const GetDataResponseData *>(body);
+            mutex.lock();
+            memcpy(&position, response->pos, sizeof(response->pos));
+            memcpy(&rotation, response->rotation, sizeof(response->rotation));
+            index = response->index;
+            bPositionUpdated = true;
+            mutex.unlock();
+        }
+        else if (code == apiFunctions->setUserPosition)
+        {
+            int amountOfEntities = size / sizeof(UserDataListItem);
+            const UserDataListItem *list = reinterpret_cast<const UserDataListItem *>(body);
+            mutex.lock();
+            for (int i = 0; i < amountOfEntities; i++)
+            {
+                if (list[i].index != index)
+                    updateEntity(list[i].index, list[i].position, list[i].rotation);
+            }
+            mutex.unlock();
         }
     }
 
-    static ApiFunctions apiFunctions;
-};
-ApiFunctions MessageReceiverUser::apiFunctions;
+    static ApiFunctions *apiFunctions;
+    static Scene *scene;
+    static Mesh *userMesh;
+    static MaterialSimple *userMaterial;
 
-MessageReceiver *funcCreateConnectionUser()
+    inline bool isPositionUpdated()
+    {
+        mutex.lock();
+        bool bOut = bPositionUpdated;
+        bPositionUpdated = false;
+        mutex.unlock();
+        return bOut;
+    }
+
+    inline Vector3 getPosition() { return position; }
+    inline Quat getRotation() { return rotation; }
+
+protected:
+    void updateEntity(int index, const Vector3 position, const Quat rotation)
+    {
+        User *user = getUser(index);
+        user->actor->setPosition(position);
+        user->actor->setRotation(rotation);
+    }
+    User *getUser(int index)
+    {
+        for (auto &user : users)
+        {
+            if (user->index == index)
+                return user;
+        }
+        User *user = new User();
+        user->index = index;
+        user->actor = scene->createActor<Actor>(std::string("User"));
+        auto component = user->actor->createComponentMesh(userMesh);
+        component->setMaterial(userMaterial);
+        component->setScale(Vector3(0.4f, 0.4f, 0.4f));
+        users.push_back(user);
+        return user;
+    }
+
+    int index = 0;
+    Vector3 position = Vector3(0);
+    Quat rotation;
+    bool bPositionUpdated = false;
+    std::vector<User *> users;
+};
+ApiFunctions *MessageProcessorUser::apiFunctions;
+Scene *MessageProcessorUser::scene;
+Mesh *MessageProcessorUser::userMesh;
+MaterialSimple *MessageProcessorUser::userMaterial;
+
+MessageProcessor *funcCreateConnectionUser()
 {
-    return new MessageReceiverUser();
+    return new MessageProcessorUser();
 }
 
 APPMAIN
@@ -112,20 +167,17 @@ APPMAIN
     // Network
     const int port = 8081;
 
-    ApiFunctions apiFunctions;
     NetworkApi api = NetworkApi(0);
-    apiFunctions.userRequest = api.addFixedSizeApiCall(sizeof(UserRequest));
-    apiFunctions.userResponse = api.addFixedSizeApiCall(sizeof(UserResponse));
-    MessageReceiverUser::apiFunctions = apiFunctions;
+    ApiFunctions apiFunctions = ApiFunctions(api);
+    MessageProcessorUser::apiFunctions = &apiFunctions;
+    MessageProcessorUser::scene = scene;
+    MessageProcessorUser::userMesh = cubeMesh;
+    MessageProcessorUser::userMaterial = concreteMaterial;
 
-    MessageReceiverUser messageReceiver;
-    Client *client = Red11::createClient(api, messageReceiver, "127.0.0.1", port);
+    MessageProcessorUser messageProcessor;
+    Client *client = Red11::createClient(api, messageProcessor, "127.0.0.1", port);
     client->connectToServer();
-
-    UserRequest userRequestData;
-    memset(userRequestData.userName, 0, sizeof(UserRequest));
-    memcpy(userRequestData.userName, "John", strlen("John"));
-    client->request(apiFunctions.userRequest, &userRequestData, sizeof(UserRequest));
+    client->request(apiFunctions.getDataRequest, nullptr, 0);
 
     // UI
     UI *ui = new UI(window, renderer, font);
@@ -135,7 +187,6 @@ APPMAIN
     message->height.setAsPercentage(100.0f);
     message->fontSize.set(48);
     message->colorText.set(Color(0.9f, 0.9f, 0.9f, 1.0f));
-    message->letterSpacing.set(1.0f);
     message->setPaddingNumber(64.0f);
     message->text.set("Connecting to server ...");
 
@@ -179,10 +230,21 @@ APPMAIN
 
     DeltaCounter deltaCounter;
     float cameraRX = 0, cameraRY = 0;
-
+    float updTimer = 0.0f;
     while (!window->isCloseRequested())
     {
         float delta = deltaCounter.getDeltaFrameCounter();
+        updTimer += delta;
+        if (updTimer > 0.02f && client->getQueueSize() == 0)
+        {
+            SetPositionRequestData setPositionRequestData;
+            Vector3 position = camera->getPosition();
+            Quat rotation = camera->getRotation();
+            memcpy(&setPositionRequestData.pos, &position, sizeof(setPositionRequestData.pos));
+            memcpy(&setPositionRequestData.rotation, &rotation, sizeof(setPositionRequestData.rotation));
+            client->request(apiFunctions.setPositionRequest, &setPositionRequestData, sizeof(SetPositionRequestData));
+            updTimer = 0.0f;
+        }
 
         window->processWindow();
 
@@ -193,6 +255,12 @@ APPMAIN
         cameraComponent->setupAsPerspective(renderer->getViewWidth(), renderer->getViewHeight());
         renderer->clearBuffer(Color(0.4, 0.5, 0.8));
         renderer->renderCubeMap(cameraComponent->getCamera(), cameraComponent, hdr);
+
+        if (messageProcessor.isPositionUpdated())
+        {
+            camera->setPosition(messageProcessor.getPosition());
+            camera->setRotation(messageProcessor.getRotation());
+        }
 
         cameraRX += inputControl.rotateY * 0.0015f;
         cameraRY += inputControl.rotateX * 0.0015f;

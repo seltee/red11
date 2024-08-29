@@ -3,10 +3,10 @@
 
 #include "client.h"
 
-Client::Client(NetworkApi &networkApi, MessageReceiver &messageReceiver, const std::string &address, int port)
+Client::Client(NetworkApi &networkApi, MessageProcessor &messageProcessor, const std::string &address, int port)
 {
     this->networkApi = &networkApi;
-    this->messageReceiver = &messageReceiver;
+    this->messageProcessor = &messageProcessor;
     this->address = address;
     this->port = port;
 }

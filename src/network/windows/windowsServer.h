@@ -9,39 +9,22 @@
 #include <iostream>
 #include "network/server.h"
 #include "utils/utils.h"
+#include "windowsConnection.h"
 
-struct ConnectionData
-{
-    std::thread *clientThreadReceiver;
-    std::thread *clientThreadSender;
-    void *userData;
-    bool bIsConnected;
-};
-
-struct ServerControlData
+struct AcceptConnectionsControlData
 {
     std::vector<NetworkError> *errors;
-    std::vector<ConnectionData *> *connections;
-    FuncMessageReceiverCreator funcCreateMessageReceiver;
+    std::vector<Connection *> *connections;
+    FuncMessageProcessorCreator funcCreateMessageProcessor;
     std::mutex *mutex;
     NetworkApi *networkApi;
     SOCKET connectSocket;
 };
 
-struct ClientControlData
-{
-    std::vector<NetworkError> *errors;
-    MessageReceiver *messageReceiver;
-    std::mutex *mutex;
-    NetworkApi *networkApi;
-    SOCKET clientSocket;
-    bool isConnected;
-};
-
 class WindowsServer : public Server
 {
 public:
-    EXPORT WindowsServer(NetworkApi &networkApi, int port, FuncMessageReceiverCreator funcCreateMessageReceiver);
+    EXPORT WindowsServer(NetworkApi &networkApi, int port, FuncMessageProcessorCreator funcCreateMessageProcessor);
 
     EXPORT bool isRunning() override final;
     EXPORT void setupServer() override final;
@@ -51,6 +34,5 @@ protected:
     bool bIsRunning = false;
     SOCKET connectSocket;
     std::thread *connectThread = nullptr;
-    ServerControlData serverControlData;
-    std::vector<ConnectionData *> connections;
+    AcceptConnectionsControlData acceptConnectionsControlData;
 };

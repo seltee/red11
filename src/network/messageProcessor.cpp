@@ -1,6 +1,17 @@
-#include "messageReceiver.h"
+// SPDX-FileCopyrightText: 2024 Dmitrii Shashkov
+// SPDX-License-Identifier: MIT
 
-void MessageReceiver::sendRequest(NetworkApiCall apiCall, const void *data, unsigned int size)
+#include "messageProcessor.h"
+
+MessageProcessor::~MessageProcessor()
+{
+}
+
+void MessageProcessor::doAction(NetworkActionCode actionCode, const char *data, unsigned int size)
+{
+}
+
+void MessageProcessor::sendRequest(NetworkApiCall apiCall, const void *data, unsigned int size)
 {
     NetworkMessage *answer = new NetworkMessage(NetworkMessageType::SendMessage, apiCall, (const char *)data, size);
     mutex.lock();
@@ -8,9 +19,8 @@ void MessageReceiver::sendRequest(NetworkApiCall apiCall, const void *data, unsi
     mutex.unlock();
 }
 
-NetworkMessage *MessageReceiver::getNetworkMessage()
+NetworkMessage *MessageProcessor::getNetworkMessage()
 {
-
     mutex.lock();
     if (messages.size() > 0)
     {

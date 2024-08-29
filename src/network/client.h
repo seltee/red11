@@ -5,7 +5,7 @@
 #include "networkApi.h"
 #include "networkUtils.h"
 #include "networkMessage.h"
-#include "messageReceiver.h"
+#include "messageProcessor.h"
 #include "utils/utils.h"
 #include <vector>
 #include <mutex>
@@ -13,7 +13,7 @@
 class Client
 {
 public:
-    EXPORT Client(NetworkApi &networkApi, MessageReceiver &messageReceiver, const std::string &address, int port);
+    EXPORT Client(NetworkApi &networkApi, MessageProcessor &messageProcessor, const std::string &address, int port);
     EXPORT virtual ~Client();
 
     EXPORT void request(NetworkApiCall apiCall, const void *data, unsigned int size);
@@ -61,5 +61,5 @@ protected:
     std::mutex mutex;
     bool bServiceIsRunning = false;
 
-    MessageReceiver *messageReceiver;
+    MessageProcessor *messageProcessor;
 };

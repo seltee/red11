@@ -23,6 +23,19 @@ NetworkApiCall NetworkApi::addFixedSizeApiCall(int nSize)
     mutex.lock();
     NetworkApiDescriptor descriptor;
     descriptor.nSize = nSize;
+    descriptor.bIsVolatile = true;
+    apis.push_back(descriptor);
+    mutex.unlock();
+    return index;
+}
+
+NetworkApiCall NetworkApi::addVolatileSizeApiCall()
+{
+    int index = apis.size();
+    mutex.lock();
+    NetworkApiDescriptor descriptor;
+    descriptor.nSize = 0;
+    descriptor.bIsVolatile = true;
     apis.push_back(descriptor);
     mutex.unlock();
     return index;
