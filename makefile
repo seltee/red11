@@ -68,10 +68,11 @@ OBJ_FILES = ${OBJDIR}/red11.o \
 			${OBJDIR}/stb_image.o ${OBJDIR}/stb_vorbis.o ${OBJDIR}/stb_truetype.o ${OBJDIR}/convhull_3d.o \
 			${OBJDIR}/deltaCounter.o ${OBJDIR}/jobQueue.o ${OBJDIR}/logger.o ${OBJDIR}/hullCliping.o \
 			${OBJDIR}/loaderFBX.o ${OBJDIR}/FBXNode.o ${OBJDIR}/FBXAnimationStack.o ${OBJDIR}/FBXAnimationLayer.o ${OBJDIR}/FBXAnimationCurve.o ${OBJDIR}/FBXAnimationCurveNode.o \
-			${OBJDIR}/FBXDeform.o ${OBJDIR}/FBXGeometry.o ${OBJDIR}/FBXModel.o ${OBJDIR}/FBXAttribute.o
+			${OBJDIR}/FBXDeform.o ${OBJDIR}/FBXGeometry.o ${OBJDIR}/FBXModel.o ${OBJDIR}/FBXAttribute.o \
+			${OBJDIR}/networkMessage.o ${OBJDIR}/messageReceiver.o ${OBJDIR}/networkApi.o ${OBJDIR}/client.o ${OBJDIR}/server.o ${OBJDIR}/windowsClient.o ${OBJDIR}/windowsServer.o
 
 EXAMPLES = 	1-window${EXT} 2-textures${EXT} 3-animation${EXT} 4-bones${EXT} 5-physics${EXT} 6-collisionEvents${EXT} 7-ui${EXT} 8-resourceManagment${EXT} 9-customShaders${EXT} \
-			10-splines${EXT} demo-1${EXT}
+			10-splines${EXT} 11-networkServer${EXT} 12-networkClient${EXT} demo-1${EXT}
 
 all: engine examples
 
@@ -349,6 +350,30 @@ ${OBJDIR}/FBXModel.o: ${SRCDIR}/utils/FBX/FBXModel.cpp
 ${OBJDIR}/FBXAttribute.o: ${SRCDIR}/utils/FBX/FBXAttribute.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/FBXAttribute.o ${SRCDIR}/utils/FBX/FBXAttribute.cpp
 
+${OBJDIR}/networkMessage.o: ${SRCDIR}/network/networkMessage.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/networkMessage.o ${SRCDIR}/network/networkMessage.cpp
+
+${OBJDIR}/messageReceiver.o: ${SRCDIR}/network/messageReceiver.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/messageReceiver.o ${SRCDIR}/network/messageReceiver.cpp
+
+${OBJDIR}/networkApi.o: ${SRCDIR}/network/networkApi.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/networkApi.o ${SRCDIR}/network/networkApi.cpp
+
+${OBJDIR}/client.o: ${SRCDIR}/network/client.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/client.o ${SRCDIR}/network/client.cpp
+
+${OBJDIR}/server.o: ${SRCDIR}/network/server.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/server.o ${SRCDIR}/network/server.cpp
+
+${OBJDIR}/server.o: ${SRCDIR}/network/server.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/server.o ${SRCDIR}/network/server.cpp
+
+${OBJDIR}/windowsClient.o: ${SRCDIR}/network/windows/windowsClient.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/windowsClient.o ${SRCDIR}/network/windows/windowsClient.cpp
+
+${OBJDIR}/windowsServer.o: ${SRCDIR}/network/windows/windowsServer.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/windowsServer.o ${SRCDIR}/network/windows/windowsServer.cpp
+
 $(TARGET): ${OBJ_FILES}
 	$(LD) ${LFLAGS} ${LIBRARIES} ${OBJ_FILES} -o $(TARGET)
 	${COPY} ${TARGET} "${BINDIR}/${TARGET}"
@@ -423,6 +448,20 @@ ${OBJDIR}/10-splines.o: ${EXMDIR}/10-splines.cpp
 10-splines${EXT}: ${OBJDIR}/10-splines.o
 	$(LD) ${EFLAGS} ${OBJDIR}/10-splines.o -o 10-splines${EXT}
 	${MOVE} 10-splines${EXT} ${BINDIR}/10-splines${EXT}
+
+${OBJDIR}/11-networkServer.o: ${EXMDIR}/11-networkServer.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/11-networkServer.o ${EXMDIR}/11-networkServer.cpp
+
+11-networkServer${EXT}: ${OBJDIR}/11-networkServer.o
+	$(LD) ${EFLAGS} ${OBJDIR}/11-networkServer.o -o 11-networkServer${EXT}
+	${MOVE} 11-networkServer${EXT} ${BINDIR}/11-networkServer${EXT}
+
+${OBJDIR}/12-networkClient.o: ${EXMDIR}/12-networkClient.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/12-networkClient.o ${EXMDIR}/12-networkClient.cpp
+
+12-networkClient${EXT}: ${OBJDIR}/12-networkClient.o
+	$(LD) ${EFLAGS} ${OBJDIR}/12-networkClient.o -o 12-networkClient${EXT}
+	${MOVE} 12-networkClient${EXT} ${BINDIR}/12-networkClient${EXT}
 
 ${OBJDIR}/demo-1.o: ${EXMDIR}/demo-1.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/demo-1.o ${EXMDIR}/demo-1.cpp

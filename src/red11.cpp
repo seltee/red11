@@ -2,10 +2,12 @@
 // SPDX-License-Identifier: MIT
 
 #define _CRT_SECURE_NO_WARNINGS
-#include "red11.h"
+#include "network/windows/windowsServer.h"
+#include "network/windows/windowsClient.h"
 #include "renderer/directx9/directx9renderer.h"
 #include "window/windows/windowsWindow.h"
 #include "audio/windows/audioWindows.h"
+#include "red11.h"
 
 MeshBuilder *Red11::meshBuilder = nullptr;
 InputProvider *Red11::globalInputProvider = nullptr;
@@ -94,4 +96,14 @@ ResourceManager *Red11::getResourceManager()
     if (!resourceManager)
         resourceManager = new ResourceManager();
     return resourceManager;
+}
+
+Server *Red11::createServer(NetworkApi &networkApi, int port, FuncMessageReceiverCreator funcCreateMessageReceiver)
+{
+    return new WindowsServer(networkApi, port, funcCreateMessageReceiver);
+}
+
+Client *Red11::createClient(NetworkApi &networkApi, MessageReceiver &messageReceiver, const std::string &address, int port)
+{
+    return new WindowsClient(networkApi, messageReceiver, address, port);
 }

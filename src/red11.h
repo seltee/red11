@@ -31,6 +31,9 @@
 #include "data/soundFile.h"
 #include "data/font.h"
 #include "audio/audio.h"
+#include "network/networkApi.h"
+#include "network/server.h"
+#include "network/client.h"
 
 #ifdef WINDOWS_ONLY
 #include <shellscalingapi.h>
@@ -72,6 +75,10 @@ public:
     EXPORT static Audio *getAudio();
 
     EXPORT static ResourceManager *getResourceManager();
+
+    EXPORT static Server *createServer(NetworkApi &networkApi, int port, FuncMessageReceiverCreator funcCreateMessageReceiver);
+
+    EXPORT static Client *createClient(NetworkApi &networkApi, MessageReceiver &messageReceiver, const std::string &address, int port);
 
 protected:
     static MeshBuilder *meshBuilder;

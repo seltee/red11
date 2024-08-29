@@ -6,13 +6,16 @@
 
 Logger::Logger(const std::string &filePath)
 {
+    mutex.lock();
     pLogFile = fopen(filePath.c_str(), "w");
     if (pLogFile != nullptr)
         bIsFileWritingEnabled = true;
+    mutex.unlock();
 }
 
 void Logger::logFile(const char *format, ...)
 {
+    mutex.lock();
     if (bIsFileWritingEnabled)
     {
         va_list arg;
@@ -21,19 +24,23 @@ void Logger::logFile(const char *format, ...)
         std::string printString = formatString(format, arg);
         fputs((printString + "\n").c_str(), pLogFile);
     }
+    mutex.unlock();
 }
 
 void Logger::logConsole(const char *format, ...)
 {
+    mutex.lock();
     va_list arg;
     va_start(arg, format);
 
     std::string printString = formatString(format, arg);
     puts(printString.c_str());
+    mutex.unlock();
 }
 
 void Logger::logFileAndConsole(const char *format, ...)
 {
+    mutex.lock();
     va_list arg;
     va_start(arg, format);
 
@@ -43,6 +50,7 @@ void Logger::logFileAndConsole(const char *format, ...)
     {
         fputs((printString + "\n").c_str(), pLogFile);
     }
+    mutex.unlock();
 }
 
 std::string Logger::formatString(const char *format, va_list arg)

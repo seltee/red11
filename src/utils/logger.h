@@ -7,6 +7,7 @@
 #include <string>
 #include <stdio.h>
 #include <stdarg.h>
+#include <mutex>
 
 class Logger
 {
@@ -24,4 +25,6 @@ private:
 
     std::string formatString(const char *format, va_list arg);
     std::string convert(unsigned int num, int base);
+
+    std::mutex mutex;
 };
