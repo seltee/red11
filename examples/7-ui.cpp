@@ -91,6 +91,10 @@ public:
             if (data->button == UIButtonID::Help || data->button == UIButtonID::Modal)
                 inputControl->helpShown = !inputControl->helpShown;
         }
+        if (ev == UIEvent::NodeMarkedForRemoval)
+        {
+            Red11::getLogger()->logConsole("UI Node marked to be removed");
+        }
         if (ev == UIEvent::NodeBeingRemoved)
         {
             Red11::getLogger()->logConsole("UI Node is being removed");

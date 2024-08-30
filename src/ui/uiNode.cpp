@@ -65,6 +65,12 @@ void UINode::removeDestroyed()
     }
 }
 
+void UINode::onDestroy()
+{
+    if (uiOwner)
+        uiOwner->triggerEvent(UIEvent::NodeMarkedForRemoval, this);
+}
+
 void UINode::clearHover()
 {
     bHovered = false;
