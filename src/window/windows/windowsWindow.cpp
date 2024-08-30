@@ -183,8 +183,14 @@ WindowsWindow::WindowsWindow(const std::string &windowName, int width, int heigh
     int displayWidth = GetSystemMetrics(SM_CXSCREEN);
     int displayHeight = GetSystemMetrics(SM_CYSCREEN);
 
-    int positionX = state.bIsFullscreen ? 0 : (displayWidth - width) / 2;
-    int positionY = state.bIsFullscreen ? 0 : (displayHeight - height) / 2;
+    // Get the work area (area excluding the taskbar)
+    RECT workArea;
+    SystemParametersInfo(SPI_GETWORKAREA, 0, &workArea, 0);
+    int visibleWidth = workArea.right - workArea.left;
+    int visibleHeight = workArea.bottom - workArea.top;
+
+    int positionX = state.bIsFullscreen ? 0 : (visibleWidth - (width + getAdditionalWindowWidth())) / 2;
+    int positionY = state.bIsFullscreen ? 0 : (visibleHeight - (height + getAdditionalWindowHeight())) / 2;
     state.realWidth = state.bIsFullscreen ? displayWidth : width;
     state.realHeight = state.bIsFullscreen ? displayHeight : height;
 
@@ -262,8 +268,14 @@ void WindowsWindow::setFullscreen(bool fullscreenState)
 
         int displayWidth = GetSystemMetrics(SM_CXSCREEN);
         int displayHeight = GetSystemMetrics(SM_CYSCREEN);
-        int positionX = fullscreenState ? 0 : (displayWidth - state.requesedWidth) / 2;
-        int positionY = fullscreenState ? 0 : (displayHeight - state.requesedHeight) / 2;
+        // Get the work area (area excluding the taskbar)
+        RECT workArea;
+        SystemParametersInfo(SPI_GETWORKAREA, 0, &workArea, 0);
+        int visibleWidth = workArea.right - workArea.left;
+        int visibleHeight = workArea.bottom - workArea.top;
+
+        int positionX = fullscreenState ? 0 : (visibleWidth - state.requesedWidth) / 2;
+        int positionY = fullscreenState ? 0 : (visibleHeight - state.requesedHeight) / 2;
         int newRealWidth = state.bIsFullscreen ? displayWidth : state.requesedWidth + getAdditionalWindowWidth();
         int newRealHeight = state.bIsFullscreen ? displayHeight : state.requesedHeight + getAdditionalWindowHeight();
 
