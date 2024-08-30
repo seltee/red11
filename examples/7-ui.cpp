@@ -83,16 +83,17 @@ public:
     void processEvent(UIEvent ev, UINode *node) override final
     {
         UIUserData *data = (UIUserData *)node->userData;
-        if (!data)
-            return;
-
-        if (ev == UIEvent::Click)
+        if (ev == UIEvent::Click && data)
         {
             if (data->button == UIButtonID::AddBall)
                 inputControl->shoot = true;
 
             if (data->button == UIButtonID::Help || data->button == UIButtonID::Modal)
                 inputControl->helpShown = !inputControl->helpShown;
+        }
+        if (ev == UIEvent::NodeBeingRemoved)
+        {
+            Red11::getLogger()->logConsole("UI Node is being removed");
         }
     }
 
@@ -195,6 +196,9 @@ APPMAIN
     UI *ui = new UI(window, renderer, font);
     UIUserEventController *uiController = ui->createEventController<UIUserEventController>();
     uiController->setup(&inputControl);
+
+    UINode *deleteMe = ui->createUINodeChild<UINode>();
+    deleteMe->destroy();
 
     UINode *canvas = ui->createUINodeChild<UINode>();
     canvas->width.setAsPercentage(100.0f);

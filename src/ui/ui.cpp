@@ -15,7 +15,7 @@ const float fZShift = -0.5f;
 UI::UI(Window *window, Renderer *renderer, Font *defaultFont)
 {
     uiContext = new UIContext(window, renderer, defaultFont);
-    root = new UINode(nullptr);
+    root = new UINode(nullptr, this);
 
     inputProvider = Red11::getGlobalInputProvider();
     InputDescriptorList mouseClickList;

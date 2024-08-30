@@ -12,16 +12,18 @@
 
 // Note - percentage is 100.0f for full, not 1.0f
 
+class UI;
+
 class UINode : public UINodeDisplay, public Destroyable
 {
 public:
-    EXPORT UINode(UINode *parent);
+    EXPORT UINode(UINode *parent, UI *uiOwner);
     EXPORT virtual ~UINode();
 
     template <class T, typename std::enable_if<std::is_base_of<UINode, T>::value>::type * = nullptr>
     inline T *createUINodeChild(void *userData = nullptr)
     {
-        auto newNode = new T(this);
+        auto newNode = new T(this, uiOwner);
         newNode->userData = userData;
         prepareNewNode(newNode);
         return newNode;
@@ -165,4 +167,6 @@ protected:
     UINodeDisplay hover;
     // final style that will be calculated and shown
     UINodeDisplay style;
+
+    UI *uiOwner = nullptr;
 };

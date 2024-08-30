@@ -45,5 +45,6 @@ enum class UIEvent
     ClickOutside,
     ReleaseOutside,
     Enter,
-    Leave
+    Leave,
+    NodeBeingRemoved
 };

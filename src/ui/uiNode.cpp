@@ -2,10 +2,12 @@
 // SPDX-License-Identifier: MIT
 
 #include "uiNode.h"
+#include "ui.h"
 
-UINode::UINode(UINode *parent)
+UINode::UINode(UINode *parent, UI *uiOwner)
 {
     this->parent = parent;
+    this->uiOwner = uiOwner;
 }
 
 UINode::~UINode()
@@ -53,6 +55,8 @@ void UINode::removeDestroyed()
     {
         if ((*it)->isDestroyed())
         {
+            if (uiOwner)
+                uiOwner->triggerEvent(UIEvent::NodeBeingRemoved, this);
             delete (*it);
             it = children.erase(it);
         }
