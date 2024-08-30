@@ -24,6 +24,9 @@ matrix World : register(c0);
 matrix WorldViewProj : register(c4);
 matrix WorldInverseTranspose : register(c8);
 
+// Parameters, 0 - z multiplier, 1 - z shift
+float4 Parameters : register(c12);
+
 matrix LightsShadowMatricies[3] : register(c16);
 
 VS_Output main(VS_Input vin)
@@ -43,5 +46,7 @@ VS_Output main(VS_Input vin)
         shadowCoord.y = 1.0 - shadowCoord.y;
         vout.shadowCoord[i] = shadowCoord.xyz;
     }
+    vout.pos.z *= Parameters[0];
+    vout.pos.z += Parameters[1];
     return vout;
 }

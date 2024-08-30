@@ -772,9 +772,9 @@ void DirectX9Renderer::renderMeshDepthData(Camera *camera, QueuedMeshRenderData 
     }
     else
     {
+        setupMaterialDepthRender(mesh->material);
         if (mesh->material->getDisplay() == MaterialDisplay::SolidMask)
         {
-            setupMaterialDepthRender(mesh->material);
             if (mesh->material->getShaderDepth(RendererType::DirectX9))
                 mesh->material->getShaderDepth(RendererType::DirectX9)->use();
             else

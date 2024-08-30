@@ -36,6 +36,9 @@ void Directx9MaterialRenderData::setupForRender(Directx9data *dxData, bool bUseR
     data->useReflectionRadiance = bUseReflectionRadiance ? 1.0f : 0.0f;
     d3ddev->SetPixelShaderConstantF(12, (const float *)data, 3);
 
+    // === Setup vertex parameters data ===
+    d3ddev->SetVertexShaderConstantF(12, (const float *)pfVParameters, 1);
+
     // === Setup colors ===
     // Albedo Color
     d3ddev->SetPixelShaderConstantF(15, materialSimple->getAlbedoColor().getAsFloatArray(), 1);
@@ -84,6 +87,9 @@ void Directx9MaterialRenderData::setupForDepth(Directx9data *dxData)
     Directx9MaterialRenderData *materialRenderData = dxData->getMaterialRenderData(material);
     d3ddev->SetPixelShaderConstantF(12, (const float *)materialRenderData->getData(), 3);
 
+    // === Setup vertex parameters data ===
+    d3ddev->SetVertexShaderConstantF(12, (const float *)pfVParameters, 1);
+
     // === Setup colors ===
     // Albedo Color
     d3ddev->SetPixelShaderConstantF(15, materialSimple->getAlbedoColor().getAsFloatArray(), 1);
@@ -114,4 +120,9 @@ void Directx9MaterialRenderData::rebuildData()
     data.metallicValue = materialSimple->getMetallic();
     data.alphaValue = materialSimple->getAlpha();
     data.alphaHalfQuite = materialSimple->getDisplay() == MaterialDisplay::SolidMask ? 1.0f : 0.0f;
+
+    pfVParameters[0] = materialSimple->getZModifier();
+    pfVParameters[1] = materialSimple->getZShift();
+    pfVParameters[2] = 0.0f;
+    pfVParameters[3] = 0.0f;
 }

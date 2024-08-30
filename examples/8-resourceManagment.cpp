@@ -70,6 +70,7 @@ APPMAIN
     auto crateMaterial = new MaterialSimple(crateTexture);
     crateMaterial->setRoughness(0.7f);
     crateMaterial->setMetallic(0.2f);
+    crateMaterial->setZModifier(0.1f);
 
     // Meshes
     auto cubeMesh = Red11::getMeshBuilder()->createCube(0.1f);
@@ -162,7 +163,8 @@ APPMAIN
 
     DeltaCounter deltaCounter;
     float cameraRX = 0, cameraRY = 0;
-    float time = 0;
+    float fTime = 0;
+    float fTime2 = 0;
     bool s = false;
     bool s1 = false;
     bool s2 = false;
@@ -170,22 +172,24 @@ APPMAIN
     while (!window->isCloseRequested())
     {
         float delta = deltaCounter.getDeltaFrameCounter();
-
-        time += delta;
-        if (time > 1.0f && !s)
+        fTime2 += delta;
+        if (fTime2 > 0.2f)
+            fTime2 -= 0.2f;
+        fTime += delta;
+        if (fTime > 1.0f && !s)
         {
             s = true;
             boxComponent->destroy();
             boxComponent = nullptr;
         }
 
-        if (time > 2.0f && !s1)
+        if (fTime > 2.0f && !s1)
         {
             s1 = true;
             Red11::getResourceManager()->freeUnusedAll();
         }
 
-        if (time > 3.0f && !s2)
+        if (fTime > 3.0f && !s2)
         {
             s2 = true;
             Red11::getResourceManager()->freeUnusedAll();
@@ -195,10 +199,10 @@ APPMAIN
             Red11::getResourceManager()->freeUnusedAll();
         }
 
-        if (boxComponent)
-            boxComponent->setVisibility(!boxComponent->getVisibility());
-        else
-            objectContainer->setVisibility(!objectContainer->getVisibility());
+        //if (boxComponent)
+        //    boxComponent->setVisibility(fTime2 > 0.1f);
+        //else
+        //    objectContainer->setVisibility(!objectContainer->getVisibility());
 
         window->processWindow();
 

@@ -31,6 +31,7 @@ protected:
     LPDIRECT3DDEVICE9 d3ddev;
     Material *material;
     DX9Material data;
+    float pfVParameters[4];
     unsigned int lastUpdIndex = 0xffffffff;
 };
 

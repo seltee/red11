@@ -102,6 +102,7 @@ APPMAIN
     auto lightShadowComponent = lightShadowPresenter->createComponentMesh(cubeMesh);
     auto lightShadowMaterial = new MaterialSimple(lightSunComponent->getLight()->getShadowTexture(0));
     lightShadowMaterial->setAlbedoColor(Color(1.2f, 0, 0));
+    lightShadowMaterial->setZModifier(0.01f);
     lightShadowComponent->setMaterial(lightShadowMaterial);
     lightShadowComponent->setPosition(0.0f, 0.9f, -2.5f);
     lightShadowComponent->setScale(Vector3(4.0f, 4.0f, 4.0f));

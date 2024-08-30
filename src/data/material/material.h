@@ -56,6 +56,10 @@ public:
     inline Shader *getShaderShadow(RendererType renderType) { return shadowShader[(int)renderType]; }
     inline void setShaderShadowSkinned(Shader *shadowSkinnedShader) { this->shadowSkinnedShader[(int)shadowSkinnedShader->getType()] = shadowSkinnedShader; }
     inline Shader *getShaderShadowSkinned(RendererType renderType) { return shadowSkinnedShader[(int)renderType]; }
+    inline void setZModifier(float fZModifier) { this->fZModifier = fZModifier; }
+    inline float getZModifier() { return this->fZModifier; }
+    inline void setZShift(float fZShift) { this->fZShift = fZShift; }
+    inline float getZShift() { return this->fZShift; }
 
 protected:
     unsigned int getNextIndex();
@@ -75,4 +79,7 @@ protected:
     Shader *colorSkinnedShader[4] = {nullptr, nullptr, nullptr, nullptr};
     Shader *shadowShader[4] = {nullptr, nullptr, nullptr, nullptr};
     Shader *shadowSkinnedShader[4] = {nullptr, nullptr, nullptr, nullptr};
+
+    float fZModifier = 1.0f;
+    float fZShift = 0.0f;
 };

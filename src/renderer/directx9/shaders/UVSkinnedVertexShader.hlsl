@@ -20,6 +20,9 @@ struct VS_Output
 
 matrix ViewProj : register(c0);
 
+// Parameters, 0 - z multiplier, 1 - z shift
+float4 Parameters : register(c12);
+
 matrix LightsShadowMatricies[4] : register(c16);
 
 // 0 - 12 - matricies
@@ -60,5 +63,7 @@ VS_Output main(VS_Input vin)
         vout.shadowCoord[p] = shadowCoord.xyz;
     }
 
+    vout.pos.z *= Parameters[0];
+    vout.pos.z += Parameters[1];
     return vout;
 }
