@@ -109,28 +109,28 @@ void Light::rebuildShadowTextures()
         case LightShadowQuality::Low:
             numOfCascades = 1;
             bufferSize = 1024;
-            cascadeDistance = 2.6f;
+            cascadeDistance = 4.0f;
             break;
         case LightShadowQuality::Medium:
             bufferSize = 1024;
-            numOfCascades = 1;
-            cascadeDistance = 2.6f;
+            numOfCascades = 2;
+            cascadeDistance = 2.5f;
             break;
         case LightShadowQuality::High:
             bufferSize = 2048;
-            numOfCascades = 1;
-            cascadeDistance = 3.6f;
+            numOfCascades = 2;
+            cascadeDistance = 3.5f;
             break;
         case LightShadowQuality::Ultra:
             bufferSize = 2048;
-            numOfCascades = 1;
-            cascadeDistance = 3.6f;
+            numOfCascades = 2;
+            cascadeDistance = 3.5f;
             break;
         case LightShadowQuality::AmountOfValues:
         case LightShadowQuality::Maximum:
             bufferSize = 4096;
-            numOfCascades = 1;
-            cascadeDistance = 5.4f;
+            numOfCascades = 2;
+            cascadeDistance = 4.5f;
             break;
         }
     }

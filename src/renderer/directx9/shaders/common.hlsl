@@ -51,10 +51,14 @@ inline float ShadowCalculation(sampler2D shadowTexSampler, float3 fragPosLightSp
     if (shadow < 0.09)
         return 0;
     shadow /= 9.0;
-    float edgeX = min((0.5 - abs(projCoords.x - 0.5)) * 8.0, 1);
-    float edgeY = min((0.5 - abs(projCoords.y - 0.5)) * 8.0, 1);
-    float edge = min(edgeX, edgeY);
-    return shadow * edge;
+    return shadow;
+}
+
+inline float CalculateEdge(float2 projCoords)
+{
+    float edgeX = min((0.5 - abs(projCoords.x - 0.5)) * 12.0, 1);
+    float edgeY = min((0.5 - abs(projCoords.y - 0.5)) * 12.0, 1);
+    return min(edgeX, edgeY);
 }
 
 inline float ShadowCalculationL(sampler2D shadowTexSampler, float3 fragPosLightSpace, float bias)
@@ -74,7 +78,9 @@ inline float3 CaclLightWithShadow(
     float3 V,
     float3 worldPos,
     float3 shadowCoords,
-    float3 polygonNormal)
+    float3 shadowCoordsAdditional,
+    float3 polygonNormal,
+    float distance)
 {
     float type = light.type[0];
 
@@ -82,22 +88,22 @@ inline float3 CaclLightWithShadow(
     float isShadowsEnabled = light.type[1];
 
     float attenuation = 1.0f;
-    float shadow = 1.0f;
+    float shadow = 0.0f;
 
-    // Direction
-    if (type == 1.0f)
+    if (type == 1.0f || type == 4.0f)
     {
+        // Direction
         L = -light.normal.xyz;
     }
-    // Omni / Spot
-    if (type == 2.0f || type == 3.0f)
+    else if (type == 2.0f || type == 3.0f)
     {
+        // Omni / Spot
         L = light.position.xyz - worldPos;
-        float distance = length(L);
+        float lightDistance = length(L);
         L = normalize(L);
         attenuation = 1.0 / (light.type[3] +
-                             light.position[3] * distance +
-                             light.normal[3] * distance * distance);
+                             light.position[3] * lightDistance +
+                             light.normal[3] * lightDistance * lightDistance);
 
         // Spot attenuation
         if (type == 3.0f)
@@ -135,25 +141,48 @@ inline float3 CaclLightWithShadow(
     {
         if (type == 1.0f)
         {
+            // directional
             float bias = max(0.0012 * (1.0 - dot(polygonNormal, L)), 0.0001);
-            shadow = min(1.0 - ShadowCalculation(lightShadowTexSampler, shadowCoords, light.type[2], bias), 1);
+            shadow = ShadowCalculation(lightShadowTexSampler, shadowCoords, light.type[2], bias) * CalculateEdge(shadowCoords.xy);
         }
-        if (type == 3.0f)
+        else if (type == 4.0f)
         {
+            // directional cascaded
+            const float cascadeSplitStart = light.color[3];
+            const float cascadeSplitEnd = cascadeSplitStart + 0.2;
+            if (distance < cascadeSplitStart) // If in first cascade
+            {
+                float bias = max(0.0012 * (1.0 - dot(polygonNormal, L)), 0.0001);
+                shadow = ShadowCalculation(lightShadowTexSampler, shadowCoords, light.type[2], bias);
+            }
+            else if (distance > cascadeSplitEnd)
+            {
+                // Use second cascade
+                float bias = max(0.002 * (1.0 - dot(polygonNormal, L)), 0.0002);
+                shadow = ShadowCalculation(lightAdditionShadowTexSampler, shadowCoordsAdditional, light.type[2], bias) * CalculateEdge(shadowCoordsAdditional.xy);
+            }
+            else
+            {
+                // Use blending
+                float biasStart = max(0.0012 * (1.0 - dot(polygonNormal, L)), 0.0001);
+                float biasEnd = max(0.002 * (1.0 - dot(polygonNormal, L)), 0.0002);
+                float factor = max((distance - cascadeSplitStart), 0.0001) / (cascadeSplitEnd - cascadeSplitStart);
+                float blendStart = ShadowCalculation(lightShadowTexSampler, shadowCoords, light.type[2], biasStart);
+                float blendEnd = ShadowCalculation(lightAdditionShadowTexSampler, shadowCoordsAdditional, light.type[2], biasEnd);
+                shadow = lerp(blendStart, blendEnd, factor);
+            }
+        }
+        else if (type == 3.0f)
+        {
+            // spot
             float bias = max(0.01 * (1.0 - dot(polygonNormal, L)), 0.002);
             float mask = tex2D(lightAdditionShadowTexSampler, shadowCoords.xy).r;
-            shadow = (1.0 - ShadowCalculationL(lightShadowTexSampler, shadowCoords, bias)) * mask;
+            shadow = ShadowCalculation(lightShadowTexSampler, shadowCoords, light.type[2], bias) * CalculateEdge(shadowCoords.xy);
         }
     }
 
-    if (type > 0.1)
-    {
-        return (kD * diffuse + specular) * light.color.xyz * NdotL * attenuation * shadow;
-    }
-    else
-    {
-        return float3(0, 0, 0);
-    }
+    shadow = 1.0f - shadow;
+    return (kD * diffuse + specular) * light.color.xyz * NdotL * attenuation * shadow;
 }
 
 inline float3 CaclLight(
@@ -171,14 +200,14 @@ inline float3 CaclLight(
 
     float attenuation = 1.0f;
 
-    // Direction
-    if (type == 1.0f)
+    if (type == 1.0f || type == 4.0f)
     {
+        // Directional and directional with cascades
         L = -light.normal.xyz;
     }
-    // Omni / Spot
-    if (type == 2.0f || type == 3.0f)
+    else if (type == 2.0f || type == 3.0f)
     {
+        // Omni / Spot
         L = light.position.xyz - worldPos;
         float distance = length(L);
         L = normalize(L);

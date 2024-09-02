@@ -148,10 +148,10 @@ void DirectX9Renderer::renderMeshSkinned(Camera *camera, Mesh *mesh, std::vector
         return;
     Directx9MeshRenderData *meshData = data.getMeshRenderData(mesh);
 
-    // set bone matrices, base register is 32, so, 56 bone is availalbe
+    // set bone matrices, base register is 40, so, 54 bone is availalbe
     for (auto &bone : *bones)
     {
-        int reg = 32 + bone.deform->index * 4;
+        int reg = 40 + bone.deform->index * 4;
         if (reg >= 256)
             break;
         Matrix4 boneMatrix = *bone.model * bone.deform->getInvBindMatrix();
@@ -577,7 +577,7 @@ void DirectX9Renderer::setupLights(const Vector3 &objectPosition, float objectRa
 {
     // registers for lights:
     // 20 - 84 - light data
-    // 16 - 32 - vertex shadow light matricies
+    // 16 - 40 - vertex shadow light matricies
     // type, typeData, typeData, typeData
     // positionv3, xxx
     // normalv3, power
@@ -601,7 +601,7 @@ void DirectX9Renderer::setupLights(const Vector3 &objectPosition, float objectRa
     // Bonned meshed limited to 4 shadows per mesh
     int baseReg = 20;
     int shadowMatrixBaseReg = 16;
-    int shadowMatrixMaxReg = 28;
+    int shadowMatrixMaxReg = 40;
     int shadowTextureBaseReg = 10;
     DX9LightShaderStruct dxLight;
     memset(&dxLight, 0, sizeof(DX9LightShaderStruct));
@@ -610,6 +610,8 @@ void DirectX9Renderer::setupLights(const Vector3 &objectPosition, float objectRa
     {
         auto lightData = i < affectingLights.size() ? &affectingLights.at(i) : nullptr;
         auto light = lightData ? lightData->light : nullptr;
+        bool bIsCascaded = i <= 1;
+
         if (!light)
         {
             dxLight.type = 0.0f;
@@ -620,14 +622,16 @@ void DirectX9Renderer::setupLights(const Vector3 &objectPosition, float objectRa
             Color lightColor = light->getColor();
             Vector3 lightDirection = light->getNormal();
             bool castShadow = light->isShadowsEnabled() && (shadowMatrixBaseReg < shadowMatrixMaxReg);
+            int numOfCascades = bIsCascaded ? light->getNumOfCascades() : 1;
 
-            dxLight.type = 1.0f;
+            // 4 - cascaded directional, 1 - usual directional
+            dxLight.type = (numOfCascades > 1) ? 4.0f : 1.0f;
             dxLight.castShadow = castShadow ? 1.0f : 0.0f;
             dxLight.texelSize = light->getShadowTextureTexelSize();
             dxLight.attConstant = 1.0f;
             dxLight.attLinear = 1.0f;
             dxLight.attQuadratic = 1.0f;
-            dxLight.innerRadius = 1.0f;
+            dxLight.innerRadius = light->getCascadeDistance() * 0.35f;
 
             dxLight.normal[0] = lightDirection.x;
             dxLight.normal[1] = lightDirection.y;
@@ -641,15 +645,15 @@ void DirectX9Renderer::setupLights(const Vector3 &objectPosition, float objectRa
 
             if (castShadow)
             {
-                for (int c = 0; c < light->getNumOfCascades(); c++)
+                for (int c = 0; c < numOfCascades; c++)
                 {
                     Directx9TextureRenderData *cascade = data.getTextureRenderData(light->getShadowTexture(c));
                     if (cascade)
                     {
                         d3ddev->SetTexture(shadowTextureBaseReg + c, cascade->texture);
                     }
+                    d3ddev->SetVertexShaderConstantF(shadowMatrixBaseReg + c * 4, (const float *)value_ptr(light->getShadowViewProjectionMatrix(c)), 4);
                 }
-                d3ddev->SetVertexShaderConstantF(shadowMatrixBaseReg, (const float *)value_ptr(light->getShadowViewProjectionMatrix()), 4);
             }
         }
         else if (light->getType() == LightType::Omni)
@@ -717,11 +721,11 @@ void DirectX9Renderer::setupLights(const Vector3 &objectPosition, float objectRa
                     if (shadowMaskTexture)
                         d3ddev->SetTexture(shadowTextureBaseReg + 1, shadowMaskTexture->texture);
                 }
-                d3ddev->SetVertexShaderConstantF(shadowMatrixBaseReg, (const float *)value_ptr(light->getShadowViewProjectionMatrix()), 4);
+                d3ddev->SetVertexShaderConstantF(shadowMatrixBaseReg, (const float *)value_ptr(light->getShadowViewProjectionMatrix(0)), 4);
             }
         }
         baseReg += 4;
-        shadowMatrixBaseReg += 4;
+        shadowMatrixBaseReg += 8;
         shadowTextureBaseReg += 2;
     }
 }
@@ -850,7 +854,7 @@ void DirectX9Renderer::renderShadowBuffersDirectional(const Vector3 &cameraPosit
 
     for (int i = 0; i < light->getNumOfCascades(); i++)
     {
-        float cascadeSize = light->getCascadeDistance() * float(i + 1);
+        float cascadeSize = light->getCascadeDistance() * float(i * 3 + 1);
 
         Directx9TextureRenderData *cascade = data.getTextureRenderData(light->getShadowTexture(i));
         if (!cascade)
@@ -869,8 +873,8 @@ void DirectX9Renderer::renderShadowBuffersDirectional(const Vector3 &cameraPosit
         d3ddev->Clear(0, NULL, D3DCLEAR_ZBUFFER, D3DCOLOR_XRGB(0, 0, 0), 1.0f, 0);
 
         renderQueueLightDepthBuffer(&camera);
-        if (i == 0)
-            light->setShadowViewProjectionMatrix(glm::transpose(*camera.getProjectionMatrix() * *camera.getViewMatrix()));
+
+        light->setShadowViewProjectionMatrix(i, glm::transpose(*camera.getProjectionMatrix() * *camera.getViewMatrix()));
     }
 
     d3ddev->SetRenderTarget(0, originalRenderTarget);
@@ -909,7 +913,7 @@ void DirectX9Renderer::renderShadowBuffersSpot(Light *light)
 
     renderQueueLightDepthBuffer(&camera);
 
-    light->setShadowViewProjectionMatrix(glm::transpose(*camera.getProjectionMatrix() * *camera.getViewMatrix()));
+    light->setShadowViewProjectionMatrix(0, glm::transpose(*camera.getProjectionMatrix() * *camera.getViewMatrix()));
 
     d3ddev->SetRenderTarget(0, originalRenderTarget);
     d3ddev->SetDepthStencilSurface(originalDepthStencil);

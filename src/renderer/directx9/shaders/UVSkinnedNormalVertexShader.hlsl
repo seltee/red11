@@ -12,12 +12,12 @@ struct VS_Input
 struct VS_Output
 {
     float4 pos : POSITION;
-    float3 worldPos : TEXCOORD2;
-    float3 normal : TEXCOORD1;
-    float2 texCoord : TEXCOORD;
-    float3 tangent : TEXCOORD3;
-    float3 bitangent : TEXCOORD4;
-    float3 shadowCoord[3] : TEXCOORD5;
+    float3 tangent : TANGENT;
+    float3 normal : NORMAL;
+    float2 texCoord : TEXCOORD0;
+    float3 worldPos : TEXCOORD1;
+    float3 bitangent : TEXCOORD2;
+    float3 shadowCoord[5] : TEXCOORD3;
 };
 
 matrix ViewProj : register(c0);
@@ -25,11 +25,11 @@ matrix ViewProj : register(c0);
 // Parameters, 0 - z multiplier, 1 - z shift
 float4 Parameters : register(c12);
 
-matrix LightsShadowMatricies[4] : register(c16);
+// 16 - 40
+matrix LightsShadowMatricies[6] : register(c16);
 
-// 32 - 256 - bones data = 56 bones
-
-matrix BoneMatrices[56] : register(c32);
+// 40 - 256 - bones data = 54 bones
+matrix BoneMatrices[54] : register(c40);
 
 VS_Output main(VS_Input vin)
 {
@@ -54,12 +54,12 @@ VS_Output main(VS_Input vin)
     VS_Output vout;
 
     vout.pos = mul(position, ViewProj);
-    vout.worldPos = position;
+    vout.worldPos = position.xyz;
     vout.normal = normalize(normal);
     vout.tangent = normalize(tangent);
     vout.bitangent = normalize(bitangent);
     vout.texCoord = vin.texCoord;
-    for (int p = 0; p < 3; p++)
+    for (int p = 0; p < 5; p++)
     {
         float4 shadowCoord = mul(float4(vout.worldPos, 1.0), LightsShadowMatricies[p]);
         shadowCoord.xyz /= shadowCoord.w;

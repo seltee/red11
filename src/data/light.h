@@ -125,8 +125,8 @@ public:
     inline void setShadowMaskTexture(Texture *texture) { this->shadowMaskTexture = texture; }
     inline Texture *getShadowMaskTexture() { return shadowMaskTexture; };
 
-    inline void setShadowViewProjectionMatrix(const Matrix4 &mShadowViewProjection) { this->mShadowViewProjection = mShadowViewProjection; }
-    inline Matrix4 getShadowViewProjectionMatrix() { return mShadowViewProjection; }
+    inline void setShadowViewProjectionMatrix(int cascade, const Matrix4 &mShadowViewProjection) { this->mShadowViewProjection[cascade] = mShadowViewProjection; }
+    inline Matrix4 getShadowViewProjectionMatrix(int cascade) { return mShadowViewProjection[cascade]; }
 
 protected:
     LightType type;
@@ -148,7 +148,7 @@ protected:
     Attenuation attenuation;
     Color color;
 
-    Matrix4 mShadowViewProjection;
+    Matrix4 mShadowViewProjection[2];
 
     float radius;
     float innerRadius;

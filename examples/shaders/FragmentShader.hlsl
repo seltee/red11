@@ -56,15 +56,15 @@ float4 main(VS_Output pin) : SV_TARGET
 
     if (Lights[0].type[0] > 0.1)
         color += CaclLightWithShadow(
-            Lights[0], shadowTexSampler[0], shadowTexSampler[1], diffuse, metallic, roughness, N, V, pin.worldPos, pin.shadowCoord[0], N);
+            Lights[0], shadowTexSampler[0], shadowTexSampler[1], diffuse, metallic, roughness, N, V, pin.worldPos, pin.shadowCoord[0], pin.shadowCoord[1], N);
 
     if (Lights[1].type[0] > 0.1)
         color += CaclLightWithShadow(
-            Lights[1], shadowTexSampler[2], shadowTexSampler[3], diffuse, metallic, roughness, N, V, pin.worldPos, pin.shadowCoord[1], N);
+            Lights[1], shadowTexSampler[2], shadowTexSampler[3], diffuse, metallic, roughness, N, V, pin.worldPos, pin.shadowCoord[2], pin.shadowCoord[3], N);
 
     if (Lights[2].type[0] > 0.1)
         color += CaclLightWithShadow(
-            Lights[2], shadowTexSampler[4], shadowTexSampler[5], diffuse, metallic, roughness, N, V, pin.worldPos, pin.shadowCoord[2], N);
+            Lights[2], shadowTexSampler[4], shadowTexSampler[5], diffuse, metallic, roughness, N, V, pin.worldPos, pin.shadowCoord[4], pin.shadowCoord[5], N);
 
     if (Lights[3].type[0] > 0.1)
         color += CaclLight(Lights[3], diffuse, metallic, roughness, N, V, N);

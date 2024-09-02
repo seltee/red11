@@ -108,18 +108,18 @@ APPMAIN
     lightShadowComponent->setScale(Vector3(4.0f, 4.0f, 4.0f));
 
     // rotating lights
-    const int omniLightsAmount = 10;
+    const int omniLightsAmount = 12;
     Actor *omniActors[omniLightsAmount];
     for (int i = 0; i < omniLightsAmount; i++)
     {
         omniActors[i] = scene->createActor<Actor>(std::string("LightOmni_") + std::to_string(i));
-        Color color = Color(randf(20.0f, 60.0f), randf(20.0f, 60.0f), randf(20.0f, 60.0f));
+        Color color = Color(randf(6.0f, 22.0f), randf(6.0f, 22.0f), randf(6.0f, 22.0f));
         auto omniComponentBox = omniActors[i]->createComponentMesh(cubeMesh);
         auto omniMaterial = new MaterialSimple(Color(0, 0, 0), color);
         omniComponentBox->setMaterial(omniMaterial);
         omniComponentBox->setScale(0.3f);
         auto lightOmniComponent = omniActors[i]->createComponent<ComponentLight>();
-        lightOmniComponent->setupOmni(Attenuation(16.0f, 4.0f, 40.0f), color);
+        lightOmniComponent->setupOmni(Attenuation(8.0f, 4.0f, 5.0f), color);
     }
 
     // Camera

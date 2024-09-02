@@ -15,11 +15,8 @@ struct VS_Output
 
 matrix ViewProj : register(c0);
 
-// 0 - 12 - matricies
-// 16 - 32 - light shadow matricies
-// 32 - 256 - bones data = 56 bones
-
-matrix BoneMatrices[56] : register(c32);
+// 40 - 256 - bones data = 54 bones
+matrix BoneMatrices[54] : register(c40);
 
 VS_Output main(VS_Input vin)
 {

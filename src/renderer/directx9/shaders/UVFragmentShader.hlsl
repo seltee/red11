@@ -11,15 +11,16 @@ sampler2D emptyTexSampler : register(s7);
 
 sampler2D radianceTexSampler : register(s8);
 sampler2D reflectionTexSampler : register(s9);
+
 sampler2D shadowTexSampler[6] : register(s10);
 
 struct VS_Output
 {
     float4 pos : POSITION;
-    float3 worldPos : TEXCOORD2;
-    float3 normal : TEXCOORD1;
-    float2 texCoord : TEXCOORD;
-    float3 shadowCoord[3] : TEXCOORD3;
+    float3 normal : Normal;
+    float2 texCoord : TEXCOORD0;
+    float3 worldPos : TEXCOORD1;
+    float3 shadowCoord[6] : TEXCOORD2;
 };
 
 // useAlbedoTexture, useAlphaTexture, useNormalTexture, useMetallicTexture;
@@ -49,8 +50,9 @@ float4 main(VS_Output pin) : SV_TARGET
     float ao = MaterialData2[1] ? tex2D(aoTexSampler, pin.texCoord).r : 1.0;
 
     float3 N = normalize(pin.normal);
-    float3 V = normalize(CameraPosition.xyz - pin.worldPos.xyz);
-    float3 H, F, L;
+    float3 worldDifference = CameraPosition.xyz - pin.worldPos;
+    float distance = length(worldDifference);
+    float3 V = normalize(worldDifference);
 
     float3 ambientColor = AmbientLightColor.rgb;
     if (MaterialData2[3])
@@ -62,15 +64,15 @@ float4 main(VS_Output pin) : SV_TARGET
 
     if (Lights[0].type[0] > 0.1)
         color += CaclLightWithShadow(
-            Lights[0], shadowTexSampler[0], shadowTexSampler[1], diffuse, metallic, roughness, N, V, pin.worldPos, pin.shadowCoord[0], N);
+            Lights[0], shadowTexSampler[0], shadowTexSampler[1], diffuse, metallic, roughness, N, V, pin.worldPos, pin.shadowCoord[0], pin.shadowCoord[1], N, distance);
 
     if (Lights[1].type[0] > 0.1)
         color += CaclLightWithShadow(
-            Lights[1], shadowTexSampler[2], shadowTexSampler[3], diffuse, metallic, roughness, N, V, pin.worldPos, pin.shadowCoord[1], N);
+            Lights[1], shadowTexSampler[2], shadowTexSampler[3], diffuse, metallic, roughness, N, V, pin.worldPos, pin.shadowCoord[2], pin.shadowCoord[3], N, distance);
 
     if (Lights[2].type[0] > 0.1)
         color += CaclLightWithShadow(
-            Lights[2], shadowTexSampler[4], shadowTexSampler[5], diffuse, metallic, roughness, N, V, pin.worldPos, pin.shadowCoord[2], N);
+            Lights[2], shadowTexSampler[4], shadowTexSampler[5], diffuse, metallic, roughness, N, V, pin.worldPos, pin.shadowCoord[4], pin.shadowCoord[5], N, distance);
 
     if (Lights[3].type[0] > 0.1)
         color += CaclLight(Lights[3], diffuse, metallic, roughness, N, V, N);
