@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 
 #pragma once
-
+#include "utils/utils.h"
 #include <vector>
 #include <stdio.h>
 
@@ -23,15 +23,16 @@ struct FBXNodeRecordHeader
 class FBXNode
 {
 public:
-    FBXNode(int level, FILE *file);
+    EXPORT FBXNode(int level, FILE *file);
+    EXPORT ~FBXNode();
 
-    void process();
-    void readHead();
-    void readValues();
-    void print();
-    bool isName(const char *name);
-    FBXNode *findNode(const char *name);
-    bool doSkip(const char *name);
+    EXPORT void process();
+    EXPORT void readHead();
+    EXPORT void readValues();
+    EXPORT void print();
+    EXPORT bool isName(const char *name);
+    EXPORT FBXNode *findNode(const char *name);
+    EXPORT bool doSkip(const char *name);
 
     std::vector<FBXNode *> children;
 

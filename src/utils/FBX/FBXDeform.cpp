@@ -41,6 +41,12 @@ FBXDeform::FBXDeform(FBXNode *node)
     }
 }
 
+FBXDeform::~FBXDeform()
+{
+    if (this->weights)
+        delete[] this->weights;
+}
+
 bool FBXDeform::hasDeformer(FBXDeform *deform)
 {
     for (auto &it : children)
@@ -85,10 +91,6 @@ void FBXDeform::setParent(FBXDeform *parent)
 }
 
 /*
-
-
-
-
 - Deformer
 Deformer
  Deformer

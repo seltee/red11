@@ -51,18 +51,38 @@ MeshObject *MeshObject::clone()
 
 void MeshObject::setVertices(const Vector3 *list, int amount, const Matrix4 &transformation)
 {
-    this->vertices = new Vector3[amount];
-    this->verticesAmount = amount;
+    if (this->vertices)
+        delete[] this->vertices;
+    this->vertices = nullptr;
 
-    for (int i = 0; i < amount; i++)
-        this->vertices[i] = Vector3(transformation * Vector4(list[i], 1.0f));
+    if (amount)
+    {
+        this->vertices = new Vector3[amount];
+        this->verticesAmount = amount;
+
+        for (int i = 0; i < amount; i++)
+            this->vertices[i] = Vector3(transformation * Vector4(list[i], 1.0f));
+    }
 }
 
 void MeshObject::setVertices(const VertexDataUV *list, int amount, const Matrix4 &transformation)
 {
-    this->vertices = new Vector3[amount];
-    this->verticesAmount = amount;
+    if (this->vertices)
+        delete[] this->vertices;
+    this->vertices = nullptr;
 
-    for (int i = 0; i < amount; i++)
-        this->vertices[i] = Vector3(transformation * Vector4(list[i].position, 1.0f));
+    if (amount)
+    {
+        this->vertices = new Vector3[amount];
+        this->verticesAmount = amount;
+
+        for (int i = 0; i < amount; i++)
+            this->vertices[i] = Vector3(transformation * Vector4(list[i].position, 1.0f));
+    }
+}
+
+MeshObject::~MeshObject()
+{
+    if (this->vertices)
+        delete[] this->vertices;
 }

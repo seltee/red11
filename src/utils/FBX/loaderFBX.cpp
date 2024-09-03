@@ -419,6 +419,25 @@ bool LoaderFBX::loadFBXFile(std::string path, std::vector<MeshObject *> *meshObj
         }
     }
 
+    for (auto &item : models)
+        delete item;
+    for (auto &item : animStacks)
+        delete item;
+    for (auto &item : animLayers)
+        delete item;
+    for (auto &item : animCurveNodes)
+        delete item;
+    for (auto &item : animCurves)
+        delete item;
+    for (auto &item : deforms)
+        delete item;
+    for (auto &item : geometries)
+        delete item;
+    for (auto &item : attributes)
+        delete item;
+    for (auto &item : nodes)
+        delete item;
+
     return true;
 }
 

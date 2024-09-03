@@ -10,6 +10,12 @@ FBXNode::FBXNode(int level, FILE *file)
     this->file = file;
 }
 
+FBXNode::~FBXNode()
+{
+    for (auto &child : children)
+        delete child;
+}
+
 void FBXNode::process()
 {
     readHead();

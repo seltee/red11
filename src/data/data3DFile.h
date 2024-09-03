@@ -17,7 +17,11 @@
 class Data3DFile
 {
 public:
+    // if bLoadMeshData is false only animations will be loaded
     EXPORT Data3DFile(const std::string &path, bool bLoadMeshData = true);
+
+    // if bDestroyMesh will be true mesh returned with getAsMesh will be destroyed together with meshObjectList and animationsList
+    EXPORT void destroy(bool bDestroyMeshData = false);
 
     EXPORT Mesh *getAsMesh();
     EXPORT Spline *getSplineByName(const std::string &name, SplineInterpolation interpolation = SplineInterpolation::Linear, bool bIsLooped = false);
@@ -32,6 +36,8 @@ public:
     EXPORT void freeCache();
 
 protected:
+    ~Data3DFile();
+
     std::vector<MeshObject *> meshObjectList;
     std::vector<Animation *> animationsList;
     Mesh *mesh = nullptr;

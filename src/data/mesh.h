@@ -111,6 +111,8 @@ public:
     Mesh(VertexDataType type, void *verticies, int vLength, PolygonTriPoints *polygons, int pLength, const Matrix4 *transformation = nullptr);
     virtual ~Mesh();
 
+    inline void destroy() { delete this; }
+
     void addDeform(Deform *deform);
     inline Deform *getDeformByName(std::string &name)
     {

@@ -120,6 +120,17 @@ APPMAIN
         camera->setPosition(0, 0.2, 0);
     }
 
+    // test destruction
+    for (int i = 0; i < 100; i++)
+    {
+        auto manWalkFileData = new Data3DFile("./data/man_walk.fbx");
+        manWalkFileData->load();
+        manWalkFileData->destroy(true);
+        manWalkFileData = new Data3DFile("./data/man_walk.fbx", false);
+        manWalkFileData->load();
+        manWalkFileData->destroy(true);
+    }
+
     InputControl inputControl;
     memset(&inputControl, 0, sizeof(InputControl));
 
@@ -198,11 +209,6 @@ APPMAIN
             boxComponent->setPosition(randf(-3.0f, 3.0f), 0.8f, randf(-3.0f, 3.0f));
             Red11::getResourceManager()->freeUnusedAll();
         }
-
-        //if (boxComponent)
-        //    boxComponent->setVisibility(fTime2 > 0.1f);
-        //else
-        //    objectContainer->setVisibility(!objectContainer->getVisibility());
 
         window->processWindow();
 

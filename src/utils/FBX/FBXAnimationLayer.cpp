@@ -11,6 +11,10 @@ FBXAnimationLayer::FBXAnimationLayer(FBXNode *node)
     name = std::string(charName);
 }
 
+FBXAnimationLayer::~FBXAnimationLayer()
+{
+}
+
 std::string targetAnimationName;
 
 void FBXAnimationLayer::linkCurveNode(FBXAnimationCurveNode *node)

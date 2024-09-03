@@ -44,6 +44,10 @@ FBXAnimationCurveNode::FBXAnimationCurveNode(FBXNode *node)
     }
 }
 
+FBXAnimationCurveNode::~FBXAnimationCurveNode()
+{
+}
+
 void FBXAnimationCurveNode::linkCurve(FBXAnimationCurve *curve, FBXNode *node)
 {
     const char *targetName = node->numProperties >= 4 && node->bindedData.at(3).type == 'S' ? reinterpret_cast<char *>(node->bindedData.at(3).data) : nullptr;

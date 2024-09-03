@@ -34,6 +34,8 @@ class FBXAnimationCurveNode
 {
 public:
     EXPORT FBXAnimationCurveNode(FBXNode *node);
+    EXPORT ~FBXAnimationCurveNode();
+
     EXPORT void linkCurve(FBXAnimationCurve *curve, FBXNode *node);
     EXPORT void addAffectedModel(FBXModel *model);
     EXPORT const char *getTypeName();

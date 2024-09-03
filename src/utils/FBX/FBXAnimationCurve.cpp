@@ -47,6 +47,14 @@ FBXAnimationCurve::FBXAnimationCurve(FBXNode *node)
     }
 }
 
+FBXAnimationCurve::~FBXAnimationCurve()
+{
+    if (refs)
+        delete[] refs;
+    if (keys)
+        delete[] keys;
+}
+
 /*
 Animation Curve
  AnimationCurve

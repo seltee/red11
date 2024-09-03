@@ -11,7 +11,9 @@
 class Animation
 {
 public:
-    EXPORT Animation(const std::string name);
+    EXPORT Animation(const std::string &name);
+
+    inline void destroy() { delete this; };
 
     EXPORT AnimationTarget *getAnimationTarget(const std::string &targetName);
     EXPORT AnimationTarget *createAnimationTarget(const std::string &targetName);
@@ -26,6 +28,8 @@ public:
     inline std::string getName() { return name; }
 
 protected:
+    EXPORT ~Animation();
+
     std::string name;
     std::vector<AnimationTarget *> targets;
     float timeLength = 0.0f;

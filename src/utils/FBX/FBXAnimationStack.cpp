@@ -32,6 +32,10 @@ FBXAnimationStack::FBXAnimationStack(FBXNode *node)
     }
 }
 
+FBXAnimationStack::~FBXAnimationStack()
+{
+}
+
 void FBXAnimationStack::linkLayer(FBXAnimationLayer *layer)
 {
     layers.push_back(layer);

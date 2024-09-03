@@ -3,16 +3,16 @@
 
 #include "animation.h"
 
-Animation::Animation(const std::string name)
+Animation::Animation(const std::string &name)
 {
     this->name = name;
 }
 
-AnimationTarget *Animation::getAnimationTarget(const std::string &name)
+AnimationTarget *Animation::getAnimationTarget(const std::string &targetName)
 {
     for (auto &target : targets)
     {
-        if (target->isName(name))
+        if (target->isName(targetName))
             return target;
     }
     return nullptr;
@@ -61,5 +61,13 @@ void Animation::recalcAnimationLength()
     for (auto &target : targets)
     {
         timeLength = fmaxf(target->getAnimationTimeLength(), timeLength);
+    }
+}
+
+Animation::~Animation()
+{
+    for (auto &target : targets)
+    {
+        delete target;
     }
 }

@@ -19,6 +19,7 @@ class FBXDeform
 {
 public:
     FBXDeform(FBXNode *node);
+    ~FBXDeform();
 
     bool hasDeformer(FBXDeform *deform);
 

@@ -11,6 +11,7 @@ class FBXAnimationLayer
 {
 public:
     FBXAnimationLayer(FBXNode *node);
+    ~FBXAnimationLayer();
 
     void linkCurveNode(FBXAnimationCurveNode *node);
 

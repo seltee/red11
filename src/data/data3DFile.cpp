@@ -11,6 +11,19 @@ Data3DFile::Data3DFile(const std::string &path, bool bLoadMeshData)
     this->bLoadMeshData = bLoadMeshData;
 }
 
+void Data3DFile::destroy(bool bDestroyMeshData)
+{
+    if (bDestroyMeshData)
+    {
+        if (mesh)
+            mesh->destroy();
+        for (auto &item : meshObjectList)
+            item->destroy();
+        for (auto &item : animationsList)
+            item->destroy();
+    }
+}
+
 Mesh *Data3DFile::getAsMesh()
 {
     if (!bLoaded)
@@ -106,5 +119,9 @@ void Data3DFile::load()
 }
 
 void Data3DFile::freeCache()
+{
+}
+
+Data3DFile::~Data3DFile()
 {
 }

@@ -13,6 +13,7 @@ class FBXAnimationStack
 {
 public:
     FBXAnimationStack(FBXNode *node);
+    ~FBXAnimationStack();
 
     void linkLayer(FBXAnimationLayer *layer);
 

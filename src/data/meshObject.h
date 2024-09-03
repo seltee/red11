@@ -16,6 +16,9 @@ public:
     EXPORT void setParent(MeshObject *parent);
     EXPORT void setEntityParent(Entity *entityParent);
 
+    // Mesh won't be deleted
+    inline void destroy() { delete this; };
+
     // generates new mesh
     // mark it temporary if you're going to process it and delete it
     // note: garbage collector may remove temporary meshes on it's own between game cycles
@@ -27,6 +30,7 @@ public:
 
     EXPORT void setVertices(const Vector3 *list, int amount, const Matrix4 &transformation);
     EXPORT void setVertices(const VertexDataUV *list, int amount, const Matrix4 &transformation);
+
     inline const Vector3 *getVertices() const { return vertices; }
     inline int getVerticesAmount() const { return verticesAmount; }
 
@@ -40,6 +44,8 @@ public:
     inline unsigned int getIndex() { return index; }
 
 protected:
+    EXPORT ~MeshObject();
+
     Mesh *mesh = nullptr;
     MeshObject *parent = nullptr;
 

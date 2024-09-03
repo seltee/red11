@@ -18,6 +18,7 @@ class FBXAnimationCurve
 {
 public:
     EXPORT FBXAnimationCurve(FBXNode *node);
+    EXPORT ~FBXAnimationCurve();
 
     unsigned long long id = 0;
     unsigned int keyVer = 0;
