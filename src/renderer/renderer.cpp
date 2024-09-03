@@ -6,9 +6,10 @@
 
 std::vector<Renderer *> Renderer::renderers;
 
-Renderer::Renderer(Window *window)
+Renderer::Renderer(Window *window, AntialiasingMethod antialiasingMethod)
 {
     this->window = window;
+    this->antialiasingMethod = antialiasingMethod;
     viewWidth = window->getWidth();
     viewHeight = window->getHeight();
 
@@ -38,6 +39,21 @@ void Renderer::queueMesh(Mesh *mesh, Material *material, const Matrix4 &model)
         this->queueMesh(mesh, material, &matrixStore[lastMatrixStore]);
         lastMatrixStore++;
     }
+}
+
+std::vector<AntialiasingMethod> Renderer::getListOfAvailableAntialiasingMethods()
+{
+    std::vector<AntialiasingMethod> list;
+    list.push_back(AntialiasingMethod::None);
+    if (isAntialiasingMethodAvailable(AntialiasingMethod::Multisample2))
+        list.push_back(AntialiasingMethod::Multisample2);
+    if (isAntialiasingMethodAvailable(AntialiasingMethod::Multisample4))
+        list.push_back(AntialiasingMethod::Multisample4);
+    if (isAntialiasingMethodAvailable(AntialiasingMethod::Multisample8))
+        list.push_back(AntialiasingMethod::Multisample8);
+    if (isAntialiasingMethodAvailable(AntialiasingMethod::Multisample16))
+        list.push_back(AntialiasingMethod::Multisample16);
+    return list;
 }
 
 void Renderer::removeFromAllTextureByIndex(unsigned int index)

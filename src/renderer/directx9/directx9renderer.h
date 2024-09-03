@@ -43,7 +43,7 @@
 class DirectX9Renderer : public Renderer
 {
 public:
-    EXPORT DirectX9Renderer(Window *window, bool bVSync);
+    EXPORT DirectX9Renderer(Window *window, AntialiasingMethod antialiasingMethod, bool bVSync);
 
     EXPORT RendererType getType() override final;
 
@@ -68,6 +68,9 @@ public:
 
     EXPORT void setAmbientLight(const Color &ambientColor) override final;
 
+    EXPORT bool isAntialiasingMethodAvailable(AntialiasingMethod method) override final;
+    EXPORT bool setAntialiasingMethod(AntialiasingMethod method) override final;
+
     EXPORT void present() override final;
 
     EXPORT void removeTextureByIndex(unsigned int index) override;
@@ -79,8 +82,10 @@ public:
     inline float *getShaderEngineDataPtr() { return engineData; }
 
 protected:
-    void initD3D(HWND hWnd, bool bIsFullscreen, int width, int height, bool bVSync); // sets up and initializes Direct3D
+    void initD3D(HWND hWnd, bool bIsFullscreen, int width, int height); // sets up and initializes Direct3D
     void resizeD3D(int width, int height);
+    void recreateDevice();
+    D3DMULTISAMPLE_TYPE translateAntialiasingType(AntialiasingMethod method);
     void renderQueueDepthBuffer(Camera *camera);
     void renderQueueLightDepthBuffer(Camera *camera);
     void renderQueueDepthEqual(const Vector3 &cameraPosition, Camera *camera);
@@ -176,6 +181,9 @@ protected:
     Texture *ambientTexture = nullptr;
 
     bool bUseRadianceReflection = false;
+    bool bVSync = false;
+
+    Window *window;
 };
 
 #endif

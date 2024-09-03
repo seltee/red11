@@ -23,6 +23,10 @@ public:
     Directx9data();
     ~Directx9data();
 
+    // Free queues, release all cached dx9 data
+    // Used before reinitializing 3d
+    void killAll();
+
     inline void addMesh(Mesh *mesh, Material *material, const Matrix4 *model)
     {
         if (queueCurrentMesh < MAX_QUEUE_MESH_COUNT && mesh)

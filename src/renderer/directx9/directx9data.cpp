@@ -19,6 +19,29 @@ Directx9data::~Directx9data()
     printf("TODO: Destroy all data in dx9data\n");
 }
 
+void Directx9data::killAll()
+{
+    clearQueue();
+    for (int i = 0; i < MAX_ELEMENT_INDEX; i++)
+    {
+        if (meshRenderData[i])
+        {
+            delete meshRenderData[i];
+            meshRenderData[i] = nullptr;
+        }
+        if (textureRenderData[i])
+        {
+            delete textureRenderData[i];
+            textureRenderData[i] = nullptr;
+        }
+        if (materialRenderData[i])
+        {
+            delete materialRenderData[i];
+            materialRenderData[i] = nullptr;
+        }
+    }
+}
+
 Directx9MeshRenderData *Directx9data::getMeshRenderData(Mesh *mesh)
 {
     if (!mesh)

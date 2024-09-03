@@ -9,10 +9,16 @@
 
 const Color defaultAmbientColor = Color(1.0f, 1.0f, 1.0f, 1.0f);
 
-DirectX9Renderer::DirectX9Renderer(Window *window, bool bVSync) : Renderer(window)
+DirectX9Renderer::DirectX9Renderer(Window *window, AntialiasingMethod antialiasingMethod, bool bVSync) : Renderer(window, antialiasingMethod)
 {
-    WindowsWindow *winWindow = (WindowsWindow *)window;
-    initD3D(winWindow->getHwnd(), false, window->getWidth(), window->getHeight(), bVSync);
+    this->window = window;
+    this->bVSync = bVSync;
+
+    // create the Direct3D interface
+    d3d = Direct3DCreate9(D3D_SDK_VERSION);
+
+    // init 3d
+    initD3D(reinterpret_cast<WindowsWindow *>(window)->getHwnd(), false, window->getWidth(), window->getHeight());
 }
 
 RendererType DirectX9Renderer::getType()
@@ -307,6 +313,25 @@ void DirectX9Renderer::setAmbientLight(const Color &ambientColor)
     this->ambientColor = ambientColor;
 }
 
+bool DirectX9Renderer::isAntialiasingMethodAvailable(AntialiasingMethod method)
+{
+    if (method == AntialiasingMethod::None)
+        return true;
+    unsigned long qualityLevels;
+    if (d3d->CheckDeviceMultiSampleType(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, TRUE, translateAntialiasingType(method), &qualityLevels) >= 0)
+        return true;
+    return false;
+}
+
+bool DirectX9Renderer::setAntialiasingMethod(AntialiasingMethod method)
+{
+    if (!isAntialiasingMethodAvailable(method))
+        return false;
+    this->antialiasingMethod = method;
+    recreateDevice();
+    return true;
+}
+
 void DirectX9Renderer::present()
 {
     d3ddev->Present(NULL, NULL, NULL, NULL);
@@ -333,10 +358,8 @@ DirectX9Shader *DirectX9Renderer::createDirectX9Shader(const std::string &name, 
 }
 
 // function prototypes
-void DirectX9Renderer::initD3D(HWND hWnd, bool bIsFullscreen, int width, int height, bool bVSync)
+void DirectX9Renderer::initD3D(HWND hWnd, bool bIsFullscreen, int width, int height)
 {
-    d3d = Direct3DCreate9(D3D_SDK_VERSION); // create the Direct3D interface
-
     int displayWidth = GetSystemMetrics(SM_CXSCREEN);
     int displayHeight = GetSystemMetrics(SM_CYSCREEN);
 
@@ -351,6 +374,17 @@ void DirectX9Renderer::initD3D(HWND hWnd, bool bIsFullscreen, int width, int hei
     d3dpp.EnableAutoDepthStencil = true;
     d3dpp.AutoDepthStencilFormat = D3DFMT_D24S8;
     d3dpp.PresentationInterval = bVSync ? D3DPRESENT_INTERVAL_DEFAULT : D3DPRESENT_INTERVAL_IMMEDIATE;
+
+    if (antialiasingMethod != AntialiasingMethod::None)
+    {
+        // get quality
+        unsigned long qualityLevels;
+        d3d->CheckDeviceMultiSampleType(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, TRUE, translateAntialiasingType(antialiasingMethod), &qualityLevels);
+
+        d3dpp.MultiSampleType = translateAntialiasingType(antialiasingMethod);
+        d3dpp.MultiSampleQuality = qualityLevels - 1;
+    }
+
     d3d->CreateDevice(D3DADAPTER_DEFAULT,
                       D3DDEVTYPE_HAL,
                       hWnd,
@@ -437,6 +471,36 @@ void DirectX9Renderer::resizeD3D(int width, int height)
 {
     this->viewWidth = width;
     this->viewHeight = height;
+}
+
+void DirectX9Renderer::recreateDevice()
+{
+    if (d3ddev)
+    {
+        d3ddev->Release();
+        d3ddev = nullptr;
+    }
+
+    data.killAll();
+    initD3D(reinterpret_cast<WindowsWindow *>(window)->getHwnd(), false, window->getWidth(), window->getHeight());
+}
+
+D3DMULTISAMPLE_TYPE DirectX9Renderer::translateAntialiasingType(AntialiasingMethod method)
+{
+    switch (method)
+    {
+    case AntialiasingMethod::Multisample2:
+        return D3DMULTISAMPLE_2_SAMPLES;
+    case AntialiasingMethod::Multisample4:
+        return D3DMULTISAMPLE_4_SAMPLES;
+    case AntialiasingMethod::Multisample8:
+        return D3DMULTISAMPLE_8_SAMPLES;
+    case AntialiasingMethod::Multisample16:
+        return D3DMULTISAMPLE_16_SAMPLES;
+
+    default:
+        return D3DMULTISAMPLE_NONE;
+    }
 }
 
 void DirectX9Renderer::renderQueueDepthBuffer(Camera *camera)

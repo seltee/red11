@@ -16,10 +16,19 @@
 
 #define MAX_MATRICIES (256 * 1024)
 
+enum class AntialiasingMethod
+{
+    None,
+    Multisample2,
+    Multisample4,
+    Multisample8,
+    Multisample16,
+};
+
 class Renderer
 {
 public:
-    Renderer(Window *window);
+    Renderer(Window *window, AntialiasingMethod antialiasingMethod = AntialiasingMethod::None);
     virtual ~Renderer();
 
     virtual RendererType getType() = 0;
@@ -51,6 +60,10 @@ public:
     virtual void renderSpriteMask(const Matrix4 &mModel, Texture *texture, const Color &color) = 0;
     virtual void renderSpriteImage(const Matrix4 &mModel, Texture *texture) = 0;
 
+    virtual bool isAntialiasingMethodAvailable(AntialiasingMethod method) = 0;
+    virtual bool setAntialiasingMethod(AntialiasingMethod method) = 0;
+    virtual std::vector<AntialiasingMethod> getListOfAvailableAntialiasingMethods();
+
     inline int getViewWidth() { return viewWidth; }
     inline int getViewHeight() { return viewHeight; }
 
@@ -69,4 +82,5 @@ protected:
     int lastMatrixStore = 0;
 
     static std::vector<Renderer *> renderers;
+    AntialiasingMethod antialiasingMethod = AntialiasingMethod::None;
 };

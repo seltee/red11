@@ -60,7 +60,7 @@ public:
     EXPORT static void openConsole();
 
     EXPORT static bool isRendererAvailable(RendererType rendererType);
-    EXPORT static Renderer *createRenderer(Window *window, RendererType rendererType, bool bVSync = true);
+    EXPORT static Renderer *createRenderer(Window *window, RendererType rendererType, AntialiasingMethod antialiasingMethod = AntialiasingMethod::None, bool bVSync = true);
 
     EXPORT static MeshBuilder *getMeshBuilder();
 

@@ -44,9 +44,9 @@ bool Red11::isRendererAvailable(RendererType rendererType)
     return true;
 }
 
-Renderer *Red11::createRenderer(Window *window, RendererType rendererType, bool bVSync)
+Renderer *Red11::createRenderer(Window *window, RendererType rendererType, AntialiasingMethod antialiasingMethod, bool bVSync)
 {
-    return new DirectX9Renderer(window, bVSync);
+    return new DirectX9Renderer(window, antialiasingMethod, bVSync);
 }
 
 MeshBuilder *Red11::getMeshBuilder()

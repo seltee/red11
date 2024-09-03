@@ -23,7 +23,7 @@ APPMAIN
 
     auto window = Red11::createWindow("Bones Example", WINDOW_WIDTH, WINDOW_HEIGHT, 0);
     window->setCursorVisibility(false);
-    auto renderer = Red11::createRenderer(window, RendererType::DirectX9, false);
+    auto renderer = Red11::createRenderer(window, RendererType::DirectX9, AntialiasingMethod::Multisample4, false);
 
     // Textures & Materials
     auto monTexture = new TextureFile("MonsterDefuse", "./data/miner_defuse.png");
@@ -186,7 +186,7 @@ APPMAIN
 
     DeltaCounter deltaCounter;
     float boxRotateCounter = 0.0f;
-    float cameraRX = 0, cameraRY = 0;
+    Vector2 cameraR(0.0f);
 
     while (!window->isCloseRequested())
     {
@@ -202,10 +202,9 @@ APPMAIN
         renderer->clearBuffer(Color(0.4, 0.5, 0.8));
         renderer->renderCubeMap(cameraComponent->getCamera(), cameraComponent, hdr);
 
-        cameraRX += cameraControl.rotateY * 0.0015f;
-        cameraRY += cameraControl.rotateX * 0.0015f;
-        cameraRX = glm::clamp(cameraRX, -1.2f, 1.0f);
-        camera->setRotation(Vector3(cameraRX, cameraRY, 0));
+        cameraR += Vector2(cameraControl.rotateY * 0.0015f, cameraControl.rotateX * 0.0015f);
+        cameraR.x = glm::clamp(cameraR.x, -1.2f, 1.0f);
+        camera->setRotation(Vector3(cameraR.x, cameraR.y, 0));
 
         auto forward = camera->getRotation() * Vector3(0, 0, 0.4f);
         camera->translate(forward * delta * cameraControl.move);
