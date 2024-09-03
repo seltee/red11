@@ -16,6 +16,8 @@ struct InputControl
     bool shoot;
     bool controlCamera;
     bool helpShown;
+    bool shutDown;
+    bool reset;
 };
 
 const unsigned char F = 255;
@@ -60,8 +62,17 @@ enum class UIButtonID
     Help,
     AddBall,
     File,
+    Reset,
+    Close,
     Modal
 };
+
+struct UIMenuPair
+{
+    std::string menu;
+    UIButtonID buttonId;
+};
+
 class UIUserData
 {
 public:
@@ -70,6 +81,8 @@ public:
         this->button = button;
     }
     UIButtonID button;
+    UINode *controlsVisibilityOf = nullptr;
+    UINode *closes = nullptr;
 };
 
 class UIUserEventController : public UIEventController
@@ -85,11 +98,20 @@ public:
         UIUserData *data = (UIUserData *)node->userData;
         if (ev == UIEvent::Click && data)
         {
+            if (data->controlsVisibilityOf)
+                data->controlsVisibilityOf->visibility.set(!data->controlsVisibilityOf->visibility.getValue());
+            if (data->closes)
+                data->closes->visibility.set(false);
+
             if (data->button == UIButtonID::AddBall)
                 inputControl->shoot = true;
 
             if (data->button == UIButtonID::Help || data->button == UIButtonID::Modal)
                 inputControl->helpShown = !inputControl->helpShown;
+            if (data->button == UIButtonID::Close)
+                inputControl->shutDown = true;
+            if (data->button == UIButtonID::Reset)
+                inputControl->reset = true;
         }
         if (ev == UIEvent::NodeMarkedForRemoval)
         {
@@ -256,7 +278,7 @@ APPMAIN
     UINode *line2 = helpModal->createUINodeChild<UINode>();
     line2->text.set("has no information");
 
-    auto createMenuButton = [&](std::string text, UIButtonID button, std::vector<std::string> *menu = nullptr)
+    auto createMenuButton = [&](std::string text, UIButtonID button, const std::vector<UIMenuPair> *menu = nullptr)
     {
         bool hasArrow = menu && menu->size() > 0;
 
@@ -291,19 +313,30 @@ APPMAIN
             dropDownMenu->getMarginTop().setAsNumber(60.0f);
             dropDownMenu->contentDirection.set(UIContentDirection::Vertical);
             dropDownMenu->fontSize.set(36);
+            dropDownMenu->visibility.set(false);
+
+            data->controlsVisibilityOf = dropDownMenu;
 
             for (auto &item : *menu)
             {
-                UINode *dropDownMenuItem = dropDownMenu->createUINodeChild<UINode>(data);
-                dropDownMenuItem->width.setAsNumber(120);
-                dropDownMenuItem->height.setAsNumber(32.0f);
+                UIUserData *menuData = new UIUserData(item.buttonId);
+                menuData->closes = dropDownMenu;
+                UINode *dropDownMenuItem = dropDownMenu->createUINodeChild<UINode>(menuData);
                 dropDownMenuItem->setPaddingNumber(12.0f, 16.0f);
-                dropDownMenuItem->text.set(item);
+                dropDownMenuItem->text.set(item.menu);
                 dropDownMenuItem->getStyleHover()->colorBackground.set(Color(0.4, 0.4, 0.4));
+                dropDownMenuItem->triggersEventClick = true;
+                dropDownMenuItem->width.setAsPercentage(100);
             }
         }
     };
-    createMenuButton("File", UIButtonID::File);
+
+    std::vector<UIMenuPair> menu;
+    menu.push_back({std::string("Reset"), UIButtonID::Reset});
+    menu.push_back({std::string("Add ball"), UIButtonID::AddBall});
+    menu.push_back({std::string("Close"), UIButtonID::Close});
+
+    createMenuButton("File", UIButtonID::File, &menu);
     createMenuButton("Add ball", UIButtonID::AddBall);
     createMenuButton("Help", UIButtonID::Help);
 
@@ -409,6 +442,9 @@ APPMAIN
 
         ui->process(delta);
         ui->render();
+
+        if (inputControl.shutDown)
+            window->close();
 
         renderer->present();
     }

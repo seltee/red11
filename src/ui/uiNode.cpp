@@ -237,6 +237,60 @@ bool UINode::hasDisplayableData()
     return false;
 }
 
+float UINode::getAssumedRealFullWidth()
+{
+    float value = 0.0f;
+    if (width.isSet())
+    {
+        if (width.isUsingNumber())
+            value += fmaxf(maxWidth.isSet() ? fminf(width.getValue(), maxWidth.getValue()) : width.getValue(), getContentWidth());
+        else
+            value += getContentWidth();
+    }
+    if (getMarginLeft().isUsingNumber())
+        value += getMarginLeft().getValue();
+    if (getMarginRight().isUsingNumber())
+        value += getMarginRight().getValue();
+    if (getPaddingLeft().isUsingNumber())
+        value += getPaddingLeft().getValue();
+    if (getPaddingRight().isUsingNumber())
+        value += getPaddingRight().getValue();
+    if (getBorderLeft().isUsingNumber())
+        value += getBorderLeft().getValue();
+    if (getBorderRight().isUsingNumber())
+        value += getBorderRight().getValue();
+    return value;
+}
+
+float UINode::getAssumedRealFullHeight()
+{
+    float value = 0.0f;
+    if (height.isSet())
+    {
+        if (height.isUsingNumber())
+        {
+            value += fmaxf(maxHeight.isSet() ? fminf(height.getValue(), maxHeight.getValue()) : height.getValue(), getContentWidth());
+        }
+        else
+        {
+            value += fmaxf(maxHeight.isSet() ? fminf(height.getValue(), maxHeight.getValue()) : height.getValue(), getContentWidth());
+        }
+    }
+    if (getMarginTop().isUsingNumber())
+        value += getMarginTop().getValue();
+    if (getMarginBottom().isUsingNumber())
+        value += getMarginBottom().getValue();
+    if (getPaddingTop().isUsingNumber())
+        value += getPaddingTop().getValue();
+    if (getPaddingBottom().isUsingNumber())
+        value += getPaddingBottom().getValue();
+    if (getBorderTop().isUsingNumber())
+        value += getBorderTop().getValue();
+    if (getBorderBottom().isUsingNumber())
+        value += getBorderBottom().getValue();
+    return value;
+}
+
 float UINode::getTextWidth()
 {
     if (text.isSet())
@@ -280,19 +334,19 @@ float UINode::getFreeWidth()
             {
                 // todo deal if maxWidth is using percantage
                 occupied += child->maxWidth.isSet() ? fminf(child->width.getValue(), child->maxWidth.getValue()) : child->width.getValue();
-                if (child->getMarginLeft().isUsingNumber())
-                    occupied += child->getMarginLeft().getValue();
-                if (child->getMarginRight().isUsingNumber())
-                    occupied += child->getMarginRight().getValue();
-                if (child->getPaddingLeft().isUsingNumber())
-                    occupied += child->getPaddingLeft().getValue();
-                if (child->getPaddingRight().isUsingNumber())
-                    occupied += child->getPaddingRight().getValue();
-                if (child->getBorderLeft().isUsingNumber())
-                    occupied += child->getBorderLeft().getValue();
-                if (child->getBorderRight().isUsingNumber())
-                    occupied += child->getBorderRight().getValue();
             }
+            if (child->getMarginLeft().isUsingNumber())
+                occupied += child->getMarginLeft().getValue();
+            if (child->getMarginRight().isUsingNumber())
+                occupied += child->getMarginRight().getValue();
+            if (child->getPaddingLeft().isUsingNumber())
+                occupied += child->getPaddingLeft().getValue();
+            if (child->getPaddingRight().isUsingNumber())
+                occupied += child->getPaddingRight().getValue();
+            if (child->getBorderLeft().isUsingNumber())
+                occupied += child->getBorderLeft().getValue();
+            if (child->getBorderRight().isUsingNumber())
+                occupied += child->getBorderRight().getValue();
         }
     }
 
@@ -303,6 +357,15 @@ float UINode::getFreeWidth()
             assumedWidth = (style.width.getValue() * 0.01f) * getParentFreeWidth() - getMarginPaddingBorderWidth();
         else
             assumedWidth = style.width.getValue();
+    }
+    else if (contentDirection.getValue() == UIContentDirection::Vertical)
+    {
+        // set width by the content of biggest children
+        for (auto &child : children)
+        {
+            if (child->positioning.isNotSet() || child->positioning.getValue() != UIBlockPositioning::Absolute)
+                assumedWidth = fmaxf(assumedWidth, child->getAssumedRealFullWidth());
+        }
     }
     if (style.maxWidth.isSet())
     {
@@ -323,19 +386,19 @@ float UINode::getFreeHeight()
             {
                 // todo deal if maxWidth is using percantage
                 occupied += child->maxHeight.isSet() ? fminf(child->height.getValue(), child->maxHeight.getValue()) : child->height.getValue();
-                if (child->getMarginTop().isUsingNumber())
-                    occupied += child->getMarginTop().getValue();
-                if (child->getMarginBottom().isUsingNumber())
-                    occupied += child->getMarginBottom().getValue();
-                if (child->getPaddingTop().isUsingNumber())
-                    occupied += child->getPaddingTop().getValue();
-                if (child->getPaddingBottom().isUsingNumber())
-                    occupied += child->getPaddingBottom().getValue();
-                if (child->getBorderTop().isUsingNumber())
-                    occupied += child->getBorderTop().getValue();
-                if (child->getBorderBottom().isUsingNumber())
-                    occupied += child->getBorderBottom().getValue();
             }
+            if (child->getMarginTop().isUsingNumber())
+                occupied += child->getMarginTop().getValue();
+            if (child->getMarginBottom().isUsingNumber())
+                occupied += child->getMarginBottom().getValue();
+            if (child->getPaddingTop().isUsingNumber())
+                occupied += child->getPaddingTop().getValue();
+            if (child->getPaddingBottom().isUsingNumber())
+                occupied += child->getPaddingBottom().getValue();
+            if (child->getBorderTop().isUsingNumber())
+                occupied += child->getBorderTop().getValue();
+            if (child->getBorderBottom().isUsingNumber())
+                occupied += child->getBorderBottom().getValue();
         }
     }
 
@@ -346,6 +409,15 @@ float UINode::getFreeHeight()
             assumedHeight = (height.getValue() * 0.01f) * getParentFreeHeight() - getMarginPaddingBorderHeight();
         else
             assumedHeight = height.getValue();
+    }
+    else if (contentDirection.getValue() == UIContentDirection::Horizontal)
+    {
+        // set width by the content of biggest children
+        for (auto &child : children)
+        {
+            if (child->positioning.isNotSet() || child->positioning.getValue() != UIBlockPositioning::Absolute)
+                assumedHeight = fmaxf(assumedHeight, child->getAssumedRealFullHeight());
+        }
     }
     if (maxHeight.isSet())
     {
@@ -458,12 +530,18 @@ float UINode::getContentWidth()
     if (contentDirection.getValue() == UIContentDirection::Horizontal)
     {
         for (auto &child : children)
-            width += child->getCalculatedFullWidth();
+        {
+            if (child->positioning.isNotSet() || child->positioning.getValue() != UIBlockPositioning::Absolute)
+                width += child->getCalculatedFullWidth();
+        }
     }
     else
     {
         for (auto &child : children)
-            width = fmaxf(width, child->getCalculatedFullWidth());
+        {
+            if (child->positioning.isNotSet() || child->positioning.getValue() != UIBlockPositioning::Absolute)
+                width = fmaxf(width, child->getCalculatedFullWidth());
+        }
     }
     if (text.isSet() && text.getValue().length() > 0)
     {
@@ -487,12 +565,18 @@ float UINode::getContentHeight()
     if (contentDirection.getValue() == UIContentDirection::Vertical)
     {
         for (auto &child : children)
-            height += child->getCalculatedFullHeight();
+        {
+            if (child->positioning.isNotSet() || child->positioning.getValue() != UIBlockPositioning::Absolute)
+                height += child->getCalculatedFullHeight();
+        }
     }
     else
     {
         for (auto &child : children)
-            height = fmaxf(height, child->getCalculatedFullHeight());
+        {
+            if (child->positioning.isNotSet() || child->positioning.getValue() != UIBlockPositioning::Absolute)
+                height = fmaxf(height, child->getCalculatedFullHeight());
+        }
     }
     if (text.isSet())
     {

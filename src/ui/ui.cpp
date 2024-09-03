@@ -280,7 +280,10 @@ void UI::triggerClick()
             {
                 triggerEvent(UIEvent::Click, node);
             }
-            node = node->getParent();
+            if (node->positioning.isNotSet() || node->positioning.getValue() != UIBlockPositioning::Absolute)
+                node = node->getParent();
+            else
+                node = nullptr;
         }
     }
 
@@ -303,7 +306,10 @@ void UI::triggerRelease()
             {
                 triggerEvent(UIEvent::Release, node);
             }
-            node = node->getParent();
+            if (node->positioning.isNotSet() || node->positioning.getValue() != UIBlockPositioning::Absolute)
+                node = node->getParent();
+            else
+                node = nullptr;
         }
     }
 

@@ -82,6 +82,8 @@ public:
     inline Texture *getCalculatedImage() { return calculatedImage; }
     inline bool isCalculatedImageUsingMask() { return calculatedUseImageMask; }
     inline bool isVisible() { return visibility.isNotSet() || visibility.getValue(); }
+    EXPORT float getAssumedRealFullWidth();
+    EXPORT float getAssumedRealFullHeight();
 
     // based on display data content
     EXPORT virtual float getTextWidth();
