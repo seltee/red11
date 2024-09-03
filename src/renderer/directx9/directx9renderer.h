@@ -71,6 +71,9 @@ public:
     EXPORT bool isAntialiasingMethodAvailable(AntialiasingMethod method) override final;
     EXPORT bool setAntialiasingMethod(AntialiasingMethod method) override final;
 
+    EXPORT void setRenderArea(const OverflowWindow &overflowWindow) override final;
+    EXPORT void setRenderAreaFull() override final;
+
     EXPORT void present() override final;
 
     EXPORT void removeTextureByIndex(unsigned int index) override;
@@ -184,6 +187,10 @@ protected:
     bool bVSync = false;
 
     Window *window;
+    OverflowWindow overflowWindow;
+
+    int nViewportWidth;
+    int nViewportHeight;
 };
 
 #endif

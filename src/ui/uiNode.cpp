@@ -83,13 +83,17 @@ void UINode::collectRenderBlock(UIContext *uiContext)
     if (!isVisible())
         return;
 
+    UIBlockPositioning positioning = calcPositioning();
+    UIContentDirection direction = calcContentDirection();
+
     float xStartPosition = uiContext->xPosition;
     float yStartPosition = uiContext->yPosition;
-    int index = (calculatedPositioning == UIBlockPositioning::Absolute) ? uiContext->index + 100 : uiContext->index + 1;
+    int index = (positioning == UIBlockPositioning::Absolute) ? uiContext->index + 100 : uiContext->index + 1;
+    UIRenderBlock *parent = uiContext->parentBlock;
 
     UIRenderBlock *attachTo = nullptr;
-    if (calculatedPositioning == UIBlockPositioning::Inline || calculatedPositioning == UIBlockPositioning::Relative)
-        attachTo = uiContext->parentBlock ? uiContext->parentBlock : uiContext->initialBlock;
+    if (positioning == UIBlockPositioning::Inline || positioning == UIBlockPositioning::Relative)
+        attachTo = parent ? parent : uiContext->initialBlock;
     else
     {
         attachTo = uiContext->rootBlock;
@@ -97,7 +101,7 @@ void UINode::collectRenderBlock(UIContext *uiContext)
         yStartPosition = attachTo->y;
     }
 
-    bool createBlock = hasDisplayableData() || (calculatedPositioning != UIBlockPositioning::Inline);
+    bool createBlock = hasDisplayableData() || (positioning != UIBlockPositioning::Inline);
 
     UIRenderBlock *renderBlock = nullptr;
     if (createBlock)
@@ -138,7 +142,28 @@ void UINode::collectRenderBlock(UIContext *uiContext)
 
         renderBlock->source = this;
 
-        if (calculatedPositioning == UIBlockPositioning::Absolute || calculatedPositioning == UIBlockPositioning::Relative)
+        // Overflow for hiding content out of borders
+        if (parent)
+        {
+            if (calcOverflow() == UIOverflow::Visible)
+                memcpy(&renderBlock->overflowWindow, &parent->overflowWindow, sizeof(OverflowWindow));
+            else
+            {
+                renderBlock->overflowWindow.startH = fmaxf(parent->overflowWindow.startH, static_cast<int>(renderBlock->x + getCalculatedMarginLeft()));
+                renderBlock->overflowWindow.startV = fmaxf(parent->overflowWindow.startV, static_cast<int>(renderBlock->y + getCalculatedMarginTop()));
+                renderBlock->overflowWindow.endH = fminf(parent->overflowWindow.endH, static_cast<int>(renderBlock->x + getCalculatedMarginLeft() + renderBlock->hoverWidth));
+                renderBlock->overflowWindow.endV = fminf(parent->overflowWindow.endV, static_cast<int>(renderBlock->y + getCalculatedMarginTop() + renderBlock->hoverHeight));
+            }
+        }
+        else
+        {
+            renderBlock->overflowWindow.startH = 0.0f;
+            renderBlock->overflowWindow.startV = 0.0f;
+            renderBlock->overflowWindow.endH = width.getValue();
+            renderBlock->overflowWindow.endV = height.getValue();
+        }
+
+        if (positioning == UIBlockPositioning::Absolute || positioning == UIBlockPositioning::Relative)
             uiContext->rootBlock = renderBlock;
     }
 
@@ -146,7 +171,7 @@ void UINode::collectRenderBlock(UIContext *uiContext)
     float childrenHeight = 0.0f;
     for (auto &node : children)
     {
-        if (calculatedDirection == UIContentDirection::Horizontal)
+        if (direction == UIContentDirection::Horizontal)
         {
             childrenWidth += node->getCalculatedFullWidth();
             childrenHeight = fmaxf(childrenHeight, node->getCalculatedFullHeight());
@@ -158,11 +183,11 @@ void UINode::collectRenderBlock(UIContext *uiContext)
         }
     }
 
-    UIContentAlign alignH = calculatedAlignH;
-    UIContentAlign alignV = calculatedAlignV;
-    if ((alignH == UIContentAlign::SpaceBetween || alignH == UIContentAlign::SpaceAround) && calculatedDirection == UIContentDirection::Vertical)
+    UIContentAlign alignH = calcAlignHorizontal();
+    UIContentAlign alignV = calcAlignVertical();
+    if ((alignH == UIContentAlign::SpaceBetween || alignH == UIContentAlign::SpaceAround) && direction == UIContentDirection::Vertical)
         alignH = UIContentAlign::Middle;
-    if ((alignV == UIContentAlign::SpaceBetween || alignV == UIContentAlign::SpaceAround) && calculatedDirection == UIContentDirection::Horizontal)
+    if ((alignV == UIContentAlign::SpaceBetween || alignV == UIContentAlign::SpaceAround) && direction == UIContentDirection::Horizontal)
         alignV = UIContentAlign::Middle;
 
     float initialX = 0.0f;
@@ -199,9 +224,9 @@ void UINode::collectRenderBlock(UIContext *uiContext)
     {
         float childX = posX;
         float childY = posY;
-        if (alignH == UIContentAlign::Middle && calculatedDirection == UIContentDirection::Vertical)
+        if (alignH == UIContentAlign::Middle && direction == UIContentDirection::Vertical)
             childX += (childrenWidth - node->getCalculatedFullWidth()) * 0.5f;
-        if (alignV == UIContentAlign::Middle && calculatedDirection == UIContentDirection::Horizontal)
+        if (alignV == UIContentAlign::Middle && direction == UIContentDirection::Horizontal)
             childY += (childrenHeight - node->getCalculatedFullHeight()) * 0.5f;
 
         uiContext->setParentData(childX, childY, attachTo, index);
@@ -209,7 +234,7 @@ void UINode::collectRenderBlock(UIContext *uiContext)
 
         if (node->positioning.getValue() != UIBlockPositioning::Absolute)
         {
-            if (calculatedDirection == UIContentDirection::Horizontal)
+            if (direction == UIContentDirection::Horizontal)
                 posX += node->getCalculatedFullWidth() + betweenX;
             else
                 posY += node->getCalculatedFullHeight() + betweenY;
@@ -233,6 +258,8 @@ bool UINode::hasDisplayableData()
     if (text.isSet() && text.getValue().size() > 0)
         return true;
     if (image.isSet() && image.getValue())
+        return true;
+    if (overflow.isSet() && overflow.getValue() != UIOverflow::Visible)
         return true;
     return false;
 }
@@ -291,13 +318,84 @@ float UINode::getAssumedRealFullHeight()
     return value;
 }
 
+Font *UINode::calcFont()
+{
+    if (style.font.isSet())
+        return style.font.getValue();
+    if (parent)
+        return parent->calcFont();
+    return nullptr;
+}
+
+unsigned int UINode::calcFontSize()
+{
+    if (style.fontSize.isSet())
+        return style.fontSize.getValue();
+    if (parent)
+        return parent->calcFontSize();
+    return 24;
+}
+
+float UINode::calcLetterSpacing()
+{
+    if (style.letterSpacing.isSet())
+        return style.letterSpacing.getValue();
+    if (parent)
+        return parent->calcLetterSpacing();
+    return 0.0f;
+}
+
+float UINode::calcLineSpacing()
+{
+    if (style.lineSpacing.isSet())
+        return style.lineSpacing.getValue();
+    if (parent)
+        return parent->calcLineSpacing();
+    return 0.0f;
+}
+
+UIOverflow UINode::calcOverflow()
+{
+    if (style.overflow.isSet())
+        return style.overflow.getValue();
+    return UIOverflow::Visible;
+}
+
+UIContentAlign UINode::calcAlignHorizontal()
+{
+    if (style.horizontalAlign.isSet())
+        return style.horizontalAlign.getValue();
+    return UIContentAlign::Start;
+}
+
+UIContentAlign UINode::calcAlignVertical()
+{
+    if (style.verticalAlign.isSet())
+        return style.verticalAlign.getValue();
+    return UIContentAlign::Start;
+}
+
+UIContentDirection UINode::calcContentDirection()
+{
+    if (style.contentDirection.isSet())
+        return style.contentDirection.getValue();
+    return UIContentDirection::Horizontal;
+}
+
+UIBlockPositioning UINode::calcPositioning()
+{
+    if (style.positioning.isSet())
+        return style.positioning.getValue();
+    return UIBlockPositioning::Inline;
+}
+
 float UINode::getTextWidth()
 {
     if (text.isSet())
     {
-        Font *font = getFont();
-        float letterSpacingValue = getLetterSpacing();
-        return font->measureWidth(text.getValue(), getFontHeight()) + letterSpacingValue * (text.getValue().size() - 1);
+        Font *font = calcFont();
+        float letterSpacingValue = calcLetterSpacing();
+        return font->measureWidth(text.getValue(), calcFontSize()) + letterSpacingValue * (text.getValue().size() - 1);
     }
     return 0.0f;
 }
@@ -305,7 +403,7 @@ float UINode::getTextWidth()
 float UINode::getTextHeight()
 {
     if (text.isSet())
-        return getFontHeight();
+        return calcFontSize();
     return 0.0f;
 }
 
@@ -427,24 +525,6 @@ float UINode::getFreeHeight()
     return fmaxf(assumedHeight - occupied, 0.0f);
 }
 
-Font *UINode::getFont()
-{
-    if (style.font.isSet())
-        return style.font.getValue();
-    if (parent)
-        return parent->getFont();
-    return nullptr;
-}
-
-unsigned int UINode::getFontHeight()
-{
-    if (style.fontSize.isSet())
-        return style.fontSize.getValue();
-    if (parent)
-        return parent->getFontHeight();
-    return 24;
-}
-
 Color UINode::getColorText()
 {
     if (style.colorText.isSet())
@@ -461,24 +541,6 @@ Color UINode::getColorSelection()
     if (parent)
         return parent->getColorSelection();
     return Color(0, 0, 0, 1);
-}
-
-float UINode::getLetterSpacing()
-{
-    if (style.letterSpacing.isSet())
-        return style.letterSpacing.getValue();
-    if (parent)
-        return parent->getLetterSpacing();
-    return 0.0f;
-}
-
-float UINode::getLineSpacing()
-{
-    if (style.lineSpacing.isSet())
-        return style.lineSpacing.getValue();
-    if (parent)
-        return parent->getLineSpacing();
-    return 0.0f;
 }
 
 void UINode::propagateHoverToChildren()
@@ -545,11 +607,11 @@ float UINode::getContentWidth()
     }
     if (text.isSet() && text.getValue().length() > 0)
     {
-        Font *font = getFont();
+        Font *font = calcFont();
         if (font)
         {
-            float letterSpacingValue = getLetterSpacing();
-            width = fmaxf(width, static_cast<float>(font->measureWidth(text.getValue(), getFontHeight())) + letterSpacingValue * (text.getValue().size() - 1));
+            float letterSpacingValue = calcLetterSpacing();
+            width = fmaxf(width, static_cast<float>(font->measureWidth(text.getValue(), calcFontSize())) + letterSpacingValue * (text.getValue().size() - 1));
         }
     }
     if (image.isSet() && image.getValue())
@@ -580,9 +642,9 @@ float UINode::getContentHeight()
     }
     if (text.isSet())
     {
-        Font *font = getFont();
+        Font *font = calcFont();
         if (font)
-            height = fmaxf(height, static_cast<float>(font->measureHeight(text.getValue(), getFontHeight())));
+            height = fmaxf(height, static_cast<float>(font->measureHeight(text.getValue(), calcFontSize())));
     }
     if (image.isSet() && image.getValue())
     {
@@ -695,12 +757,6 @@ void UINode::rebuild()
         calculatedHeight = fmaxf(calculatedHeight, minHeightFinal);
     }
 
-    // Properties
-    calculatedAlignH = horizontalAlign.getValue();
-    calculatedAlignV = verticalAlign.getValue();
-    calculatedDirection = contentDirection.getValue();
-    calculatedPositioning = positioning.getValue();
-
     // Element View
     calculatedColorBackground = style.colorBackground.isSet() ? style.colorBackground.getValue() : Color(0, 0, 0, 0);
     calculatedColorBorder[UI_TOP] = style.colorBorder[UI_TOP].isSet() ? style.colorBorder[UI_TOP].getValue() : Color(0, 0, 0, 0);
@@ -709,12 +765,8 @@ void UINode::rebuild()
     calculatedColorBorder[UI_RIGHT] = style.colorBorder[UI_RIGHT].isSet() ? style.colorBorder[UI_RIGHT].getValue() : Color(0, 0, 0, 0);
 
     // Font / Text
-    calculatedFont = getFont();
-    calculatedFontSize = getFontHeight();
     calculatedColorText = getColorText();
     calculatedColorSelection = getColorSelection();
-    calculatedLetterSpacing = getLetterSpacing();
-    calculatedLineSpacing = getLineSpacing();
 
     calculatedTextHorizontalAlign = style.textHorizontalAlign.isSet() ? style.textHorizontalAlign.getValue() : UIContentAlign::Start;
     if (calculatedTextHorizontalAlign == UIContentAlign::SpaceAround || calculatedTextHorizontalAlign == UIContentAlign::SpaceBetween)

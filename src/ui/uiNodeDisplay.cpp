@@ -205,6 +205,11 @@ bool UINodeDisplay::insertFrom(UINodeDisplay *nodeDisplay)
         cursorIcon.set(nodeDisplay->cursorIcon.getValue());
         out = true;
     }
+    if (nodeDisplay->overflow.isSet())
+    {
+        overflow.set(nodeDisplay->overflow.getValue());
+        out = true;
+    }
     return out;
 }
 
@@ -246,4 +251,5 @@ void UINodeDisplay::clear()
     propagateHover.unSet();
     visibility.unSet();
     cursorIcon.unSet();
+    overflow.unSet();
 }

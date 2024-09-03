@@ -18,6 +18,7 @@
 #include "uiPropertyToggle.h"
 #include "uiPropertyCursorIcon.h"
 #include "uiPropertyWordWrap.h"
+#include "uiPropertyOverflow.h"
 #include "data/font.h"
 
 class UINodeDisplay
@@ -160,4 +161,5 @@ public:
     UIPropertyToggle propagateHover;
     UIPropertyToggle visibility;
     UIPropertyCursorIcon cursorIcon;
+    UIPropertyOverflow overflow;
 };

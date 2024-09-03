@@ -3,6 +3,7 @@
 
 #pragma once
 #include <vector>
+#include "utils/primitives.h"
 
 class UINode;
 
@@ -18,4 +19,5 @@ public:
     int index;
     UINode *source;
     std::vector<UIRenderBlock *> children;
+    OverflowWindow overflowWindow;
 };

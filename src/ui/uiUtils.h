@@ -49,3 +49,9 @@ enum class UIEvent
     NodeMarkedForRemoval,
     NodeBeingRemoved
 };
+
+enum class UIOverflow
+{
+    Visible,
+    Hidden
+};

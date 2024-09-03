@@ -19,6 +19,7 @@ DirectX9Renderer::DirectX9Renderer(Window *window, AntialiasingMethod antialiasi
 
     // init 3d
     initD3D(reinterpret_cast<WindowsWindow *>(window)->getHwnd(), false, window->getWidth(), window->getHeight());
+    setRenderAreaFull();
 }
 
 RendererType DirectX9Renderer::getType()
@@ -332,6 +333,39 @@ bool DirectX9Renderer::setAntialiasingMethod(AntialiasingMethod method)
     return true;
 }
 
+void DirectX9Renderer::setRenderArea(const OverflowWindow &overflowWindow)
+{
+    if (this->overflowWindow.startH != overflowWindow.startH ||
+        this->overflowWindow.startV != overflowWindow.startV ||
+        this->overflowWindow.endH != overflowWindow.endH ||
+        this->overflowWindow.endV != overflowWindow.endV)
+    {
+
+        float fMWidth = static_cast<float>(nViewportWidth) / static_cast<float>(window->getWidth());
+        float fMHeight = static_cast<float>(nViewportHeight) / static_cast<float>(window->getHeight());
+
+        memcpy(&this->overflowWindow, &overflowWindow, sizeof(OverflowWindow));
+        RECT scissorRect = {
+            static_cast<int>(ceilf(static_cast<float>(this->overflowWindow.startH) * fMWidth)),
+            static_cast<int>(ceilf(static_cast<float>(this->overflowWindow.startV) * fMHeight)),
+            static_cast<int>(ceilf(static_cast<float>(this->overflowWindow.endH) * fMWidth + 0.5f)),
+            static_cast<int>(ceilf(static_cast<float>(this->overflowWindow.endV) * fMHeight + 0.5f)),
+        };
+
+        d3ddev->SetRenderState(D3DRS_SCISSORTESTENABLE, true);
+        d3ddev->SetScissorRect(&scissorRect);
+    }
+}
+
+void DirectX9Renderer::setRenderAreaFull()
+{
+    overflowWindow.startH = 0.0f;
+    overflowWindow.startV = 0.0f;
+    overflowWindow.endH = window->getWidth();
+    overflowWindow.endV = window->getHeight();
+    d3ddev->SetRenderState(D3DRS_SCISSORTESTENABLE, false);
+}
+
 void DirectX9Renderer::present()
 {
     d3ddev->Present(NULL, NULL, NULL, NULL);
@@ -465,6 +499,11 @@ void DirectX9Renderer::initD3D(HWND hWnd, bool bIsFullscreen, int width, int hei
     white->addUser();
     black = new Texture("BlackTexture", TextureType::Normal, 1, 1, blackData);
     black->addUser();
+
+    D3DVIEWPORT9 viewport;
+    d3ddev->GetViewport(&viewport);
+    nViewportWidth = viewport.Width;
+    nViewportHeight = viewport.Height;
 }
 
 void DirectX9Renderer::resizeD3D(int width, int height)

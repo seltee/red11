@@ -105,3 +105,8 @@ struct MousePosition
 {
     int x, y;
 };
+
+struct OverflowWindow
+{
+    int startH, endH, startV, endV;
+};

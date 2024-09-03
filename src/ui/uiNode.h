@@ -69,21 +69,24 @@ public:
     inline Color &getCalculatedColorText() { return calculatedColorText; }
     inline Color &getCalculatedColorSelection() { return calculatedColorSelection; }
     inline Color &getCalculatedColorImageMask() { return calculatedColorImageMask; }
-    inline UIContentAlign getCalculatedAlignH() { return calculatedAlignH; }
-    inline UIContentAlign getCalculatedAlignV() { return calculatedAlignV; }
-    inline UIContentDirection getCalculatedDirection() { return calculatedDirection; }
     inline bool hasCalculatedText() { return text.isSet() && text.getValue().size() > 0; }
     inline const std::string &getCalculatedText() { return text.getValue(); }
-    inline Font *getCalculatedFont() { return calculatedFont; }
-    inline unsigned int getCalcualtedFontSize() { return calculatedFontSize; }
-    inline float getCalculatedLetterSpacing() { return calculatedLetterSpacing; }
-    inline float getCalculatedLineSpacing() { return calculatedLineSpacing; }
     inline bool hasCalculatedImage() { return image.isSet() && image.getValue() != nullptr; }
     inline Texture *getCalculatedImage() { return calculatedImage; }
     inline bool isCalculatedImageUsingMask() { return calculatedUseImageMask; }
     inline bool isVisible() { return visibility.isNotSet() || visibility.getValue(); }
     EXPORT float getAssumedRealFullWidth();
     EXPORT float getAssumedRealFullHeight();
+
+    EXPORT Font *calcFont();
+    EXPORT unsigned int calcFontSize();
+    EXPORT float calcLetterSpacing();
+    EXPORT float calcLineSpacing();
+    EXPORT UIOverflow calcOverflow();
+    EXPORT UIContentAlign calcAlignHorizontal();
+    EXPORT UIContentAlign calcAlignVertical();
+    EXPORT UIContentDirection calcContentDirection();
+    EXPORT UIBlockPositioning calcPositioning();
 
     // based on display data content
     EXPORT virtual float getTextWidth();
@@ -96,12 +99,8 @@ public:
     EXPORT float getFreeHeight();
 
     // parent propagated properties:
-    EXPORT Font *getFont();
-    EXPORT unsigned int getFontHeight();
     EXPORT Color getColorText();
     EXPORT Color getColorSelection();
-    EXPORT float getLetterSpacing();
-    EXPORT float getLineSpacing();
 
     inline UINodeDisplay *getStyleHover() { return &hover; }
     inline UINodeDisplay *getStyleFinal() { return &style; }
@@ -151,14 +150,6 @@ protected:
     Color calculatedColorText = Color(0, 0, 0, 1);
     Color calculatedColorSelection = Color(0.4, 0.4, 0.9f, 1);
     Color calculatedColorImageMask = Color(0.4, 0.4, 0.9f, 1);
-    UIContentAlign calculatedAlignH = UIContentAlign::Start;
-    UIContentAlign calculatedAlignV = UIContentAlign::Start;
-    UIContentDirection calculatedDirection = UIContentDirection::Horizontal;
-    UIBlockPositioning calculatedPositioning = UIBlockPositioning::Inline;
-    Font *calculatedFont = nullptr;
-    unsigned int calculatedFontSize = 0;
-    float calculatedLetterSpacing = 0.0f;
-    float calculatedLineSpacing = 0.0f;
     UIContentAlign calculatedTextHorizontalAlign = UIContentAlign::Start;
     UIContentAlign calculatedTextVerticalAlign = UIContentAlign::Start;
     bool calculatedUseImageMask = false;

@@ -128,6 +128,13 @@ void UI::render()
 
         if (node->hasDisplayableData())
         {
+            // cut area
+            block.overflowWindow.startH = static_cast<int>(ceilf(static_cast<float>(block.overflowWindow.startH) * interfaceZoom));
+            block.overflowWindow.startV = static_cast<int>(ceilf(static_cast<float>(block.overflowWindow.startV) * interfaceZoom));
+            block.overflowWindow.endH = static_cast<int>(ceilf(static_cast<float>(block.overflowWindow.endH) * interfaceZoom) + 0.5f);
+            block.overflowWindow.endV = static_cast<int>(ceilf(static_cast<float>(block.overflowWindow.endV) * interfaceZoom) + 0.5f);
+            renderer->setRenderArea(block.overflowWindow);
+
             float posX = block.x + node->getCalculatedMarginLeft();
             float posY = block.y + node->getCalculatedMarginTop();
             float posXWithBorder = posX + node->getCalculatedBorderLeft();
@@ -179,12 +186,12 @@ void UI::render()
             if (node->hasCalculatedText())
             {
                 const std::string &text = node->getCalculatedText();
-                Font *font = node->getCalculatedFont();
-                unsigned int fontSize = node->getCalcualtedFontSize();
+                Font *font = node->calcFont();
+                unsigned int fontSize = node->calcFontSize();
                 unsigned int fontSizeGlyph = static_cast<unsigned int>(static_cast<float>(fontSize) * interfaceZoom);
                 Color &textColor = node->getCalculatedColorText();
-                float letterSpacing = node->getCalculatedLetterSpacing() / interfaceZoom;
-                float lineSpacing = node->getCalculatedLineSpacing() / interfaceZoom;
+                float letterSpacing = node->calcLetterSpacing() / interfaceZoom;
+                float lineSpacing = node->calcLineSpacing() / interfaceZoom;
 
                 float startPos = posXWithBorder + node->getCalculatedPaddingLeft() + block.textShiftX;
                 float xPosIterator = startPos;
@@ -257,6 +264,7 @@ void UI::render()
             }
         }
     }
+    renderer->setRenderAreaFull();
     renderer->endSpriteRendering();
 }
 

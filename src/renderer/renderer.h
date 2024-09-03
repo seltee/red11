@@ -71,6 +71,9 @@ public:
     virtual void removeMaterialByIndex(unsigned int index) = 0;
     virtual void removeMeshByIndex(unsigned int index) = 0;
 
+    virtual void setRenderArea(const OverflowWindow &overflowWindow) = 0;
+    virtual void setRenderAreaFull() = 0;
+
     static void removeFromAllTextureByIndex(unsigned int index);
     static void removeFromAllMaterialByIndex(unsigned int index);
     static void removeFromAllMeshByIndex(unsigned int index);
