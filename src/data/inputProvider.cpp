@@ -69,6 +69,7 @@ void InputProvider::removeAllInputDetectors()
 
 void InputProvider::triggerInput(InputType type, InputData &data)
 {
+    processAnyInput(type, data);
     for (auto &descriptor : descriptorCallbacks)
     {
         for (auto &it : descriptor.descriptors)
@@ -90,9 +91,12 @@ void InputProvider::triggerInput(InputType type, InputData &data)
                     }
                     break;
                 case InputType::GamepadButton:
-                    if (it.input.gamepadButtonInput == data.gamepadButton.keyCode)
+                    if (isUsingGamepad(data.gamepadButton.gamepad))
                     {
-                        descriptor.callback(type, &data, float(data.gamepadButton.state ? 1.0f : 0.0f) * it.modifier, descriptor.userData);
+                        if (it.input.gamepadButtonInput == data.gamepadButton.keyCode)
+                        {
+                            descriptor.callback(type, &data, float(data.gamepadButton.state ? 1.0f : 0.0f) * it.modifier, descriptor.userData);
+                        }
                     }
                     break;
                 case InputType::GamepadAxis:
@@ -161,4 +165,131 @@ void InputProvider::setMousePosition(int x, int y, bool generateMoveEvents)
 
     prevMouseX = x;
     prevMouseY = y;
+}
+
+int InputProvider::addAnyKeyboardInput(void *userData, InputAnyCallback callback)
+{
+    static int lastIndex = 0;
+    int index = lastIndex;
+    lastIndex++;
+    anyKeyboardInputCallbacks.push_back({callback, userData, index});
+    return index;
+}
+
+void InputProvider::removeAnyKeyboardInput(int index)
+{
+    for (auto it = anyKeyboardInputCallbacks.begin(); it != anyKeyboardInputCallbacks.end(); it++)
+    {
+        if ((*it).index == index)
+        {
+            anyKeyboardInputCallbacks.erase(it);
+            return;
+        }
+    }
+}
+
+int InputProvider::addAnyMouseInput(void *userData, InputAnyCallback callback)
+{
+    static int lastIndex = 0;
+    int index = lastIndex;
+    lastIndex++;
+    anyMouseInputCallbacks.push_back({callback, userData, index});
+    return index;
+}
+
+void InputProvider::removeAnyMouseInput(int index)
+{
+    for (auto it = anyMouseInputCallbacks.begin(); it != anyMouseInputCallbacks.end(); it++)
+    {
+        if ((*it).index == index)
+        {
+            anyMouseInputCallbacks.erase(it);
+            return;
+        }
+    }
+}
+
+int InputProvider::addAnyGamepadInput(void *userData, InputAnyCallback callback)
+{
+    static int lastIndex = 0;
+    int index = lastIndex;
+    lastIndex++;
+    anyGamepadInputCallbacks.push_back({callback, userData, index});
+    return index;
+}
+
+void InputProvider::removeAnyGamepadInput(int index)
+{
+    for (auto it = anyGamepadInputCallbacks.begin(); it != anyGamepadInputCallbacks.end(); it++)
+    {
+        if ((*it).index == index)
+        {
+            anyGamepadInputCallbacks.erase(it);
+            return;
+        }
+    }
+}
+
+void InputProvider::addGamepad(Gamepad *gamepad)
+{
+    gamepads.push_back(gamepad);
+}
+
+void InputProvider::removeGamepad(Gamepad *gamepad)
+{
+    for (auto it = gamepads.begin(); it != gamepads.end(); it++)
+    {
+        if ((*it)->is(gamepad))
+        {
+            gamepads.erase(it);
+            return;
+        }
+    }
+}
+bool InputProvider::isUsingGamepad(Gamepad *gamepad)
+{
+    for (auto &it : gamepads)
+    {
+        if (it->is(gamepad))
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+void InputProvider::processAnyInput(InputType type, InputData &data)
+{
+    if (type == InputType::Keyboard && data.keyboard.state)
+    {
+        for (auto &item : anyKeyboardInputCallbacks)
+        {
+            item.callback(item.userData);
+        }
+    }
+    else if (type == InputType::Mouse &&
+             data.mouse.type != InputMouseType::MoveX &&
+             data.mouse.type != InputMouseType::MoveY &&
+             data.mouse.type != InputMouseType::PositionX &&
+             data.mouse.type != InputMouseType::PositionY && abs(data.mouse.value) > 0)
+    {
+        for (auto &item : anyMouseInputCallbacks)
+        {
+            item.callback(item.userData);
+        }
+    }
+    else if (type == InputType::GamepadButton && data.gamepadButton.state && isUsingGamepad(data.gamepadButton.gamepad))
+    {
+        for (auto &item : anyGamepadInputCallbacks)
+        {
+            item.callback(item.userData);
+        }
+    }
+    else if (type == InputType::GamepadAxis && fabsf(data.gamepadAxis.value) > 0.2f)
+    {
+        for (auto &item : anyGamepadInputCallbacks)
+        {
+            item.callback(item.userData);
+        }
+    }
 }

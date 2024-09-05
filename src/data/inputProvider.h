@@ -5,6 +5,7 @@
 #include "utils/utils.h"
 #include "utils/primitives.h"
 #include "utils/keyboardCodes.h"
+#include "window/gamepad.h"
 #include <vector>
 
 enum class InputMouseType
@@ -43,6 +44,7 @@ struct InputGamepadButton
 {
     bool state;
     int keyCode;
+    Gamepad *gamepad;
 };
 
 struct InputGamepadAxis
@@ -86,6 +88,14 @@ struct InputDescriptorCallbackData
 struct InputDetectorCallbackData
 {
     void (*callback)(InputType type);
+};
+
+typedef void (*InputAnyCallback)(void *userData);
+struct InputAny
+{
+    InputAnyCallback callback;
+    void *userData;
+    int index = 0;
 };
 
 class InputDescriptorList
@@ -145,7 +155,23 @@ public:
 
     static EXPORT void setMousePosition(int x, int y, bool generateMoveEvents = false);
 
+    // returns index you can use to remove it later
+    EXPORT int addAnyKeyboardInput(void *userData, InputAnyCallback callback);
+    EXPORT void removeAnyKeyboardInput(int index);
+
+    EXPORT int addAnyMouseInput(void *userData, InputAnyCallback callback);
+    EXPORT void removeAnyMouseInput(int index);
+
+    EXPORT int addAnyGamepadInput(void *userData, InputAnyCallback callback);
+    EXPORT void removeAnyGamepadInput(int index);
+
+    EXPORT void addGamepad(Gamepad *gamepad);
+    EXPORT void removeGamepad(Gamepad *gamepad);
+
 protected:
+    EXPORT bool isUsingGamepad(Gamepad *gamepad);
+    void processAnyInput(InputType type, InputData &data);
+
     static std::vector<InputProvider *> inputs;
 
     static int prevMouseX;
@@ -153,4 +179,10 @@ protected:
 
     std::vector<InputDescriptorCallbackData> descriptorCallbacks;
     std::vector<InputDetectorCallbackData> detectorCallbacks;
+
+    std::vector<InputAny> anyKeyboardInputCallbacks;
+    std::vector<InputAny> anyMouseInputCallbacks;
+    std::vector<InputAny> anyGamepadInputCallbacks;
+
+    std::vector<Gamepad *> gamepads;
 };

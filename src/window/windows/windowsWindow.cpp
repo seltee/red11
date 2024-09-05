@@ -4,133 +4,24 @@
 #include "settings.h"
 #include "windowsWindow.h"
 #include "data/inputProvider.h"
+#include "windowsWindowUtils.h"
+#include "red11.h"
 #include <algorithm>
 #include <shellscalingapi.h>
 #include <windows.h>
+#include <XInput.h>
+#include <hidsdi.h>
+#include <hidusage.h>
+#include <hidpi.h>
 
 #ifdef WINDOWS_ONLY
 typedef BOOL(WINAPI *SetProcessDPIAwareFunc)();
 
+// For XInput 1.3 (Windows 7 and above)
+#pragma comment(lib, "xinput.lib")
+#pragma comment(lib, "hid.lib")
+
 #define CLASS_NAME L"Red11 Window Class"
-
-LRESULT CALLBACK WindowProcedure(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
-{
-    WindowsWindow *window = (WindowsWindow *)GetWindowLongPtr(hWnd, GWLP_USERDATA);
-    RECT rect;
-    InputData inputData;
-
-    if (message == WM_CREATE)
-    {
-        CREATESTRUCT *CreateStruct = (CREATESTRUCT *)lParam;
-        window = (WindowsWindow *)CreateStruct->lpCreateParams;
-        SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)window);
-    }
-
-    switch (message)
-    {
-    case WM_DESTROY:
-        PostQuitMessage(0);
-        break;
-
-    case WM_SETFOCUS:
-        window->setIsFocused(true);
-        break;
-
-    case WM_KILLFOCUS:
-        window->setIsFocused(false);
-        break;
-
-    case WM_KEYDOWN:
-        inputData.keyboard.keyCode = (KeyboardCode)wParam;
-        inputData.keyboard.state = 1;
-        InputProvider::provideNewInput(InputType::Keyboard, inputData);
-        break;
-
-    case WM_KEYUP:
-        inputData.keyboard.keyCode = (KeyboardCode)wParam;
-        inputData.keyboard.state = 0;
-        InputProvider::provideNewInput(InputType::Keyboard, inputData);
-        break;
-
-    case WM_SETCURSOR:
-    {
-        // Check if the cursor is within the client area
-        if (LOWORD(lParam) == HTCLIENT)
-            window->resetCursorIcon();
-        break;
-    }
-
-    case WM_MOUSEMOVE:
-        inputData.mouse.type = InputMouseType::PositionX;
-        inputData.mouse.value = (int)(lParam & 0xffff);
-        InputProvider::provideNewInput(InputType::Mouse, inputData);
-        inputData.mouse.type = InputMouseType::PositionY;
-        inputData.mouse.value = (int)(lParam >> 16);
-        InputProvider::provideNewInput(InputType::Mouse, inputData);
-        window->updateMousePosition((int)(lParam & 0xffff), (int)(lParam >> 16));
-        break;
-
-    case WM_LBUTTONDOWN:
-        inputData.mouse.type = InputMouseType::LeftButton;
-        inputData.mouse.value = 1.0f;
-        InputProvider::provideNewInput(InputType::Mouse, inputData);
-        break;
-
-    case WM_LBUTTONUP:
-        inputData.mouse.type = InputMouseType::LeftButton;
-        inputData.mouse.value = 0.0f;
-        InputProvider::provideNewInput(InputType::Mouse, inputData);
-        break;
-
-    case WM_RBUTTONDOWN:
-        inputData.mouse.type = InputMouseType::RightButton;
-        inputData.mouse.value = 1.0f;
-        InputProvider::provideNewInput(InputType::Mouse, inputData);
-        break;
-
-    case WM_RBUTTONUP:
-        inputData.mouse.type = InputMouseType::RightButton;
-        inputData.mouse.value = 0.0f;
-        InputProvider::provideNewInput(InputType::Mouse, inputData);
-        break;
-
-    case WM_MBUTTONDOWN:
-        inputData.mouse.type = InputMouseType::MiddleButton;
-        inputData.mouse.value = 1.0f;
-        InputProvider::provideNewInput(InputType::Mouse, inputData);
-        break;
-
-    case WM_MBUTTONUP:
-        inputData.mouse.type = InputMouseType::MiddleButton;
-        inputData.mouse.value = 0.0f;
-        InputProvider::provideNewInput(InputType::Mouse, inputData);
-        break;
-
-    case WM_MOUSEWHEEL:
-        inputData.mouse.type = InputMouseType::Wheel;
-        inputData.mouse.value = static_cast<float>(GET_WHEEL_DELTA_WPARAM(wParam)) / 120.0f;
-        InputProvider::provideNewInput(InputType::Mouse, inputData);
-        break;
-
-    case WM_WINDOWPOSCHANGED:
-        GetClientRect(hWnd, &rect);
-        window->udpateRealSize(rect.right, rect.bottom);
-        break;
-
-    case WM_MOUSEHOVER:
-        window->updateMouseOverWindow(true);
-        break;
-
-    case WM_MOUSELEAVE:
-        window->updateMouseOverWindow(false);
-        break;
-
-    default:
-        return DefWindowProcW(hWnd, message, wParam, lParam);
-    }
-
-    return 0;
-}
 
 WindowsWindow::WindowsWindow(const std::string &windowName, int width, int height, int flags)
 {
@@ -153,7 +44,7 @@ WindowsWindow::WindowsWindow(const std::string &windowName, int width, int heigh
     ZeroMemory(&wc, sizeof(WNDCLASSW));
     wc.style = CS_HREDRAW | CS_VREDRAW;
     wc.hCursor = LoadCursor(NULL, IDC_ARROW);
-    wc.lpfnWndProc = WindowProcedure;
+    wc.lpfnWndProc = windowProcedure;
     wc.hInstance = hInstance;
     wc.lpszClassName = CLASS_NAME;
     wc.hbrBackground = (HBRUSH)COLOR_WINDOW;
@@ -226,6 +117,8 @@ WindowsWindow::WindowsWindow(const std::string &windowName, int width, int heigh
     ShowWindow(hWnd, true);
     UpdateWindow(hWnd);
     SetActiveWindow(hWnd);
+
+    enableGamepadInput(hWnd);
 
     setCursorIcon(MouseCursorIcon::Default);
 }
@@ -593,6 +486,54 @@ void WindowsWindow::setCursorIcon(MouseCursorIcon icon, bool bForce)
 void WindowsWindow::resetCursorIcon()
 {
     setCursorIcon(mouseIcon, true);
+}
+
+std::vector<Gamepad *> WindowsWindow::getGamepadList()
+{
+    std::vector<Gamepad *> list;
+    // Get the number of input devices
+    unsigned int deviceCount = 0;
+    GetRawInputDeviceList(nullptr, &deviceCount, sizeof(RAWINPUTDEVICELIST));
+
+    if (deviceCount == 0)
+        return list;
+
+    // Allocate memory for the device list
+    RAWINPUTDEVICELIST *deviceList = new RAWINPUTDEVICELIST[deviceCount];
+    GetRawInputDeviceList(deviceList, &deviceCount, sizeof(RAWINPUTDEVICELIST));
+
+    // Iterate over all devices
+    for (unsigned int i = 0; i < deviceCount; ++i)
+    {
+        // Check if the device is a gamepad (or joystick)
+        if (deviceList[i].dwType == RIM_TYPEHID)
+        {
+            RID_DEVICE_INFO rdi;
+            rdi.cbSize = sizeof(rdi);
+            unsigned int rdiSize = sizeof(rdi);
+            GetRawInputDeviceInfo(deviceList[i].hDevice, RIDI_DEVICEINFO, &rdi, &rdiSize);
+
+            // Check for gamepad based on usage page and usage ID
+            if (rdi.hid.usUsagePage == 0x01 && (rdi.hid.usUsage == 0x04 || rdi.hid.usUsage == 0x05))
+            {
+                Gamepad *gamepad = getGamepad(deviceList[i].hDevice);
+                list.push_back(gamepad);
+            }
+        }
+    }
+    return list;
+}
+
+Gamepad *WindowsWindow::getGamepad(HANDLE handle)
+{
+    for (auto &item : gamepadList)
+    {
+        if (item->getHandle() == handle)
+            return item;
+    }
+    WindowsGamepad *gamepad = new WindowsGamepad(handle);
+    gamepadList.push_back(gamepad);
+    return gamepad;
 }
 
 void WindowsWindow::setProcessDPIAware()

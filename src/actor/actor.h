@@ -25,6 +25,7 @@ class Actor : public Entity, public Destroyable
 {
 public:
     EXPORT Actor(const std::string &name);
+    EXPORT Actor();
     EXPORT virtual ~Actor();
 
     EXPORT void setActorName(const std::string &name);
@@ -94,11 +95,11 @@ public:
     EXPORT Scene *getScene();
     EXPORT void setScene(Scene *scene);
 
-    EXPORT void onProcess(float delta);
-    EXPORT void onRenderQueue(Renderer *renderer);
+    EXPORT void process(float fDelta);
+    EXPORT void renderQueue(Renderer *renderer);
 
     EXPORT virtual void onSpawned();
-    EXPORT virtual void onSubProcess(float delta);
+    EXPORT virtual void onProcess(float fDelta);
 
 protected:
     std::string name;

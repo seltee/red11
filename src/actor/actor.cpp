@@ -9,6 +9,11 @@ Actor::Actor(const std::string &name)
     this->name = name;
 }
 
+EXPORT Actor::Actor()
+{
+    this->name = std::string("Actor");
+}
+
 Actor::~Actor()
 {
     removeComponents();
@@ -77,16 +82,16 @@ void Actor::setScene(Scene *scene)
     this->scene = scene;
 }
 
-void Actor::onProcess(float delta)
+void Actor::process(float fDelta)
 {
-    onSubProcess(delta);
+    onProcess(fDelta);
 
     if (!components.empty())
     {
         auto it = components.begin();
         while (it != components.end())
         {
-            (*it)->onProcess(delta);
+            (*it)->onProcess(fDelta);
 
             if ((*it)->isDestroyed())
             {
@@ -100,7 +105,7 @@ void Actor::onProcess(float delta)
     }
 }
 
-void Actor::onRenderQueue(Renderer *renderer)
+void Actor::renderQueue(Renderer *renderer)
 {
     if (!components.empty() && bVisible)
     {
@@ -117,6 +122,6 @@ void Actor::onSpawned()
 {
 }
 
-void Actor::onSubProcess(float delta)
+void Actor::onProcess(float fDelta)
 {
 }

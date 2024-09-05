@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 
 #pragma once
+#include "gamepad.h"
 #include "utils/utils.h"
 #include "utils/primitives.h"
 #include <vector>
@@ -79,6 +80,8 @@ public:
     virtual bool isFocused() = 0;
     virtual bool isCursorOverWindow() = 0;
     virtual void setCursorIcon(MouseCursorIcon icon, bool bForce = false) = 0;
+
+    virtual std::vector<Gamepad *> getGamepadList() = 0;
 
 protected:
     WindowState state;

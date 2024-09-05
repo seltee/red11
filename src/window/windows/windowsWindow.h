@@ -10,6 +10,7 @@
 #include <windows.h>
 
 #include "window/window.h"
+#include "windowsGamepad.h"
 
 class WindowsWindow : public Window
 {
@@ -49,10 +50,13 @@ public:
     EXPORT void setCursorIcon(MouseCursorIcon icon, bool bForce = false) override final;
     EXPORT void resetCursorIcon();
 
+    EXPORT std::vector<Gamepad *> getGamepadList() override final;
+    EXPORT Gamepad *getGamepad(HANDLE handle);
+
 protected:
-    void setProcessDPIAware();
-    bool listHasMode(std::vector<VideoMode> &modes, unsigned int width, unsigned int height, unsigned int refreshRate);
-    bool listHasRefreshRate(std::vector<unsigned int> &refreshRates, unsigned int refreshRate);
+    EXPORT void setProcessDPIAware();
+    EXPORT bool listHasMode(std::vector<VideoMode> &modes, unsigned int width, unsigned int height, unsigned int refreshRate);
+    EXPORT bool listHasRefreshRate(std::vector<unsigned int> &refreshRates, unsigned int refreshRate);
 
     HWND hWnd;
     HINSTANCE hInstance;
@@ -69,6 +73,8 @@ protected:
     HCURSOR hCursorIBeam;
     HCURSOR hCursorHelp;
     MouseCursorIcon mouseIcon = MouseCursorIcon::Default;
+
+    std::vector<WindowsGamepad *> gamepadList;
 };
 
 #endif

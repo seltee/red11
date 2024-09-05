@@ -42,7 +42,7 @@ OBJDIR = objects
 BINDIR = bin
  
 OBJ_FILES = ${OBJDIR}/red11.o \
-			${OBJDIR}/window.o ${OBJDIR}/windowsWindow.o \
+			${OBJDIR}/window.o ${OBJDIR}/gamepad.o ${OBJDIR}/windowsWindow.o ${OBJDIR}/windowsWindowUtils.o ${OBJDIR}/windowsGamepad.o \
 			${OBJDIR}/audio.o ${OBJDIR}/audioSource.o ${OBJDIR}/audioWindows.o \
 			${OBJDIR}/scene.o \
 			${OBJDIR}/ui.o ${OBJDIR}/uiContext.o ${OBJDIR}/uiNode.o ${OBJDIR}/uiNodeDisplay.o \
@@ -70,10 +70,10 @@ OBJ_FILES = ${OBJDIR}/red11.o \
 			${OBJDIR}/loaderFBX.o ${OBJDIR}/FBXNode.o ${OBJDIR}/FBXAnimationStack.o ${OBJDIR}/FBXAnimationLayer.o ${OBJDIR}/FBXAnimationCurve.o ${OBJDIR}/FBXAnimationCurveNode.o \
 			${OBJDIR}/FBXDeform.o ${OBJDIR}/FBXGeometry.o ${OBJDIR}/FBXModel.o ${OBJDIR}/FBXAttribute.o \
 			${OBJDIR}/networkMessage.o ${OBJDIR}/messageProcessor.o ${OBJDIR}/networkApi.o ${OBJDIR}/client.o ${OBJDIR}/server.o ${OBJDIR}/connection.o \
-			${OBJDIR}/windowsClient.o ${OBJDIR}/windowsServer.o ${OBJDIR}/windowsConnection.o
+			${OBJDIR}/windowsClient.o ${OBJDIR}/windowsServer.o ${OBJDIR}/windowsConnection.o \
 
 EXAMPLES = 	1-window${EXT} 2-textures${EXT} 3-animation${EXT} 4-bones${EXT} 5-physics${EXT} 6-collisionEvents${EXT} 7-ui${EXT} 8-resourceManagment${EXT} 9-customShaders${EXT} \
-			10-splines${EXT} 11-networkServer${EXT} 12-networkClient${EXT} demo-1${EXT}
+			10-splines${EXT} 11-networkServer${EXT} 12-networkClient${EXT} 13-gamepad${EXT} demo-1${EXT}
 
 all: engine examples
 
@@ -83,9 +83,18 @@ ${OBJDIR}/red11.o: ${SRCDIR}/red11.cpp
 
 ${OBJDIR}/window.o: ${SRCDIR}/window/window.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/window.o ${SRCDIR}/window/window.cpp
-	
+
+${OBJDIR}/gamepad.o: ${SRCDIR}/window/gamepad.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/gamepad.o ${SRCDIR}/window/gamepad.cpp
+
 ${OBJDIR}/windowsWindow.o: ${SRCDIR}/window/windows/windowsWindow.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/windowsWindow.o ${SRCDIR}/window/windows/windowsWindow.cpp
+
+${OBJDIR}/windowsWindowUtils.o: ${SRCDIR}/window/windows/windowsWindowUtils.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/windowsWindowUtils.o ${SRCDIR}/window/windows/windowsWindowUtils.cpp
+
+${OBJDIR}/windowsGamepad.o: ${SRCDIR}/window/windows/windowsGamepad.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/windowsGamepad.o ${SRCDIR}/window/windows/windowsGamepad.cpp
 
 ${OBJDIR}/audio.o: ${SRCDIR}/audio/audio.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/audio.o ${SRCDIR}/audio/audio.cpp
@@ -466,6 +475,13 @@ ${OBJDIR}/12-networkClient.o: ${EXMDIR}/12-networkClient.cpp
 12-networkClient${EXT}: ${OBJDIR}/12-networkClient.o
 	$(LD) ${EFLAGS} ${OBJDIR}/12-networkClient.o -o 12-networkClient${EXT}
 	${MOVE} 12-networkClient${EXT} ${BINDIR}/12-networkClient${EXT}
+
+${OBJDIR}/13-gamepad.o: ${EXMDIR}/13-gamepad.cpp
+	$(CC) $(CFLAGS) -o ${OBJDIR}/13-gamepad.o ${EXMDIR}/13-gamepad.cpp
+
+13-gamepad${EXT}: ${OBJDIR}/13-gamepad.o
+	$(LD) ${EFLAGS} ${OBJDIR}/13-gamepad.o -o 13-gamepad${EXT}
+	${MOVE} 13-gamepad${EXT} ${BINDIR}/13-gamepad${EXT}
 
 ${OBJDIR}/demo-1.o: ${EXMDIR}/demo-1.cpp
 	$(CC) $(CFLAGS) -o ${OBJDIR}/demo-1.o ${EXMDIR}/demo-1.cpp

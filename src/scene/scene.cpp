@@ -43,7 +43,7 @@ void Scene::render(Renderer *renderer, Camera *camera)
     renderer->setAmbientLight(ambientLight);
 
     for (auto &actor : actors)
-        actor->onRenderQueue(renderer);
+        actor->renderQueue(renderer);
 
     renderer->renderQueue(camera);
     renderer->clearQueue();

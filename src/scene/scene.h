@@ -29,7 +29,9 @@ public:
     template <class T, typename std::enable_if<std::is_base_of<Actor, T>::value>::type * = nullptr>
     inline T *createActor()
     {
-        return createActor<T>("Actor");
+        auto newActor = new T();
+        prepareNewActor(newActor);
+        return newActor;
     }
 
     EXPORT void prepareNewActor(Actor *actor);
