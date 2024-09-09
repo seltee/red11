@@ -46,7 +46,10 @@ public:
         forwardList.addKeyboardInput(KeyboardCode::Up, 1.0f);
         forwardList.addKeyboardInput(KeyboardCode::KeyW, 1.0f);
         if (gamepad)
+        {
             forwardList.addGamepadButtonInput(gamepad->getDefaultCodeDPadUp(), 1.0f);
+            forwardList.addGamepadAxisInput(gamepad->getAxisCodeLeftStickVertical(), -1.0f);
+        }
         input->addInput(forwardList, this, [](InputType type, InputData *data, float value, void *userData)
                         { reinterpret_cast<Player *>(userData)->setMoveForward(value); });
 
@@ -54,7 +57,10 @@ public:
         backwardsList.addKeyboardInput(KeyboardCode::Down, 1.0f);
         backwardsList.addKeyboardInput(KeyboardCode::KeyS, 1.0f);
         if (gamepad)
+        {
             backwardsList.addGamepadButtonInput(gamepad->getDefaultCodeDPadDown(), 1.0f);
+            backwardsList.addGamepadAxisInput(gamepad->getAxisCodeLeftStickVertical(), 1.0f);
+        }
         input->addInput(backwardsList, this, [](InputType type, InputData *data, float value, void *userData)
                         { reinterpret_cast<Player *>(userData)->setMoveBackwards(value); });
 
@@ -62,7 +68,10 @@ public:
         leftList.addKeyboardInput(KeyboardCode::Left, 1.0f);
         leftList.addKeyboardInput(KeyboardCode::KeyA, 1.0f);
         if (gamepad)
+        {
             leftList.addGamepadButtonInput(gamepad->getDefaultCodeDPadLeft(), 1.0f);
+            leftList.addGamepadAxisInput(gamepad->getAxisCodeLeftStickHorizontal(), -1.0f);
+        }
         input->addInput(leftList, this, [](InputType type, InputData *data, float value, void *userData)
                         { reinterpret_cast<Player *>(userData)->setMoveLeft(value); });
 
@@ -70,7 +79,10 @@ public:
         rightList.addKeyboardInput(KeyboardCode::Right, 1.0f);
         rightList.addKeyboardInput(KeyboardCode::KeyD, 1.0f);
         if (gamepad)
+        {
             rightList.addGamepadButtonInput(gamepad->getDefaultCodeDPadRight(), 1.0f);
+            rightList.addGamepadAxisInput(gamepad->getAxisCodeLeftStickHorizontal(), 1.0f);
+        }
         input->addInput(rightList, this, [](InputType type, InputData *data, float value, void *userData)
                         { reinterpret_cast<Player *>(userData)->setMoveRight(value); });
     }
@@ -87,22 +99,22 @@ public:
 
     void setMoveForward(float value)
     {
-        fMoveForwardValue = value;
+        fMoveForwardValue = fmaxf(value, 0.0f);
     }
 
     void setMoveBackwards(float value)
     {
-        fMoveBackwardValue = value;
+        fMoveBackwardValue = fmaxf(value, 0.0f);
     }
 
     void setMoveLeft(float value)
     {
-        fMoveLeftValue = value;
+        fMoveLeftValue = fmaxf(value, 0.0f);
     }
 
     void setMoveRight(float value)
     {
-        fMoveRightValue = value;
+        fMoveRightValue = fmaxf(value, 0.0f);
     }
 
     InputProvider *input = nullptr;

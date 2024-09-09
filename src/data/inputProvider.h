@@ -51,6 +51,7 @@ struct InputGamepadAxis
 {
     float value;
     int axisCode;
+    Gamepad *gamepad;
 };
 
 union InputData

@@ -153,16 +153,27 @@ LRESULT CALLBACK windowProcedure(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
             Gamepad *gamepad = window->getGamepad(raw->header.hDevice);
 
             // Parse HID report using the preparsed data
-            GamepadReport report = parseHidReport(raw->header.hDevice, pPreparsedData, (char *)raw->data.hid.bRawData, raw->data.hid.dwSizeHid);
+            GamepadReport report = parseHidReport(raw->header.hDevice, pPreparsedData, (char *)raw->data.hid.bRawData, raw->data.hid.dwSizeHid, gamepad);
             for (int i = 0; i < MAX_GAMEPAD_BUTTONS; i++)
             {
-                bool bIsChanged = gamepad->checkStateChanged(i, report.buttons[i]);
+                bool bIsChanged = gamepad->checkButtonStateChanged(i, report.buttons[i]);
                 if (bIsChanged)
                 {
                     inputData.gamepadButton.keyCode = i;
                     inputData.gamepadButton.state = report.buttons[i];
                     inputData.gamepadButton.gamepad = gamepad;
                     InputProvider::provideNewInput(InputType::GamepadButton, inputData);
+                }
+            }
+            for (int i = 0; i < MAX_GAMEPAD_AXISES; i++)
+            {
+                bool bIsChanged = gamepad->checkAxisStateChanged(i, report.axises[i]);
+                if (bIsChanged)
+                {
+                    inputData.gamepadAxis.axisCode = i;
+                    inputData.gamepadAxis.value = report.axises[i];
+                    inputData.gamepadAxis.gamepad = gamepad;
+                    InputProvider::provideNewInput(InputType::GamepadAxis, inputData);
                 }
             }
             free(pPreparsedData);
@@ -179,7 +190,7 @@ LRESULT CALLBACK windowProcedure(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
     return 0;
 }
 
-GamepadReport parseHidReport(HANDLE hDevice, PHIDP_PREPARSED_DATA pPreparsedData, char *report, UINT reportLength)
+GamepadReport parseHidReport(HANDLE hDevice, PHIDP_PREPARSED_DATA pPreparsedData, char *report, UINT reportLength, Gamepad *gamepad)
 {
     GamepadReport gamepadReport;
     memset(&gamepadReport, 0, sizeof(GamepadReport));
@@ -213,19 +224,22 @@ GamepadReport parseHidReport(HANDLE hDevice, PHIDP_PREPARSED_DATA pPreparsedData
 
         unsigned long value;
         HidP_GetUsageValue(HidP_Input, page, 0, usage, &value, pPreparsedData, report, reportLength);
+        float fValue = fminf(fmaxf((static_cast<float>(value) / static_cast<float>(0xffff / 2)) - 1.0f, -1.0f), 1.0f);
 
-        // printf("Axis %d value: %lu\n", usage, value);
+        if (usage >= 0 && usage < MAX_GAMEPAD_AXISES && fabsf(fValue) > gamepad->getDeadZone())
+            gamepadReport.axises[usage] = fValue;
+
+        // DPAD
         if (usage == 57)
         {
-            // dpad
             if (value == 1 || value == 2 || value == 8)
-                gamepadReport.buttons[GAMEPAD_DPAD_UP] = true;
+                gamepadReport.buttons[gamepad->getDefaultCodeDPadUp()] = true;
             if (value == 2 || value == 3 || value == 4)
-                gamepadReport.buttons[GAMEPAD_DPAD_RIGHT] = true;
+                gamepadReport.buttons[gamepad->getDefaultCodeDPadRight()] = true;
             if (value == 4 || value == 5 || value == 6)
-                gamepadReport.buttons[GAMEPAD_DPAD_DOWN] = true;
+                gamepadReport.buttons[gamepad->getDefaultCodeDPadDown()] = true;
             if (value == 6 || value == 7 || value == 8)
-                gamepadReport.buttons[GAMEPAD_DPAD_LEFT] = true;
+                gamepadReport.buttons[gamepad->getDefaultCodeDPadLeft()] = true;
         }
     }
 

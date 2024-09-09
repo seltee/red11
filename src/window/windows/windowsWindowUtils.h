@@ -18,10 +18,11 @@
 struct GamepadReport
 {
     bool buttons[MAX_GAMEPAD_BUTTONS];
+    float axises[MAX_GAMEPAD_AXISES];
 };
 
 LRESULT CALLBACK windowProcedure(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
-GamepadReport parseHidReport(HANDLE hDevice, PHIDP_PREPARSED_DATA pPreparsedData, char *report, UINT reportLength);
+GamepadReport parseHidReport(HANDLE hDevice, PHIDP_PREPARSED_DATA pPreparsedData, char *report, UINT reportLength, Gamepad *gamepad);
 void enableGamepadInput(HWND hWnd);
 
 #endif

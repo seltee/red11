@@ -35,8 +35,6 @@ WindowsGamepad::WindowsGamepad(HANDLE hDevice)
     memset(uniqueCode, 0xff, 16);
     reinterpret_cast<UniqueCode *>(uniqueCode)->unVendorId = unVendorId;
     reinterpret_cast<UniqueCode *>(uniqueCode)->unProductId = unProductId;
-
-    printf("name %s\ndisplay %s\n", name.c_str(), displayName.c_str());
 }
 
 bool WindowsGamepad::is(Gamepad *gamepad)
@@ -110,11 +108,10 @@ std::string WindowsGamepad::getDisplayName()
 
         if (SetupDiGetDeviceInterfaceDetailW(deviceInfoSet, &deviceInterfaceData, deviceDetailData, requiredSize, NULL, &deviceInfoData))
         {
-
-            out = convertWCharToString((wchar_t *)deviceDetailData->DevicePath);
             // Compare device path to find the matching one
             if (_wcsicmp((wchar_t *)deviceDetailData->DevicePath, deviceName) == 0)
             {
+                out = convertWCharToString((wchar_t *)deviceDetailData->DevicePath);
                 // Try to get the friendly name of the device
                 wchar_t friendlyName[256];
                 if (SetupDiGetDeviceRegistryPropertyW(deviceInfoSet, &deviceInfoData, SPDRP_FRIENDLYNAME, NULL,
@@ -128,6 +125,7 @@ std::string WindowsGamepad::getDisplayName()
                     // Fallback to device description if friendly name is not available
                     out = convertWCharToString(friendlyName);
                 }
+                break;
             }
         }
 
